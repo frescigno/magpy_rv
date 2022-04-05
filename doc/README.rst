@@ -1,3 +1,0 @@
-GORGON
-
-Gaussian prOcess ReGressiON
