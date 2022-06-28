@@ -1,4 +1,2 @@
-# GORGON
-Gaussian pRocess reGressiON
-
-Currently building the repository for this code
+# MAGPy
+Modeling Activity with Gaussian process regression in Python
