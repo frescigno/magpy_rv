@@ -22,6 +22,7 @@ import Models
 import Check
 import Parameter
 import Auxiliary as aux
+import Check as check
 
 
 
@@ -278,6 +279,15 @@ class MCMC:
                 z = (np.random.rand()*(a-1) + 1)**2 / a
                 Xk_new = Xj_hp + (S1_hp[chain] - Xj_hp) * z
                 Xk_new_mod = Xj_mod + (S1_mod[chain] - Xj_mod) * z
+                
+                start_check = check.Parameter_Check(Xk_new,self.kernel_names, Xk_new_mod, self.model_names, self.x)
+                for i in range(len(check_list)):
+                    base = check_list[i][0]
+                    check_name = check_list[i][1]
+                    check_params = check_list[i][2]
+                    
+                    
+                    
                 
                 # check_list will be in the form of ["kernel", "no_negative", params (if needed)]
                 

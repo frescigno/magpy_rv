@@ -47,6 +47,36 @@ def get_mod_numb_params(model_name):
     return model_param_number
 
 
+
+
+def get_kern_numb_params(kernel_name):
+    ''' Function to give the number of expected parameters per model
+    
+    Parameters
+    ---------
+    kernel_name : string
+        Name of the considered kernel
+    
+    Returns
+    ---------
+    kernel_param_number : int
+        Number of parameter per kernel
+    '''
+    
+    if kernel_name.startswith("cos") or kernel_name.startswith("Cos"):
+        kernel_param_number = 2
+    if kernel_name.startswith("ExpSqu") or kernel_name.startswith("Expsqu") or kernel_name.startswith("xxpsqu"):
+        kernel_param_number = 2
+    if kernel_name.startswith("Expsin") or kernel_name.startswith("expsin") or kernel_name.startswith("ExpSin") or kernel_name.startswith("expSin"):
+        kernel_param_number = 3
+    if kernel_name.startswith("QuasiPer") or kernel_name.startswith("quasiper") or kernel_name.startswith("Quasiper"):
+        kernel_param_number = 4
+    if kernel_name.startswith("Mater 5") or kernel_name.startswith("mater 5") or kernel_name.startswith("mater5") or kernel_name.startswith("Mater5"):
+        kernel_param_number = 2
+    
+    return kernel_param_number
+
+
 ###########################
 ########## MODEL ##########
 ###########################
