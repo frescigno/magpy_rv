@@ -10,14 +10,16 @@ Contains:
     Sum of Models
 
 Author: Federica Rescigno
-Version: 20-04-2022
+Version: 13-07-2023
+
+Adding batman for simulataneous photometric analysis
 """
 
 import scipy
 import numpy as np
 from scipy.linalg import cho_factor, cho_solve
 import matplotlib.pyplot as plt
-
+import batman
 
 '''KERNELS'''
 
@@ -183,7 +185,7 @@ class Cosine:
     
     def __init__(self, hparams):
         '''
-           Parameters
+        Parameters
         ----------
         hparams : dictionary with all the hyperparameters
             Should have 2 elements with possibly errors
@@ -242,12 +244,9 @@ class Cosine:
 
         Returns
         -------
-        self.dist_e : ???
+        self.dist_e : array, fl
             Spatial distance between each x1-x2 points set in euclidean space
             in formula = (t - t') within sine
-        self.dist_se : ???
-            Spatial distance between each x1-x2 points set in squared euclidean space
-            in formula = (t - t')^2
         '''
         
         X1 = np.array([x1]).T
@@ -1135,6 +1134,7 @@ MODELS = {"No_Model": ['rvs'],
 "Offset": ['rvs', 'offset'],
 "Polinomyal":["a_0","a_1","a_2","a_3"],
 "Keplerian": ['time', 'P', 'K', 'ecc', 'omega', 't0'],
+"Batman2": ['rho_star', 'q1', 'q2', 'jitphot', 'P_0', 't0_0', 'ecc_0', 'omega_0', 'Rratio_0', 'i_0', 'P_1', 't0_1', 'ecc_1', 'omega_1', 'Rratio_1', 'i_1'],
 "Uncorr_Noise": ['to come']
 }
 #will add Uncorrelated noise, FF' and others
@@ -1235,7 +1235,7 @@ class Offset:
         self.model_params = model_params
         
         # Check if we have the right amount of parameters
-        assert len(self.model_params) == 1, "Offset Model requires 2 parameter:" \
+        assert len(self.model_params) == 1, "Offset Model requires 1 parameter:" \
             + "'offset'"
         
         # Check if all hyperparameters are numbers
@@ -1455,6 +1455,99 @@ class Keplerian:
 
 
 
+class Batman2:
+    '''Photometric modelling
+    '''
+    
+    def __init__(self, time, model_params):
+        '''
+        Parameters
+        ----------
+        time : array
+            Time or x axis array of the photometry
+        '''
+        
+        self.time = time
+        self.model_params = model_params
+        
+        # Check if all hyperparameters are numbers
+        try:
+            
+            self.rho = self.model_params['rho_star'].value          #0
+            self.q1 = self.model_params['q1'].value                 #1
+            self.q2 = self.model_params['q2'].value                 #2
+            self.jit = self.model_params['jitphot'].value           #3
+            self.P_0 = self.model_params['P_0'].value               #4
+            self.t0_0 = self.model_params['t0_0'].value             #5
+            self.ecc_0 = self.model_params['ecc_0'].value           #6
+            self.omega_0 = self.model_params['omega_0'].value       #7
+            self.Rratio_0 = self.model_params['Rratio_0'].value     #8
+            self.i_0 = self.model_params['i_0'].value               #9
+            self.P_1 = self.model_params['P_1'].value               #10
+            self.t0_1 = self.model_params['t0_1'].value             #11
+            self.ecc_1 = self.model_params['ecc_1'].value           #12
+            self.omega_1 = self.model_params['omega_1'].value       #13
+            self.Rratio_1 = self.model_params['Rratio_1'].value     #14
+            #self.impact_1 = self.model_params['impact_1'].value
+            #self.dur_1 = self.model_params['dur_1'].value 
+            self.i_1 = self.model_params['i_1'].value               #15
+            self.offset = self.model_params['offset_phot'].value    #16
+        except KeyError:
+            raise KeyError("Batman Model requires 17 parameters")
+        
+        self.G = 6.67259e-8
+        self.u1 = 2*np.sqrt(self.q1)*self.q2
+        self.u2 = np.sqrt(self.q1)*(1-2*self.q2)
+        
+        self.a0_rstar = (self.rho*self.G*(self.P_0*24.*3600.)**2 /(3*np.pi))**(1/3)
+        self.a1_rstar = (self.rho*self.G*(self.P_1*24.*3600.)**2 /(3*np.pi))**(1/3)
+    
+    def model(self):
+        '''
+        Returns
+        -------
+        model_y : array
+            Model y to subtract from the observations
+        '''
+        
+        # Planet 1 parameters
+        params = batman.TransitParams()
+        params.t0 = self.t0_0                       #time of inferior conjunction
+        params.per = self.P_0                      #orbital period
+        params.rp = self.Rratio_0                      #planet radius (in units of stellar radii)
+        params.a = self.a0_rstar                       #semi-major axis (in units of stellar radii)
+        params.inc = self.i_0                     #orbital inclination (in degrees)
+        params.ecc = self.ecc_0                      #eccentricity
+        params.w = self.omega_0                       #longitude of periastron (in degrees)
+        params.u = [self.q1, self.q2]                #limb darkening coefficients [u1, u2]
+        params.limb_dark = "quadratic"       #limb darkening model
+        
+        m1 = batman.TransitModel(params, t=self.time)
+        flux1=m1.light_curve(params)
+        
+        # Planet 2 parameters
+        params2 = batman.TransitParams()
+        params2.t0 = self.t0_1                       #time of inferior conjunction
+        params2.per = self.P_1                      #orbital period
+        params2.rp = self.Rratio_1                      #planet radius (in units of stellar radii)
+        params2.a = self.a1_rstar                       #semi-major axis (in units of stellar radii)
+        params2.inc = self.i_1                     #orbital inclination (in degrees)
+        params2.ecc = self.ecc_1                      #eccentricity
+        params2.w = self.omega_1                       #longitude of periastron (in degrees)
+        params2.u = [self.q1, self.q2]                #limb darkening coefficients [u1, u2]
+        params2.limb_dark = "quadratic"       #limb darkening model
+        
+        m2 = batman.TransitModel(params2, t=self.time)
+        flux2=m2.light_curve(params2)
+        
+        model_y = flux1+flux2+self.offset-1
+        
+
+        return model_y
+        
+
+
+
 
 '''class MultiplePlanetsModel:
 
@@ -1497,6 +1590,7 @@ class Model_Par_Creator:
             numb = len(models)
         else:
             raise ValueError("Model must be a string or a list of strings")
+
         return numb
     
 
@@ -1518,12 +1612,20 @@ class Model_Par_Creator:
             
             if model[0].startswith("Poly") or model[0].startswith("poly"):
                 model_params = dict(a_0="a_0",a_1="a_1",a_2="a_2",a_3="a_3")
+                
+            if model[0].startswith("Bat") or model[0].startswith("bat"):
+                model_params = dict(rho_star='rho_star', q1='q1', q2='q2', jitphot='jitphot',P_0='P_0', t0_0='t0_0', ecc_0='ecc_0',omega_0='omega_0',
+                                     Rratio_0='Rratio_0',i_0='i_0',P_1='P_1',t0_1='t0_1',ecc_1='ecc_1',omega_1='omega_1',Rratio_1='Rratio_1',
+                                     i_1='i_1', offset_phot='offset_phot')
+            
+            
         else:
             # Check how many times each model is called
             n_kep = 0
             n_no = 0
             n_off = 0
             n_poly = 0
+            n_phot = 0
             model_params = {}
             for mod_name in model:
                 if mod_name.startswith("Kepler") or mod_name.startswith("kepler"):
@@ -1538,8 +1640,7 @@ class Model_Par_Creator:
                 if mod_name.startswith("Poly") or mod_name.startswith("poly"):
                     model_params.update({'a_0_'+str(n_off):'a_0','a_1_'+str(n_off):'a_1','a_2_'+str(n_off):'a_2','a_3_'+str(n_off):'a_3'})
                     n_off += 1
-                
-        
+                    
         return model_params
 
 
@@ -1556,7 +1657,7 @@ class GPLikelyhood:
     '''Gaussian Process likelyhood
     '''
     
-    def __init__(self, x, y, model_y, yerr, hparameters, model_param, kernel_name):
+    def __init__(self, x, y, model_y, yerr, hparameters, model_param, kernel_name, x_phot=None, y_phot=None, yerr_phot=None, model_y_phot=None, model_param_phot=None):
         '''
         Parameters
         ----------
@@ -1593,6 +1694,18 @@ class GPLikelyhood:
         self.model_param_values = []
         for key in model_param.keys():
             self.model_param_values.append(model_param[key].value)
+            
+        if x_phot is not None or (y_phot is not None) or (model_y_phot is not None) or (model_param_phot is not None) or (yerr_phot is not None):
+            assert x_phot is not None and (y_phot is not None) and (model_y_phot is not None) and (model_param_phot is not None) and (yerr_phot is not None), "I need all info for batman"
+        self.x_phot = x_phot
+        self.y_phot = y_phot
+        self.yerr_phot = yerr_phot
+        self.model_y_phot = model_y_phot
+        self.model_param_phot = model_param_phot
+        self.model_param_phot_names = model_param_phot.keys()
+        self.model_param_phot_values = []
+        for key in model_param_phot.keys():
+            self.model_param_phot_values.append(model_param_phot[key].value)
         
         
     
@@ -1694,6 +1807,14 @@ class GPLikelyhood:
         res = self.y - self.model_y - mu_pred
         return res
 
+    
+    def logprob_batman(self):
+        
+        newsig = np.sqrt(self.yerr_phot**2 + (self.model_param_phot["jitphot"].value)**2)
+        prho = ((self.model_param_phot['rho_star'].value-2.09)**2 / (2*0.10**2))
+        
+        logprob_bat = 0.5*np.sum((self.model_y_phot-self.y_phot)**2 / (newsig)**2 + np.log(newsig)) + prho        
+        return logprob_bat
 
 
     def logprob(self):
@@ -1720,7 +1841,8 @@ class GPLikelyhood:
         # Part 3: all together
         N = len(Y)
         logprob = - (N/2)*np.log(2*np.pi) - 0.5*logdetK - 0.5*alpha
-        self.logprob = logprob
+        
+        
 
         return logprob
 
@@ -1749,7 +1871,10 @@ class GPLikelyhood:
         try:
             self.prior_param = self.hparameters[param_name].value
         except KeyError:
-            self.prior_param = self.model_param[param_name].value
+            try:
+                self.prior_param = self.model_param[param_name].value
+            except KeyError:
+                self.prior_param = self.model_param_phot[param_name].value
         
         self.prior_name = prior_name
         self.prior_parameters = prior_parameters
@@ -1803,6 +1928,9 @@ class GPLikelyhood:
         '''
         
         LogL = self.logprob()
+        if self.x_phot is not None:
+            LogL =+ self.logprob_batman()
+        
         for i in range(len(prior_list)):
             hparam = prior_list[i][0]
             name_prior = prior_list[i][1]

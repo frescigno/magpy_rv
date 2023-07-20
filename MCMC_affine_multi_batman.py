@@ -7,16 +7,21 @@ Contains:
     Running function for MCMC
 
 Author: Federica Rescigno
-Version: 20-04-2022'''
+Version: 13-07-2023
+
+Adding batman for simulataneous photometric analysis'''
 
 import numpy as np
 import random
-import GP_solar_multi as gp
+import GP_solar_multi_batman as gp
 import math
-import plotting as plot
-import auxiliary as aux
+import plotting_batman as plot
+import auxiliary_batman as aux
 import time
 import mass_calc as mc
+
+import batman
+
 
 def numb_param_per_model(model_name):
     ''' Function to give the number of expected parameters per model
@@ -29,6 +34,8 @@ def numb_param_per_model(model_name):
         model_param_number = 5
     if model_name.startswith("poly") or model_name.startswith("Poly"):
         model_param_number = 4
+    if model_name.startswith("bat") or model_name.startswith("Bat"):
+        model_param_number =  17
     return model_param_number
 
 
@@ -65,8 +72,11 @@ def get_model(model_name, time, model_par, to_ecc=True, flags=None):
             model = gp.Offset(flags, parameters)
             model_y += model.model()
         if mod.startswith("poly") or mod.startswith("Poly"):
-            model = gp.Polynomial(time, parameters)
+            model = gp.Offset(time, parameters)
             model_y += model.model()
+        if mod.startswith("bat") or mod.startswith("Bat"):
+            model = gp.Batman2(time, parameters)
+            model_y = model.model()
         if mod.startswith("kepl") or mod.startswith("Kepl"):
             if to_ecc:
                 if len(model_name) == 1:
@@ -79,7 +89,7 @@ def get_model(model_name, time, model_par, to_ecc=True, flags=None):
             a +=1
         i += numb_param_mod
         
-    parameter=None
+    parameters=None
     return model_y
 
 
@@ -131,6 +141,22 @@ def parameter_check(parameters, names, Rstar=None, Mstar=None):
         o += numb_params
     
     return check
+
+
+def parameter_check_phot(parameters):
+    check = True
+    if parameters[0]<0 or parameters[3]<0 or parameters[4]<0 or parameters[5]<0 or parameters[6]<0 or parameters[8]<0 or parameters[10]<0 or parameters[11]<0 or parameters[12]<0 or parameters[14]<0:
+        check = False
+        return check
+    if parameters[6]>1 or parameters[12]>1 or parameters[8]>1 or parameters[14]>1 or np.deg2rad(parameters[9])>(np.pi/2) or np.deg2rad(parameters[15])>(np.pi/2):
+        check = False
+        return check
+    '''b0 =  parameters[4]*  np.cos(np.deg2rad(parameters[9]) * (1-parameters[6]**2) / (1+parameters[6]*np.sin(parameters[7])))
+    if b0>(1+parameters[8]):
+        check=False
+        print("in here3")
+        return check'''
+    return check
             
 
 
@@ -139,7 +165,7 @@ def parameter_check(parameters, names, Rstar=None, Mstar=None):
 
 class MCMC:
     
-    def __init__(self, t, rv, rv_err, hparam0, kernel_name, model_par0, model_name, prior_list, numb_chains=100, flags=None, mass=False):
+    def __init__(self, t, rv, rv_err, hparam0, kernel_name, model_par0, model_name, prior_list, numb_chains=100, flags=None, mass=False, x_phot=None, y_phot=None, yerr_phot=None, model_y_phot=None, model_param_phot=None):
         '''
         Parameters
         ----------
@@ -185,9 +211,20 @@ class MCMC:
         self.prior_list = prior_list
         self.numb_chains = int(numb_chains)
         
+        
+        if x_phot is not None or (y_phot is not None) or (model_y_phot is not None) or (model_param_phot is not None) or (yerr_phot is not None):
+            assert x_phot is not None and (y_phot is not None) and (model_y_phot is not None) and (model_param_phot is not None) and (yerr_phot is not None), "I need all info for batman"
+        self.x_phot = x_phot
+        self.y_phot = y_phot
+        self.yerr_phot = yerr_phot
+        self.model_y_phot = model_y_phot
+        self.model_param_phot = model_param_phot
+        
+        
         # Set up storing arrays
         self.hparameter_list = []
         self.model_parameter_list = []
+        self.batman_model_parameter_list = []
         self.logL_list = []
         self.accepted = []
         self.mass = mass
@@ -230,11 +267,25 @@ class MCMC:
         self.modpar_info[1] = which_model
         self.modpar_info[2] = name
         
+        # Do the same for batman model
+        if self.x_phot is not None:
+            self.single_batman_modpar0 = []
+            self.batman_modpar_err = []
+            self.batman_modpar_vary = []
+            self.batman_modpar_names = []
+            for key in model_param_phot.keys():
+                self.single_batman_modpar0.append(model_param_phot[key].value)
+                self.batman_modpar_err.append(model_param_phot[key].error)
+                self.batman_modpar_vary.append(model_param_phot[key].vary)
+                self.batman_modpar_names.append(key)
+        
         
         # Save number of parameters
         self.k_numb_param = len(self.single_hp0)
         self.mod_numb_param = len(self.single_modpar0)
         self.numb_param = len(self.single_hp0) + len(self.single_modpar0)
+        if x_phot is not None:
+            self.batman_numb_param = len(self.single_batman_modpar0)
         
         
         # If model is keplerian, substitute eccentricity and omega with Sk and Ck
@@ -250,12 +301,16 @@ class MCMC:
         # Check that you have a reasonable number of chains
         if self.numb_chains < (len(self.single_hp0)+len(self.single_modpar0))*2:
             return RuntimeWarning("It is not advisable to conduct this analysis with less chains than double the amount of free parameters")
-        
+        if x_phot is not None:
+            if self.numb_chains < (self.k_numb_param + self.mod_numb_param +self.batman_numb_param):
+                return RuntimeWarning("It is not advisable to conduct this analysis with less chains than double the amount of free parameters")
         
         
         # Populate the positions based on those values for the starting point of all the chains
         self.hp0 = aux.initial_pos_creator(self.single_hp0,self.hp_err, self.numb_chains)
         self.modpar0 = aux.initial_pos_creator(self.single_modpar0, self.modpar_err, self.numb_chains) #, param_names=self.modpar_info[0])
+        if x_phot is not None:
+            self.batman_modpar0 = aux.initial_pos_creator(self.single_batman_modpar0, self.batman_modpar_err, self.numb_chains)
         
         # Append these first guesses (and their chains) to the storing arrays (check for right shape)
         self.hparameter_list.append(self.hp0)
@@ -264,6 +319,10 @@ class MCMC:
         self.hparameter_list.tolist()
         self.model_parameter_list = np.array(self.model_parameter_list[0])
         self.model_parameter_list.tolist()
+        if x_phot is not None:
+            self.batman_model_parameter_list.append(self.batman_modpar0)
+            self.batman_model_parameter_list = np.array(self.batman_model_parameter_list[0])
+            self.batman_model_parameter_list.tolist()
         #print("check shape", self.hparameter_list)
         row = len(self.hparameter_list)
         column = len(self.hparameter_list[0])
@@ -293,6 +352,13 @@ class MCMC:
             model_par_chain = Model_Par_Creator.create(self.model_name)
             for i, key in zip(range(len(modpar_chain)), model_par_chain.keys()):
                 model_par_chain[key] = gp.Parameter(value=modpar_chain[i], error=self.modpar_err[i], vary=self.modpar_vary[i])
+            
+            if x_phot is not None:
+                batman_modpar_chain = self.batman_modpar0[chain]
+                batman_model_par_chain = Model_Par_Creator.create(["Batman2"])
+                for i, key in zip(range(len(batman_modpar_chain)), batman_model_par_chain.keys()):
+                    batman_model_par_chain[key] = gp.Parameter(value=batman_modpar_chain[i], error=self.batman_modpar_err[i], vary=self.batman_modpar_vary[i])
+                
                 
             if self.mass:
                 mass0_chain = mc.mass_calc(model_par_chain["P_0"].value, model_par_chain["K_0"].value, model_par_chain["omega_0"].value, model_par_chain["ecc_0"].value, 0.743)
@@ -308,10 +374,14 @@ class MCMC:
                 self.model_y0 = get_model(self.model_name, self.t, model_par_chain)
             if flags is not None:
                 self.model_y0 = get_model(self.model_name, self.t, model_par_chain, flags=self.flags)
+            if x_phot is not None:
+                self.model_y0_batman = get_model(["Batman2"], self.x_phot, batman_model_par_chain)
             
             #for priors in ecc and omega need to go back momentarely
-            
-            self.likelyhood = gp.GPLikelyhood(self.t,self.rv,self.model_y0, self.rv_err, hparam_chain, model_par_chain, self.kernel_name)
+            if x_phot is not None:
+                self.likelyhood = gp.GPLikelyhood(self.t,self.rv,self.model_y0, self.rv_err, hparam_chain, model_par_chain, self.kernel_name, x_phot=self.x_phot, y_phot=self.y_phot, model_y_phot=self.model_y0_batman, model_param_phot=batman_model_par_chain, yerr_phot=self.yerr_phot)
+            else:
+                self.likelyhood = gp.GPLikelyhood(self.t,self.rv,self.model_y0, self.rv_err, hparam_chain, model_par_chain, self.kernel_name)
             logL_chain = self.likelyhood.LogL(self.prior_list)
             
             # logL is initial likelihood of this chain, append it to logL0 of all chains
@@ -343,6 +413,10 @@ class MCMC:
         print("Initial model parameter guesses (ecc and omega are replaced by Sk and Ck): ")
         print(self.single_modpar0)
         print()
+        if self.x_phot is not None:
+            print("Modelling RVs and Photometry at the same time")
+            print("Initial batman model parameter guesses: ")
+            print(self.single_batman_modpar0)
         print("Initial Log Likelihood: ", self.logL0[0])
         print()
         print("Number of chains: ", self.numb_chains)
@@ -379,6 +453,10 @@ class MCMC:
         self.hp = np.zeros_like(self.hp0)
         self.modpar = np.zeros_like(self.modpar0)
         self.logz = np.zeros(self.numb_chains)
+        if self.x_phot is not None:
+            self.batman_modpar = np.zeros_like(self.batman_modpar0)
+            S1_phot = []
+            S2_phot = []
         
         
         # Create empty arrays for considered split part = 1, and the rest = 2
@@ -388,6 +466,7 @@ class MCMC:
         S1_mod = []
         S2_mod = []
         
+        
         # Repeat how many splits you want
         for split in range(n_splits):
             # Do the separation
@@ -395,15 +474,22 @@ class MCMC:
                 if inds[walker] == split:
                     S1_hp.append(self.hp0[walker])
                     S1_mod.append(self.modpar0[walker])
+                    if self.x_phot is not None:
+                        S1_phot.append(self.batman_modpar0[walker])
                 else:
                     S2_hp.append(self.hp0[walker])
                     S2_mod.append(self.modpar0[walker])
+                    if self.x_phot is not None:
+                        S2_phot.append(self.batman_modpar0[walker])
             S1_hp = np.array(S1_hp)
             S2_hp = np.array(S2_hp)
             S1_mod = np.array(S1_mod)
             S2_mod = np.array(S2_mod)
             N_chains1 = len(S1_hp)
             N_chains2 = len(S2_hp)
+            if self.x_phot is not None:
+                S1_phot = np.array(S1_phot)
+                S2_phot = np.array(S2_phot)
 
             row = len(S1_hp)
             column = len(S1_hp[0])
@@ -422,6 +508,20 @@ class MCMC:
                 z = (np.random.rand()*(a-1) + 1)**2 / a
                 Xk_new = Xj + (S1_hp[chain] - Xj) * z
                 Xk_new_mod = Xj_mod + (S1_mod[chain] - Xj_mod) * z
+                
+                if self.x_phot is not None:
+                    Xj_phot = S2_phot[rint]
+                    Xk_new_phot=np.zeros_like(Xj_phot)
+                    for i in range(len(Xj_phot)):
+                        if i in (0,1,2,3,8,9,14,15,16):
+                            Xk_new_phot[i] = Xj_phot[i] + (S1_phot[chain][i]-Xj_phot[i]) * z
+                    Xk_new_phot[4]=Xk_new_mod[1]
+                    Xk_new_phot[5]=Xk_new_mod[5]
+                    Xk_new_phot[6],Xk_new_phot[7]= aux.to_ecc(Xk_new_mod[3],Xk_new_mod[4])
+                    Xk_new_phot[10]=Xk_new_mod[6]
+                    Xk_new_phot[11]=Xk_new_mod[10]
+                    Xk_new_phot[12],Xk_new_phot[13]= aux.to_ecc(Xk_new_mod[8],Xk_new_mod[9])
+                    phot_check = parameter_check_phot(Xk_new_phot)
 
                 #print("new", Xk_new)
                 
@@ -430,8 +530,36 @@ class MCMC:
                     model_param_check = parameter_check(Xk_new_mod, self.model_name, Rstar, Mstar)
                 else:
                     model_param_check = parameter_check(Xk_new_mod, self.model_name)
+                
+                if self.x_phot is not None:
+                    while (np.min(Xk_new) < 0) or (not model_param_check) or (not phot_check):
+                        # Compute the step and apply it
+                        # The random number is the same within a chain but different between chains
+                        z = (np.random.rand()*(a-1) + 1)**2 / a
+                        Xk_new = Xj + (S1_hp[chain] - Xj) * z
+                        Xk_new_mod = Xj_mod + (S1_mod[chain] - Xj_mod) * z
+                        Xk_new_phot = Xj_phot + (S1_phot[chain]-Xj_phot) * z
                     
-                while (np.min(Xk_new) < 0) or (not model_param_check):
+                        if Rstar is not None and Mstar is not None:
+                            model_param_check = parameter_check(Xk_new_mod, self.model_name, Rstar, Mstar)
+                        else:
+                            model_param_check = parameter_check(Xk_new_mod, self.model_name)
+                        phot_check = parameter_check_phot(Xk_new_phot)
+                            
+                else:
+                    while (np.min(Xk_new) < 0) or (not model_param_check):
+                        # Compute the step and apply it
+                        # The random number is the same within a chain but different between chains
+                        z = (np.random.rand()*(a-1) + 1)**2 / a
+                        Xk_new = Xj + (S1_hp[chain] - Xj) * z
+                        Xk_new_mod = Xj_mod + (S1_mod[chain] - Xj_mod) * z
+                    
+                        if Rstar is not None and Mstar is not None:
+                            model_param_check = parameter_check(Xk_new_mod, self.model_name, Rstar, Mstar)
+                        else:
+                            model_param_check = parameter_check(Xk_new_mod, self.model_name)
+                
+                '''while (np.min(Xk_new) < 0) or (not model_param_check):
                     # Compute the step and apply it
                     # The random number is the same within a chain but different between chains
                     z = (np.random.rand()*(a-1) + 1)**2 / a
@@ -441,17 +569,27 @@ class MCMC:
                     if Rstar is not None and Mstar is not None:
                         model_param_check = parameter_check(Xk_new_mod, self.model_name, Rstar, Mstar)
                     else:
-                        model_param_check = parameter_check(Xk_new_mod, self.model_name)
+                        model_param_check = parameter_check(Xk_new_mod, self.model_name)'''
                                 
             
                         
                 log_z = np.log(z)
                     
                 # Save as the new value for the chain, by finding where the initial step was positioned and putting it in the same position
-                for o in range(self.numb_chains):
+                if self.x_phot is not None:
+                    for o in range(self.numb_chains):
+                        # Kernel and model parameters are still kept together after shuffling
+                        if (self.hp0[o][0] == S1_hp[chain][0]) and (self.modpar0[o][0] == S1_mod[chain][0]) and (self.batman_modpar0[o][0] == S1_phot[chain][0]):
+                            position = o
+                else:
+                    for o in range(self.numb_chains):
+                        # Kernel and model parameters are still kept together after shuffling
+                        if (self.hp0[o][0] == S1_hp[chain][0]) and (self.modpar0[o][0] == S1_mod[chain][0]):
+                            position = o
+                '''for o in range(self.numb_chains):
                     # Kernel and model parameters are still kept together after shuffling
                     if (self.hp0[o][0] == S1_hp[chain][0]) and (self.modpar0[o][0] == S1_mod[chain][0]):
-                        position = o
+                        position = o'''
                 
                 #print(position)
                 
@@ -466,6 +604,13 @@ class MCMC:
                         #print("nope")
                     else:
                         self.modpar[position][v] = S1_mod[chain][v]
+                if self.x_phot is not None:
+                    for v in range(len(self.batman_modpar_vary)):
+                        if self.batman_modpar_vary[v]:
+                            self.batman_modpar[position][v] = Xk_new_phot[v]
+                        else:
+                            self.batman_modpar[position][v] = S1_phot[chain][v]
+                            
                 self.logz[position] = log_z
                 
             
@@ -477,6 +622,10 @@ class MCMC:
             
             S1_mod = []
             S2_mod = []
+            
+            if self.x_phot is not None:
+                S1_phot = []
+                S2_phot = []
             
             #print("hp", self.hp)
         
@@ -517,6 +666,14 @@ class MCMC:
             
             for i, key in zip(range(self.mod_numb_param), model_param.keys()):
                 model_param[key] = gp.Parameter(value=self.modpar[chain][i], error=self.modpar_err[i], vary=self.modpar_vary[i])
+                
+            
+            if self.x_phot is not None:
+                batman_param = None
+                batman_param = Model_Par_Creator.create(["Batman2"])
+                for i, key in zip(range(len(self.batman_modpar_vary)), batman_param.keys()):
+                    batman_param[key] = gp.Parameter(value=self.batman_modpar[chain][i], error=self.batman_modpar_err[i], vary=self.batman_modpar_vary[i])
+                self.model_y_phot = get_model(["Batman2"], self.x_phot,batman_param)
             
             if self.mass:
                 #print(model_param["omega_0"].value, model_param["ecc_0"].value, model_param["omega_1"].value, model_param["ecc_1"].value)
@@ -544,8 +701,13 @@ class MCMC:
             self.likelyhood = None
             #logL_chain = None
             # Use current hp and model to compute the logL
-            self.likelyhood = gp.GPLikelyhood(self.t, self.rv, self.model_y, self.rv_err, param, model_param, self.kernel_name)
+            if self.x_phot is not None:
+                self.likelyhood = gp.GPLikelyhood(self.t, self.rv, self.model_y, self.rv_err, param, model_param, self.kernel_name, x_phot=self.x_phot, y_phot=self.y_phot, yerr_phot=self.yerr_phot, model_y_phot=self.model_y_phot, model_param_phot=batman_param)
+            else:
+                self.likelyhood = gp.GPLikelyhood(self.t, self.rv, self.model_y, self.rv_err, param, model_param, self.kernel_name)
             logL_chain = self.likelyhood.LogL(self.prior_list)
+            '''self.likelyhood = gp.GPLikelyhood(self.t, self.rv, self.model_y, self.rv_err, param, model_param, self.kernel_name)
+            logL_chain = self.likelyhood.LogL(self.prior_list)'''
             #print("h", logL_chain)
             
             self.logL.append(logL_chain)
@@ -566,6 +728,8 @@ class MCMC:
         if self.mass:
             mass0_decision = []
             mass1_decision = []
+        if self.x_phot is not None:
+            batman_decision = []
         
         
         
@@ -586,6 +750,9 @@ class MCMC:
             hp0 = self.hp0
             modpar = self.modpar
             modpar0 = self.modpar0
+            if self.x_phot is not None:
+                batman_modpar = self.batman_modpar
+                batman_modpar0 = self.batman_modpar0
             
             # If the logL is larger than one, then it's exponent will definitely be larger than 1 and will automatically be accepted
             if diff_logL_z > 1:
@@ -596,6 +763,8 @@ class MCMC:
                 if self.mass:
                     mass0_decision.append(self.mass0[chain])
                     mass1_decision.append(self.mass1[chain])
+                if self.x_phot is not None:
+                    batman_decision.append(batman_modpar[chain])
                 
             # If the logL is ver small (eg. smaller than -35), automatic refusal
             if diff_logL_z < -35.:
@@ -606,6 +775,8 @@ class MCMC:
                 if self.mass:
                     mass0_decision.append(self.mass0_0[chain])
                     mass1_decision.append(self.mass1_0[chain])
+                if self.x_phot is not None:
+                    batman_decision.append(batman_modpar0[chain])
             
             if (diff_logL_z >= -35.) and (diff_logL_z <= 1.):
                 # Generate random number from uniform distribution
@@ -619,6 +790,8 @@ class MCMC:
                     if self.mass:
                         mass0_decision.append(self.mass0[chain])
                         mass1_decision.append(self.mass1[chain])
+                    if self.x_phot is not None:
+                        batman_decision.append(batman_modpar[chain])
                 # if it is larger than the number reject the step
                 else:
                     logL_decision.append(self.logL0[chain])
@@ -628,6 +801,8 @@ class MCMC:
                     if self.mass:
                         mass0_decision.append(self.mass0_0[chain])
                         mass1_decision.append(self.mass1_0[chain])
+                    if self.x_phot is not None:
+                        batman_decision.append(batman_modpar0[chain])
             
             
     
@@ -644,6 +819,8 @@ class MCMC:
         # Rest of lists, nrows = nchains, ncols = nparam, ndepth = niterations
         self.hparameter_list = np.dstack((self.hparameter_list, hp_decision))
         self.model_parameter_list = np.dstack((self.model_parameter_list, modpar_decision))
+        if self.x_phot is not None:
+            self.batman_model_parameter_list = np.dstack((self.batman_model_parameter_list,batman_decision))
         #print("before", hp_decision)
         #print("after", self.hparameter_list)
         
@@ -675,6 +852,8 @@ class MCMC:
                 if self.mass:
                     self.mass0_0[chain] = self.mass0[chain]
                     self.mass1_0[chain] = self.mass1[chain]
+                if self.x_phot is not None:
+                    self.batman_modpar0[chain] = self.batman_modpar[chain]
             if self.acceptance_chain[chain] is False:
                 self.logL0[chain] = self.logL0[chain]
                 self.hp0[chain] = self.hp0[chain]
@@ -682,14 +861,29 @@ class MCMC:
                 if self.mass:
                     self.mass0_0[chain] = self.mass0_0[chain]
                     self.mass1_0[chain] = self.mass1_0[chain]
+                if self.x_phot is not None:
+                    self.batman_modpar0[chain] = self.batman_modpar0[chain]
         
         # IMPORTANT!! In model_parameter_list, if the model is a keplerian we have Sk and Ck, not ecc and omega
         
         if self.mass:
-            return self.logL_list, self.hparameter_list, self.model_parameter_list, self.accepted, self.mass0_list, self.mass1_list
+            if self.x_phot is not None:
+                return self.logL_list, self.hparameter_list, self.model_parameter_list, self.accepted, self.mass0_list, self.mass1_list, self.batman_model_parameter_list
+            else:
+                return self.logL_list, self.hparameter_list, self.model_parameter_list, self.accepted, self.mass0_list, self.mass1_list
+            
+            
         else:
-            return self.logL_list, self.hparameter_list, self.model_parameter_list, self.accepted
+            if self.x_phot is not None:
+                return self.logL_list, self.hparameter_list, self.model_parameter_list, self.accepted, self.batman_model_parameter_list
+            else:
+                return self.logL_list, self.hparameter_list, self.model_parameter_list, self.accepted
     
+    '''if self.mass:
+        return self.logL_list, self.hparameter_list, self.model_parameter_list, self.accepted, self.mass0_list, self.mass1_list
+    else:
+        return self.logL_list, self.hparameter_list, self.model_parameter_list, self.accepted
+    '''
     
     
     def gelman_rubin_calc(self, burn_in):
@@ -712,11 +906,18 @@ class MCMC:
             pdb.set_trace()
         
         #  Calculate for hyperparams
-        hp=False
+        hp=True
         if hp:
             for hyper_param in range(P):
                 chain_means = []
                 intra_chain_vars = []
+                if (
+                np.nanmax(self.hparameter_list[:, hyper_param, :])
+                - np.nanmin(self.hparameter_list[:, hyper_param, :])
+                == 0.0
+            ):
+                    all_R.append(1.0)
+                    continue
                 for chain in range(J):
                     # Calculate chain mean
                     param_chain = self.hparameter_list[chain, hyper_param, burn_in:]
@@ -766,6 +967,37 @@ class MCMC:
 
             all_R.append(R)
         
+        if self.x_phot is not None:
+            P = np.shape(self.batman_model_parameter_list)[1]
+            for param in range(P):
+                if self.batman_modpar_names[param] not in self.modpar_names:
+                    chain_means = []
+                    intra_chain_vars = []
+                    if (
+                        np.nanmax(self.batman_model_parameter_list[:, param, :])
+                        - np.nanmin(self.batman_model_parameter_list[:, param, :])
+                        == 0.0
+                    ):
+                        all_R.append(1.0)
+                        continue
+                    for chain in range(J):
+                        # Calculate chain mean
+                        param_chain = self.batman_model_parameter_list[chain, param, burn_in:]
+
+                        chain_means.append(np.nanmean(param_chain))
+                        intra_chain_var = np.nanvar(param_chain, ddof=1)
+                        intra_chain_vars.append(intra_chain_var)
+                    chain_means = np.array(chain_means)
+                    grand_mean = np.mean(chain_means)
+                    intra_chain_vars = np.array(intra_chain_vars)
+                    inter_chain_var = L / (J - 1) * np.sum(np.square(chain_means - grand_mean))
+                    W = np.mean(intra_chain_vars)
+
+                    R = (1 - 1 / L) * W + inter_chain_var / L
+                    R /= W
+                    all_R.append(R)
+            
+        
         all_R = np.array(all_R)
         try:
             #assert len(all_R) == self.numb_param
@@ -789,13 +1021,70 @@ class MCMC:
 
 
 
-def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, numb_chains=None, n_splits=None, a=None, Rstar=None, Mstar=None, flags=None, plot_convergence=False, saving_folder=None, mass=False):
+def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, numb_chains=None, n_splits=None, a=None, Rstar=None, Mstar=None, flags=None, plot_convergence=False, saving_folder=None, mass=False, x_phot=None, y_phot=None, yerr_phot=None, model_y_phot=None, model_param_phot=None):
     
-    from MCMC_affine_multi import MCMC
+    from MCMC_affine_multi_batman import MCMC
     
     gelman_rubin_limit = 1.1
     
-    if mass:
+
+    if x_phot is not None:
+        if mass:
+            if flags is None:
+                if numb_chains is None:
+                    _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, mass=True, x_phot=x_phot, y_phot=y_phot, yerr_phot=yerr_phot, model_y_phot=model_y_phot, model_param_phot=model_param_phot)
+                    numb_chains=100
+                else:
+                    _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, numb_chains, mass=True, x_phot=x_phot, y_phot=y_phot, yerr_phot=yerr_phot, model_y_phot=model_y_phot, model_param_phot=model_param_phot)
+            if flags is not None:
+                if numb_chains is None:
+                    _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, flags=flags, mass=True, x_phot=x_phot, y_phot=y_phot, yerr_phot=yerr_phot, model_y_phot=model_y_phot, model_param_phot=model_param_phot)
+                    numb_chains=100
+                else:
+                    _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, numb_chains, flags=flags, mass=True, x_phot=x_phot, y_phot=y_phot, yerr_phot=yerr_phot, model_y_phot=model_y_phot, model_param_phot=model_param_phot)
+        else:
+            if flags is None:
+                if numb_chains is None:
+                    _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, x_phot=x_phot, y_phot=y_phot, yerr_phot=yerr_phot, model_y_phot=model_y_phot, model_param_phot=model_param_phot)
+                    numb_chains=100
+                else:
+                    _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, numb_chains, x_phot=x_phot, y_phot=y_phot, yerr_phot=yerr_phot, model_y_phot=model_y_phot, model_param_phot=model_param_phot)
+            if flags is not None:
+                if numb_chains is None:
+                    _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, flags=flags, x_phot=x_phot, y_phot=y_phot, yerr_phot=yerr_phot, model_y_phot=model_y_phot, model_param_phot=model_param_phot)
+                    numb_chains=100
+                else:
+                    _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, numb_chains, flags=flags, x_phot=x_phot, y_phot=y_phot, yerr_phot=yerr_phot, model_y_phot=model_y_phot, model_param_phot=model_param_phot)
+            
+    else:
+        if mass:
+            if flags is None:
+                if numb_chains is None:
+                    _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, mass=True)
+                    numb_chains=100
+                else:
+                    _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, numb_chains, mass=True)
+            if flags is not None:
+                if numb_chains is None:
+                    _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, flags=flags, mass=True)
+                    numb_chains=100
+                else:
+                    _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, numb_chains, flags=flags, mass=True)
+        else:
+            if flags is None:
+                if numb_chains is None:
+                    _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list)
+                    numb_chains=100
+                else:
+                    _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, numb_chains)
+            if flags is not None:
+                if numb_chains is None:
+                    _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, flags=flags)
+                    numb_chains=100
+                else:
+                    _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, numb_chains, flags=flags)
+    
+    '''if mass:
         if flags is None:
             if numb_chains is None:
                 _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, mass=True)
@@ -820,7 +1109,7 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0, mode
                 _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, flags=flags)
                 numb_chains=100
             else:
-                _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, numb_chains, flags=flags)
+                _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, numb_chains, flags=flags)'''
     
     # Initialise progress bar
     print("Start Iterations")
@@ -833,12 +1122,15 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0, mode
     if plot_convergence:
         import matplotlib.pyplot as plt
 
-        conv_f, ax = plt.subplots()
+        conv_f, ax = plt.subplots(figsize=(15,15))
         hparam_names = aux.hparam_names(kernel_name)
         model_param_names = aux.model_param_names(model_name)
         all_param_names = hparam_names + model_param_names
-        all_param_names = model_param_names
-        conv_vals = {i: [] for i in all_param_names}
+        #all_param_names = model_param_names
+        if x_phot is not None:
+            batman_names = aux.batman_names()
+            all_param_names = hparam_names + model_param_names + batman_names
+        conv_vals = {i: [] for i in all_param_names}    
         conv_iters = []
 
         if saving_folder is None:
@@ -865,10 +1157,23 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0, mode
         elif Rstar is None or Mstar is None:
             _.compare()
         
-        if mass:
+        if x_phot is not None:
+            if mass:
+                logL_list, hparameter_list, model_parameter_list, accepted, mass0, mass1, batman_list = _.reset()
+            else:
+                logL_list, hparameter_list, model_parameter_list, accepted, batman_list = _.reset()
+        else:
+            if mass:
+                logL_list, hparameter_list, model_parameter_list, accepted, mass0, mass1 = _.reset()
+            else:
+                logL_list, hparameter_list, model_parameter_list, accepted = _.reset()
+            
+        
+        '''if mass:
             logL_list, hparameter_list, model_parameter_list, accepted, mass0, mass1 = _.reset()
         else:
-            logL_list, hparameter_list, model_parameter_list, accepted = _.reset()
+            logL_list, hparameter_list, model_parameter_list, accepted = _.reset()'''
+        
         if (iteration % 2==0) or iteration == iterations-1:
             aux.printProgressBar(iteration, iterations-1, length=50)
 
@@ -879,8 +1184,13 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0, mode
                 # print(iteration)
                 if plot_convergence:
                     assert len(R_list) == len(conv_vals)
-                    for i, R in enumerate(R_list):
-                        conv_vals[all_param_names[i]].append(R)
+                    if x_phot is not None:
+                        all_names = list(set(all_param_names))
+                        for i, R in enumerate(R_list):
+                            conv_vals[all_names[i]].append(R)
+                    else:
+                        for i, R in enumerate(R_list):
+                            conv_vals[all_param_names[i]].append(R)
                     conv_iters.append(iteration)
 
                     # for param in conv_vals:
@@ -902,6 +1212,7 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0, mode
                     
 
     if plot_convergence:
+        print("conv_iters",conv_iters)
         for param in conv_vals:
             ax.plot(conv_iters, conv_vals[param], label=param)
         ax.legend()
@@ -939,11 +1250,22 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0, mode
     
     # Mixing plots
     #plot.mixing_plot(iterations+4, hparam_chain, hparam_names, model_param_chain, model_param_names, LogL_chain)
-    if mass:
+    if x_phot is not None:
+        if mass:
+            return logL_list, hparameter_list, model_parameter_list, mass0, mass1, batman_list, completed_iterations
+        else:
+            return logL_list, hparameter_list, model_parameter_list, batman_list, completed_iterations
+    else:
+        if mass:
+            return logL_list, hparameter_list, model_parameter_list, mass0, mass1, completed_iterations
+        else:
+            return logL_list, hparameter_list, model_parameter_list, completed_iterations
+    '''if mass:
         return logL_list, hparameter_list, model_parameter_list, mass0, mass1, completed_iterations
-    
     else:
         return logL_list, hparameter_list, model_parameter_list, completed_iterations
+    '''
+        
 
 
     

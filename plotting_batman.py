@@ -4,7 +4,9 @@
 List of all desired plottings for GP code
 
 Author: Federica Rescigno
-Version: 25-01-2022
+Version: 13-07-2023
+
+Adding batman for simulataneous photometric analysis
 """
 import matplotlib
 from matplotlib.colors import Normalize
@@ -12,7 +14,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import numpy as np
 import scipy.interpolate
-import auxiliary as aux
+import auxiliary_batman as aux
 import matplotlib.ticker as plticker
 
 poster=False
