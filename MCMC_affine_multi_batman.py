@@ -15,7 +15,7 @@ import numpy as np
 import random
 import GP_solar_multi_batman as gp
 import math
-import plotting as plot
+import plotting_batman as plot
 import auxiliary_batman as aux
 import time
 import mass_calc as mc
