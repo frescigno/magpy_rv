@@ -15,7 +15,7 @@ import numpy as np
 import random
 import GP_solar_multi_batman as gp
 import math
-import plotting_batman as plot
+import plotting as plot
 import auxiliary_batman as aux
 import time
 import mass_calc as mc
@@ -148,7 +148,7 @@ def parameter_check_phot(parameters):
     if parameters[0]<0 or parameters[3]<0 or parameters[4]<0 or parameters[5]<0 or parameters[6]<0 or parameters[8]<0 or parameters[10]<0 or parameters[11]<0 or parameters[12]<0 or parameters[14]<0:
         check = False
         return check
-    if parameters[6]>1 or parameters[12]>1 or parameters[8]>1 or parameters[14]>1 or np.deg2rad(parameters[9])>(np.pi/2) or np.deg2rad(parameters[15])>(np.pi/2):
+    if parameters[6]>0.95 or parameters[12]>0.95 or parameters[8]>1 or parameters[14]>1 or np.deg2rad(parameters[9])>(np.pi/2) or np.deg2rad(parameters[15])>(np.pi/2):
         check = False
         return check
     '''b0 =  parameters[4]*  np.cos(np.deg2rad(parameters[9]) * (1-parameters[6]**2) / (1+parameters[6]*np.sin(parameters[7])))
@@ -522,6 +522,7 @@ class MCMC:
                     Xk_new_phot[11]=Xk_new_mod[10]
                     Xk_new_phot[12],Xk_new_phot[13]= aux.to_ecc(Xk_new_mod[8],Xk_new_mod[9])
                     phot_check = parameter_check_phot(Xk_new_phot)
+                    print(Xk_new_phot)
 
                 #print("new", Xk_new)
                 
@@ -538,7 +539,17 @@ class MCMC:
                         z = (np.random.rand()*(a-1) + 1)**2 / a
                         Xk_new = Xj + (S1_hp[chain] - Xj) * z
                         Xk_new_mod = Xj_mod + (S1_mod[chain] - Xj_mod) * z
-                        Xk_new_phot = Xj_phot + (S1_phot[chain]-Xj_phot) * z
+                        for i in range(len(Xj_phot)):
+                            if i in (0,1,2,3,8,9,14,15,16):
+                                Xk_new_phot[i] = Xj_phot[i] + (S1_phot[chain][i]-Xj_phot[i]) * z
+                        Xk_new_phot[4]=Xk_new_mod[1]
+                        Xk_new_phot[5]=Xk_new_mod[5]
+                        Xk_new_phot[6],Xk_new_phot[7]= aux.to_ecc(Xk_new_mod[3],Xk_new_mod[4])
+                        Xk_new_phot[10]=Xk_new_mod[6]
+                        Xk_new_phot[11]=Xk_new_mod[10]
+                        Xk_new_phot[12],Xk_new_phot[13]= aux.to_ecc(Xk_new_mod[8],Xk_new_mod[9])
+                        phot_check = parameter_check_phot(Xk_new_phot)
+                        print(Xk_new_phot)
                     
                         if Rstar is not None and Mstar is not None:
                             model_param_check = parameter_check(Xk_new_mod, self.model_name, Rstar, Mstar)
@@ -712,7 +723,6 @@ class MCMC:
             
             self.logL.append(logL_chain)
             
-        
         # Final output: a logL 2d array, ncols = 1, nrows = numb_chains        
         
 
@@ -1151,12 +1161,12 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0, mode
             _.split_step(n_splits=n_splits, a=a)
         
         _.compute()
-        
+
         if Rstar is not None and Mstar is not None:
             _.compare(Rstar=Rstar, Mstar=Mstar)
         elif Rstar is None or Mstar is None:
             _.compare()
-        
+
         if x_phot is not None:
             if mass:
                 logL_list, hparameter_list, model_parameter_list, accepted, mass0, mass1, batman_list = _.reset()
