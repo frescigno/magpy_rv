@@ -72,18 +72,18 @@ def PRINTPRIORDER(pri_name = None):
         pri_name = "no prior"
     
     if pri_name.startswith("Gaus") or pri_name.startswith("gaus"):
-        print("List should take the form [mu, sigma] where all values are floats")
+        print("List should take the form [mu, sigma] where all values are floats or ints")
     elif pri_name.startswith("Jef") or pri_name.startswith("jef"):
-        print("List should take the form [minval, maxval] where all values are floats")
+        print("List should take the form [minval, maxval] where all values are float or ints")
     elif pri_name.startswith("Mod") or pri_name.startswith("mod"):
-        print("List should take the form [minval, maxval, kneeval] where all values are floats")
+        print("List should take the form [minval, maxval, kneeval] where all values are floats or ints")
     elif pri_name.startswith("Uni") or pri_name.startswith("uni"):
-        print("List should take the form [minval, maxval] where all values are floats")
+        print("List should take the form [minval, maxval] where all values are floats or ints")
     else:
-        print("Gaussian: List should take the form [mu, sigma] where all values are floats \n"
-              "Jeffery: List should take the form [minval, maxval] where all values are floats \n"
-              "Modified Jeffery: List should take the form [minval, maxval, kneeval] where all values are floats \n"
-              "Uniform: List should take the form [minval, maxval] where all values are floats")
+        print("Gaussian: List should take the form [mu, sigma] where all values are floats or ints \n"
+              "Jeffery: List should take the form [minval, maxval] where all values are floats or ints \n"
+              "Modified Jeffery: List should take the form [minval, maxval, kneeval] where all values are floats or ints \n"
+              "Uniform: List should take the form [minval, maxval] where all values are floats or ints")
         
     
 # Prior Parameter Creator Function
@@ -95,7 +95,7 @@ def pri_create(param_name, prior, vals = None):
     ----------
     prior: string
         name of the desired prior
-    vals: list or tuple of floats, optional
+    vals: list or tuple of floats or ints, optional
         list of floats containing the prior parameters in order specified by the PRINTPRIORDER function.
         To view which values belong in the list and the format, run the PRINTPRIORDER function.
     
@@ -104,7 +104,7 @@ def pri_create(param_name, prior, vals = None):
     Assertion:
         Raised if vals is not None and not a list or a tuple
     Assertion:
-        Raised if vals is not None and not made of floats
+        Raised if vals is not None and not made of floats or ints
     Assertion:
         Raised if length of the vals list does not match the required length for the prior
     Assertion:
@@ -115,10 +115,15 @@ def pri_create(param_name, prior, vals = None):
     prior_params: dictionary
         dictionary of all prior parameters
     """
+    
+    # if vals is a numpy array, change to a list so the code runs properly
+    if type(vals) == np.ndarray:
+        vals = vals.tolist()
+        
     if vals != None:
         assert type(vals) == list or tuple, "vals must be inputted as a list or tuple"
         for i in vals:
-            assert type(i) == float, "vals must be a list or tuple of floats"
+            assert type(i) == float or int, "vals must be a list or tuple of floats or ints"
     
     if prior.startswith("Gauss") or prior.startswith("gauss"):
         prior = "Gaussian"
