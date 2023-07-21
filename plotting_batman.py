@@ -349,8 +349,6 @@ def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, batman
         depth3 = shapes3[2]
         
         batpar = np.zeros((((depth3)*numb_chains3),nparam3))
-        print(nparam3)
-        print(len(batman_names))
         for p in range(nparam3):
             numb=0
             for c in range(numb_chains3):
@@ -460,9 +458,10 @@ def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, batman
     
     print("Parameter values after MCMC: ", final_param_values)
     if errors:
-        return final_param_values, final_param_erru, final_param_errd
-    elif batman_parameters is not None:
-        return final_param_values, final_param_erru, final_param_errd, final_batparam_values, final_batparam_erru, final_batparam_errd
+        if batman_parameters is not None:
+            return final_param_values, final_param_erru, final_param_errd, final_batparam_values, final_batparam_erru, final_batparam_errd
+        else:
+            return final_param_values, final_param_erru, final_param_errd
     else:
         return final_param_values
 

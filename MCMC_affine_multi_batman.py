@@ -522,7 +522,6 @@ class MCMC:
                     Xk_new_phot[11]=Xk_new_mod[10]
                     Xk_new_phot[12],Xk_new_phot[13]= aux.to_ecc(Xk_new_mod[8],Xk_new_mod[9])
                     phot_check = parameter_check_phot(Xk_new_phot)
-                    print(Xk_new_phot)
 
                 #print("new", Xk_new)
                 
@@ -549,7 +548,6 @@ class MCMC:
                         Xk_new_phot[11]=Xk_new_mod[10]
                         Xk_new_phot[12],Xk_new_phot[13]= aux.to_ecc(Xk_new_mod[8],Xk_new_mod[9])
                         phot_check = parameter_check_phot(Xk_new_phot)
-                        print(Xk_new_phot)
                     
                         if Rstar is not None and Mstar is not None:
                             model_param_check = parameter_check(Xk_new_mod, self.model_name, Rstar, Mstar)
@@ -569,6 +567,10 @@ class MCMC:
                             model_param_check = parameter_check(Xk_new_mod, self.model_name, Rstar, Mstar)
                         else:
                             model_param_check = parameter_check(Xk_new_mod, self.model_name)
+                
+                
+                if Xk_new_phot[10]!=Xk_new_mod[6]:
+                    exit()
                 
                 '''while (np.min(Xk_new) < 0) or (not model_param_check):
                     # Compute the step and apply it
@@ -830,7 +832,7 @@ class MCMC:
         self.hparameter_list = np.dstack((self.hparameter_list, hp_decision))
         self.model_parameter_list = np.dstack((self.model_parameter_list, modpar_decision))
         if self.x_phot is not None:
-            self.batman_model_parameter_list = np.dstack((self.batman_model_parameter_list,batman_decision))
+            self.batman_model_parameter_list = np.dstack((self.batman_model_parameter_list, batman_decision))
         #print("before", hp_decision)
         #print("after", self.hparameter_list)
         
