@@ -13,7 +13,7 @@ import scipy as sc
 import Parameters as par
 from scipy.linalg import cho_factor, cho_solve
 import matplotlib.pyplot as plt
-import Kernels_new as ker
+import Kernels as ker
 import Models as mod
 from MCMC_affine_multi import get_model #change this when the mcmc file is rewritten
 
