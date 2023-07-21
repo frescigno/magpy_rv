@@ -215,14 +215,21 @@ class Offset:
         # Check if all hyperparameters are numbers
         try:
             self.offset = self.model_params['offset'].value
+            self.flag_val = 1.
+            print('offset_')
         except KeyError:
             for i in range(10):
                 try:
                     self.offset = self.model_params['offset_'+str(i)].value
+                    self.flag_val = i+1.
+                    print('offset_'+str(i))
                     break
                 except KeyError:
-                    raise KeyError("Offset Model requires 1 parameter:" \
+                    if i == 10:
+                        raise KeyError("Offset Model requires 1 parameter:" \
                         + "'offset'")
+                    else:
+                        continue
         
     
     def model(self):
@@ -233,13 +240,17 @@ class Offset:
             Model y to subtract from the observations
         '''
         model_y=[]
+        # flags is an array of 0s and 1s
         for i in range(len(self.flags)):
-            if self.flags[i]>0.5:
+            # if i is a 1, append the offset value to the empty list
+            if self.flags[i] == self.flag_val:
                 model_y.append(self.offset)
             else:
+                #if i is 0, append 0 to the empty list
                 model_y.append(0.0)
         
         model_y = np.array(model_y)
+        # model y is an array containing all the offsets only for the values needing to be offset
         return model_y
 
 
