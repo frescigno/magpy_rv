@@ -103,6 +103,68 @@ def mod_create(model):
     return model_params
 
 
+# flags creator function
+
+def get_data(times, ys, y_errs):
+    """Function to combine data from multiple telescopes to an X and Y array and generate an array of flags for the offsets
+
+    Parameters
+    ----------
+    times: list or tuple of arrays of floats
+        list of the time arrays from the telescopes where the first array in the list is the zero point offset
+    ys: list or tuple of arrays of floats
+        list of the rv arrays from the telescopes where the first array in the list is the zero point offset, arrays entered into list in same order as times
+    y_errs: list or tuple of arrays of floats
+        list of the rv error arrays from the telescopes where the first array in the list is the zero point offset, arrays entered into list in same order as times
+    
+    Raises
+    ------
+    Assertion:
+        Raised if times is not a list or tuple
+    Assertion
+        Raised if ys is not a list or tuple
+    Assertion
+        Raised if y_errs is not a list or tuple
+        
+    Returns
+    -------
+    time: array of floats
+        combined time array of all telescopes
+    y: array of floats
+        combined rv array of all telescopes
+    y_err: array of floats
+        combined rv error array of all telescopes
+    flags: array of floats
+        array of flags representing which datapoints in the time array are related to which telescope and so will have which offset
+    """
+    
+    if type(times) == np.ndarray:
+            times = times.tolist()
+    if type(ys) == np.ndarray:
+            ys = ys.tolist()
+    if type(y_errs) == np.ndarray:
+            y_errs = y_errs.tolist()
+    
+    assert type(times) == list or tuple, "times should be a list or tuple of arrays"
+    assert type(ys) == list or tuple, "ys should be a list or tuple of arrays"
+    assert type(y_errs) == list or tuple, "y_errs should be a list or tuple of arrays"
+    
+    flag_list = []
+    for N, i in enumerate(times): 
+      flagval = np.zeros_like(i) + N
+      flag_list.append(flagval)
+    
+    time = np.concatenate(times)
+    y = np.concatenate(ys)
+    y_err = np.concatenate(y_errs)
+    flags = np.concatenate(flag_list)
+    time, y, y_err, flags = zip(*sorted(zip(time, y, y_err, flags)))
+    time = np.array(time)
+    return(time, y, y_err, flags)
+       
+    
+
+
 # Models
 
 
