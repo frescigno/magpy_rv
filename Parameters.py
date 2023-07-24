@@ -93,6 +93,8 @@ def pri_create(param_name, prior, vals = None):
 
     Parameters
     ----------
+    param_name: string
+        name of parameter that the prior is being assigned to - should be the same as it appears in the kernel or model
     prior: string
         name of the desired prior
     vals: list or tuple of floats or ints, optional
