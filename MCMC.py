@@ -678,9 +678,16 @@ class MCMC:
 
 
 
-def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list = [], numb_chains=None, n_splits=None, a=None, Rstar=None, Mstar=None, flags=None, plot_convergence=False, saving_folder=None, mass=False):
+def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = None, model_name = ["no_model"], prior_list = [], numb_chains=None, n_splits=None, a=None, Rstar=None, Mstar=None, flags=None, plot_convergence=False, saving_folder=None, mass=False):
     
     gelman_rubin_limit = 1.1
+    
+    if model_param0 == None:
+        if model_name[0].startswith("no") or model_name[0].startswith("No"):
+            model_param0 = modl.mod_create(["no_model"])
+            model_param0["no"] = par.parameter(value=0., error=0., vary=False)
+        else:
+            raise KeyError("model parameters and model list must be provided when using a model")
     
     if mass:
         if flags is None:

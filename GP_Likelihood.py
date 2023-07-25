@@ -81,7 +81,7 @@ class GPLikelihood:
         # check if a model is required, if not create a blank model
         
         if model_y == None:
-            if model_param == None or "No" in model_param.keys() or "no" in model_param.keys():
+            if model_param == None or "no" in model_param.keys():
                 # run the get_model function from the MCMC file, this will likely be changed when that file is re-written
                 model_list = ["no"]
                 model_param = mod.mod_create(model_list)
@@ -92,9 +92,7 @@ class GPLikelihood:
                 raise KeyError("model_y must be provided when using a model")
         else:
             if model_param == None:
-                raise KeyError("model parameters must be specified when using a model")
-            if "No" in model_param.keys() or "no" in model_param.keys():
-                raise KeyError("model_y should not be provided when using no model")  
+                raise KeyError("model parameters must be specified when using a model")  
             else:
                 self.model_y = np.array(model_y)
         
