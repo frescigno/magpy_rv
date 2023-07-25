@@ -57,7 +57,6 @@ def get_model(model_name, time, model_par, to_ecc=True, flags=None):
             model = mod.No_Model(time, parameters)
             model_y += model.model()
         if name.startswith("off") or name.startswith("Off"):
-            print(parameters)
             model = mod.Offset(flags, parameters)
             model_y += model.model()
         if name.startswith("poly") or name.startswith("Poly"):

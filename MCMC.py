@@ -12,7 +12,7 @@ import numpy as np
 import scipy as sc
 import Parameters as par
 import Kernels as ker
-import Models as mod
+import Models as modl
 import GP_Likelihood as gp
 import random
 import math
@@ -177,13 +177,12 @@ class MCMC:
 
             
             # Re-create parameter objects, kernel and model
-            hparam_chain = gp.Par_Creator.create(self.kernel_name)
+            hparam_chain = par.par_create(self.kernel_name)
             for i, key in zip(range(len(hp_chain)), hparam_chain.keys()):
-                hparam_chain[key] = gp.Parameter(value=hp_chain[i], error=self.hp_err[i], vary=self.hp_vary[i])
-            Model_Par_Creator = gp.Model_Par_Creator()
-            model_par_chain = Model_Par_Creator.create(self.model_name)
+                hparam_chain[key] = par.parameter(value=hp_chain[i], error=self.hp_err[i], vary=self.hp_vary[i])
+            model_par_chain = modl.mod_create(self.model_name)
             for i, key in zip(range(len(modpar_chain)), model_par_chain.keys()):
-                model_par_chain[key] = gp.Parameter(value=modpar_chain[i], error=self.modpar_err[i], vary=self.modpar_vary[i])
+                model_par_chain[key] = par.parameter(value=modpar_chain[i], error=self.modpar_err[i], vary=self.modpar_vary[i])
                 
             if self.mass:
                 mass0_chain = mc.mass_calc(model_par_chain["P_0"].value, model_par_chain["K_0"].value, model_par_chain["omega_0"].value, model_par_chain["ecc_0"].value, 0.743)
@@ -202,8 +201,8 @@ class MCMC:
             
             #for priors in ecc and omega need to go back momentarely
             
-            self.likelyhood = gp.GPLikelyhood(self.t,self.rv,self.model_y0, self.rv_err, hparam_chain, model_par_chain, self.kernel_name)
-            logL_chain = self.likelyhood.LogL(self.prior_list)
+            self.likelihood = gp.GPLikelihood(self.t, self.rv, self.rv_err, hparam_chain, self.kernel_name, self.model_y0, model_par_chain)
+            logL_chain = self.likelihood.LogL(self.prior_list)
             
             # logL is initial likelihood of this chain, append it to logL0 of all chains
             self.logL0.append(logL_chain)
@@ -396,18 +395,17 @@ class MCMC:
             #print("chain", chain)
             # Reset dictionary for the kernel hyperparameters and store new values
             param = None
-            param = gp.Par_Creator.create(self.kernel_name)
+            param = par.par_create(self.kernel_name)
             for i, key in zip(range(self.k_numb_param), param.keys()):
-                param[key] = gp.Parameter(value=self.hp[chain][i], error=self.hp_err[i], vary=self.hp_vary[i])
+                param[key] = par.parameter(value=self.hp[chain][i], error=self.hp_err[i], vary=self.hp_vary[i])
             
             # Do the same for the model parameters
             model_param = None
-            Model_Par_Creator = gp.Model_Par_Creator()
-            model_param = Model_Par_Creator.create(self.model_name)
+            model_param = modl.mod_create(self.model_name)
             
             
             for i, key in zip(range(self.mod_numb_param), model_param.keys()):
-                model_param[key] = gp.Parameter(value=self.modpar[chain][i], error=self.modpar_err[i], vary=self.modpar_vary[i])
+                model_param[key] = par.parameter(value=self.modpar[chain][i], error=self.modpar_err[i], vary=self.modpar_vary[i])
             
             if self.mass:
                 #print(model_param["omega_0"].value, model_param["ecc_0"].value, model_param["omega_1"].value, model_param["ecc_1"].value)
@@ -432,11 +430,11 @@ class MCMC:
             #print(model_param)
             #For some reason after going through get model we get the ecc and omega instead???
             
-            self.likelyhood = None
+            self.likelihood = None
             #logL_chain = None
             # Use current hp and model to compute the logL
-            self.likelyhood = gp.GPLikelyhood(self.t, self.rv, self.model_y, self.rv_err, param, model_param, self.kernel_name)
-            logL_chain = self.likelyhood.LogL(self.prior_list)
+            self.likelihood = gp.GPLikelihood(self.t, self.rv, self.rv_err, param, self.kernel_name, self.model_y, model_param)
+            logL_chain = self.likelihood.LogL(self.prior_list)
             #print("h", logL_chain)
             
             self.logL.append(logL_chain)
@@ -466,7 +464,7 @@ class MCMC:
             #print("z", self.logz[chain])
             #print("logL", self.logL[chain])
             #print("logL0", self.logL0[chain])
-            # Compute the difference between the current and the previous likelyhood (include affine invariant normalisation)
+            # Compute the difference between the current and the previous likelihood (include affine invariant normalisation)
             
             diff_logL_z = self.logL[chain] - self.logL0[chain] + self.logz[chain] * (self.numb_param - 1)
             #print(self.logL[chain])
@@ -680,9 +678,7 @@ class MCMC:
 
 
 
-def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, numb_chains=None, n_splits=None, a=None, Rstar=None, Mstar=None, flags=None, plot_convergence=False, saving_folder=None, mass=False):
-    
-    from MCMC_affine_multi import MCMC
+def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list = [], numb_chains=None, n_splits=None, a=None, Rstar=None, Mstar=None, flags=None, plot_convergence=False, saving_folder=None, mass=False):
     
     gelman_rubin_limit = 1.1
     

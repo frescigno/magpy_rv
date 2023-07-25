@@ -23,8 +23,8 @@ from MCMC_aux import get_model
 #######################################
 
 
-class GPLikelyhood:
-    '''Gaussian Process likelyhood
+class GPLikelihood:
+    '''Gaussian Process likelihood
     '''
     
     def __init__(self, x, y, yerr, hparameters, kernel_name, model_y = None, model_param = None):
@@ -113,7 +113,7 @@ class GPLikelyhood:
         parameters : string
             List of all parameters with values
         '''
-        message = "Gaussian Process Likelyhood object, computed with a {} kernel \n".format(self.kernel_name)
+        message = "Gaussian Process Likelihood object, computed with a {} kernel \n".format(self.kernel_name)
         
         parameters = "Kernel parameters: \n"
         for i in range(len(self.haparm_values)):
@@ -224,7 +224,7 @@ class GPLikelyhood:
 
     def logprob(self):
         '''
-        Computes the natural logarith of the likelyhood of the gaussian fit.
+        Computes the natural logarith of the likelihood of the gaussian fit.
         Following the equation:
             ln(L) = -n/2 ln(2pi) * -1/2 ln(det(K)) -1/2 Y.T dot K-1 dot Y
         
@@ -236,7 +236,7 @@ class GPLikelyhood:
         # Compute kernel covariance matrix and the y (rvs) to model
         K = self.compute_kernel(self.x, self.x)
         Y = self.internal_residuals()
-        # Compute likelyhood, formula 2.28 in Raphie Thesis
+        # Compute likelihood, formula 2.28 in Raphie Thesis
         # Part 1: get ln of determinant
         sign, logdetK = np.linalg.slogdet(K)
         #Part 2: compute Y.T * K-1 * Y
@@ -353,7 +353,7 @@ class GPLikelyhood:
         Returns
         -------
         LogL : float
-            Final ln of likelyhood after applying all posteriors from priors
+            Final ln of likelihood after applying all posteriors from priors
         '''
         
         # check if prior_list is a list

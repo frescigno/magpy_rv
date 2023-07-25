@@ -296,13 +296,11 @@ class Offset:
         try:
             self.offset = self.model_params['offset'].value
             self.flag_val = 1.
-            print('offset_')
         except KeyError:
             for i in range(10):
                 try:
                     self.offset = self.model_params['offset_'+str(i)].value
                     self.flag_val = i+1.
-                    print('offset_'+str(i))
                     break
                 except KeyError:
                     if i == 10:
