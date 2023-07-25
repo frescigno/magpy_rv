@@ -13,13 +13,11 @@ Adding batman for simulataneous photometric analysis'''
 
 import numpy as np
 import random
+import time
 import GP_solar_multi_batman as gp
-import math
 import plotting_batman as plot
 import auxiliary_batman as aux
-import time
 import mass_calc as mc
-
 import batman
 
 
@@ -224,7 +222,6 @@ class MCMC:
         # Set up storing arrays
         self.hparameter_list = []
         self.model_parameter_list = []
-        self.batman_model_parameter_list = []
         self.logL_list = []
         self.accepted = []
         self.mass = mass
@@ -269,6 +266,7 @@ class MCMC:
         
         # Do the same for batman model
         if self.x_phot is not None:
+            self.batman_model_parameter_list = []
             self.single_batman_modpar0 = []
             self.batman_modpar_err = []
             self.batman_modpar_vary = []
@@ -311,7 +309,15 @@ class MCMC:
         self.modpar0 = aux.initial_pos_creator(self.single_modpar0, self.modpar_err, self.numb_chains) #, param_names=self.modpar_info[0])
         if x_phot is not None:
             self.batman_modpar0 = aux.initial_pos_creator(self.single_batman_modpar0, self.batman_modpar_err, self.numb_chains)
-        
+        #print(self.modpar0[1][0])
+        for chain in range(len(self.batman_modpar0)):
+            self.batman_modpar0[chain][4] = self.modpar0[chain][1]
+            self.batman_modpar0[chain][5] = self.modpar0[chain][5]
+            self.batman_modpar0[chain][6],self.batman_modpar0[chain][7] = aux.to_ecc(self.modpar0[chain][3],self.modpar0[chain][4])
+            self.batman_modpar0[chain][10] = self.modpar0[chain][6]
+            self.batman_modpar0[chain][11] = self.modpar0[chain][10]
+            self.batman_modpar0[chain][12],self.batman_modpar0[chain][13] = aux.to_ecc(self.modpar0[chain][8],self.modpar0[chain][9])
+
         # Append these first guesses (and their chains) to the storing arrays (check for right shape)
         self.hparameter_list.append(self.hp0)
         self.model_parameter_list.append(self.modpar0)
