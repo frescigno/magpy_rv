@@ -20,6 +20,7 @@ import numpy as np
 from scipy.linalg import cho_factor, cho_solve
 import matplotlib.pyplot as plt
 import batman
+import auxiliary_batman as aux
 
 '''KERNELS'''
 
@@ -1494,7 +1495,7 @@ class Batman2:
             self.offset = self.model_params['offset_phot'].value    #16
         except KeyError:
             raise KeyError("Batman Model requires 17 parameters")
-        
+                
         self.G = 6.67259e-8
         self.u1 = 2*np.sqrt(self.q1)*self.q2
         self.u2 = np.sqrt(self.q1)*(1-2*self.q2)
@@ -1512,7 +1513,8 @@ class Batman2:
         
         # Planet 1 parameters
         params = batman.TransitParams()
-        params.t0 = self.t0_0                       #time of inferior conjunction
+        
+        params.t0 = aux.periastron_to_transit(self.t0_0, self.P_0, self.ecc_0, self.omega_0) #time of inferior conjunction
         params.per = self.P_0                      #orbital period
         params.rp = self.Rratio_0                      #planet radius (in units of stellar radii)
         params.a = self.a0_rstar                       #semi-major axis (in units of stellar radii)
@@ -1527,7 +1529,7 @@ class Batman2:
         
         # Planet 2 parameters
         params2 = batman.TransitParams()
-        params2.t0 = self.t0_1                       #time of inferior conjunction
+        params2.t0 = aux.periastron_to_transit(self.t0_1, self.P_1, self.ecc_1, self.omega_1)
         params2.per = self.P_1                      #orbital period
         params2.rp = self.Rratio_1                      #planet radius (in units of stellar radii)
         params2.a = self.a1_rstar                       #semi-major axis (in units of stellar radii)
