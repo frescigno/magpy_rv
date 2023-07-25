@@ -679,7 +679,72 @@ class MCMC:
 
 
 def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = None, model_name = ["no_model"], prior_list = [], numb_chains=None, n_splits=None, a=None, Rstar=None, Mstar=None, flags=None, plot_convergence=False, saving_folder=None, mass=False):
-    
+    """Function to run the MCMC to obtain posterior distributions for hyperparameters and model parameters
+
+    Parameters
+    ----------
+    iterations : int
+        number of iterations to run the MCMC for
+    t : array of floats
+        array of the time data
+    rv : array of floats
+        array of the rv data
+    rv_err : array of floats
+        array of the rv errors
+    hparam0 : dictionary
+        dictionary of all hyperparameters
+    kernel_name : string
+        name of the chosen Kernel
+    model_param0 : dictionary, optional
+        dictionary of all model parameters, not required for no model
+        defaults to None
+    model_name : list of strings, optional
+        list of the names of the chosen models, not required for no model
+        defaults to ["no_model"]
+    prior_list : list of dictionaries, optional
+        list of prior parameters in the form of dictionaries set up by pri_create, not required for no priors
+        defaults to []
+    numb_chains : int
+        number of MCMC chains to run, no input will run 100 chains
+        defaults to None
+    n_splits : int, optional
+        number of subsplits of the total number of chains, no input will use 2 splits
+        defaults to None
+    a : float, optional
+        adjustable scale parameter, no input will use a=2
+        defaults to None
+    Rstar : float, optional
+        radius of the host star in solar radii 
+        defaults to None
+    Mstar : float, optional
+        rmass of the star in solar masses
+        defaults to None
+    flags: array of floats, optional
+        array of flags representing which datapoints in the time array are related to which telescope and so will have which offset
+        defaults to false
+    saving_folder : string, optional
+        folder location to save outputs to
+        defaults to None
+    mass : int, optional
+        number of planetary masses to be calculated from the data
+        defaults to 0   -------- not currently how it works, will need to change this
+
+    Raises
+    ------
+    KeyError
+        Raised if a model is in use and no model parameters have been provided
+
+    Returns:
+    logL_list : array of floats
+        array of the log likelihoods of every iteration
+    hparameter_list : array of floats
+        array of the hyperparameters of every iteration
+    model_parameter_list : array of floats
+        array of the model parameters of every iteration
+    mass0 : 
+    mass1 :
+    completed_iterations : 
+    """
     gelman_rubin_limit = 1.1
     
     if model_param0 == None:
