@@ -297,7 +297,6 @@ class MCMC:
 
             row = len(S1_hp)
             column = len(S1_hp[0])
-            #print("row = {}, column = {}".format(row, column))
             
             
             # Start looping over all chains in the set
@@ -312,8 +311,6 @@ class MCMC:
                 z = (np.random.rand()*(a-1) + 1)**2 / a
                 Xk_new = Xj + (S1_hp[chain] - Xj) * z
                 Xk_new_mod = Xj_mod + (S1_mod[chain] - Xj_mod) * z
-
-                #print("new", Xk_new)
                 
                 
                 if Rstar is not None and Mstar is not None:
@@ -343,8 +340,6 @@ class MCMC:
                     if (self.hp0[o][0] == S1_hp[chain][0]) and (self.modpar0[o][0] == S1_mod[chain][0]):
                         position = o
                 
-                #print(position)
-                
                 for v in range(len(self.hp_vary)):
                     if self.hp_vary[v]:
                         self.hp[position][v] = Xk_new[v]
@@ -360,7 +355,6 @@ class MCMC:
                 
             
             # Once all elements of the first section have taken the step, reinitialise the S1,2 arrays
-            #print(len(S1_mod), len(S2_mod))
             
             S1_hp = []
             S2_hp = []
@@ -368,13 +362,7 @@ class MCMC:
             S1_mod = []
             S2_mod = []
             
-            #print("hp", self.hp)
-        
-        #print(self.modpar)
-        #print()
-        #print()
         # Final result is self.hp which should be a 2d array, nrow=numb chains, ncol=numb parameters
-        #print("full z", self.logz)
                 
                 
 
@@ -386,8 +374,6 @@ class MCMC:
         self.logL = []
         self.mass0 = []
         self.mass1 =[]
-        #print("hp", self.hp)
-        #print("select", self.hp[0][1])
 
         
         # Start by going chain by chain
@@ -408,26 +394,18 @@ class MCMC:
                 model_param[key] = par.parameter(value=self.modpar[chain][i], error=self.modpar_err[i], vary=self.modpar_vary[i])
             
             if self.mass:
-                #print(model_param["omega_0"].value, model_param["ecc_0"].value, model_param["omega_1"].value, model_param["ecc_1"].value)
                 mass0_chain = mc.mass_calc(model_param["P_0"].value, model_param["K_0"].value, model_param["omega_0"].value, model_param["ecc_0"].value, 0.743)
                 mass1_chain = mc.mass_calc(model_param["P_1"].value, model_param["K_1"].value, model_param["omega_1"].value, model_param["ecc_1"].value, 0.743)
                 self.mass0.append(mass0_chain)
                 self.mass1.append(mass1_chain)
             
             
-            #print("param", param)
-            #print("par model", model_param)
-            #print("hyperpar", param)
-            
-            #self.model_y = None
             # Get new model
             if self.flags is None:
                 self.model_y = get_model(self.model_name, self.t, model_param, flags=None)
             if self.flags is not None:
                 self.model_y = get_model(self.model_name, self.t, model_param, flags=self.flags)
-            #print("model", self.model_y[0:5])
             
-            #print(model_param)
             #For some reason after going through get model we get the ecc and omega instead???
             
             self.likelihood = None
@@ -435,7 +413,6 @@ class MCMC:
             # Use current hp and model to compute the logL
             self.likelihood = gp.GPLikelihood(self.t, self.rv, self.rv_err, param, self.kernel_name, self.model_y, model_param)
             logL_chain = self.likelihood.LogL(self.prior_list)
-            #print("h", logL_chain)
             
             self.logL.append(logL_chain)
             
@@ -460,16 +437,9 @@ class MCMC:
         
         # Loop over all chains
         for chain in range(self.numb_chains):
-            #print(chain)
-            #print("z", self.logz[chain])
-            #print("logL", self.logL[chain])
-            #print("logL0", self.logL0[chain])
             # Compute the difference between the current and the previous likelihood (include affine invariant normalisation)
             
             diff_logL_z = self.logL[chain] - self.logL0[chain] + self.logz[chain] * (self.numb_param - 1)
-            #print(self.logL[chain])
-            #diff_Lz = (np.exp(self.logz[chain]))**(self.numb_param - 1) * (np.exp(self.logL[chain])/np.exp(self.logL0[chain]))
-            #print("diff", diff_Lz)
             
             hp = self.hp
             hp0 = self.hp0
@@ -499,7 +469,7 @@ class MCMC:
             if (diff_logL_z >= -35.) and (diff_logL_z <= 1.):
                 # Generate random number from uniform distribution
                 MH_rand = random.uniform(0,1)
-                # if diff_Lz is smaller than the number, accept the step
+                # if diff_Lz is larger than the number, accept the step
                 if MH_rand <= (np.exp(diff_logL_z)):
                     logL_decision.append(self.logL[chain])
                     hp_decision.append(hp[chain])
@@ -508,7 +478,7 @@ class MCMC:
                     if self.mass:
                         mass0_decision.append(self.mass0[chain])
                         mass1_decision.append(self.mass1[chain])
-                # if it is larger than the number reject the step
+                # if it is smaller than the number reject the step
                 else:
                     logL_decision.append(self.logL0[chain])
                     hp_decision.append(hp0[chain])
@@ -533,8 +503,6 @@ class MCMC:
         # Rest of lists, nrows = nchains, ncols = nparam, ndepth = niterations
         self.hparameter_list = np.dstack((self.hparameter_list, hp_decision))
         self.model_parameter_list = np.dstack((self.model_parameter_list, modpar_decision))
-        #print("before", hp_decision)
-        #print("after", self.hparameter_list)
         
         
 
@@ -657,7 +625,6 @@ class MCMC:
         
         all_R = np.array(all_R)
         try:
-            #assert len(all_R) == self.numb_param
             assert np.all(all_R >= 1.0)
         except:
             import pdb
@@ -805,7 +772,6 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = Non
 
             saving_folder = os.getcwd()
     
-    #aux.printProgressBar(0, iterations, length = 50)
     
     for iteration in range(iterations):
         if n_splits is None and a is None:
@@ -835,21 +801,12 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = Non
             if (iteration >= burn_in) and (iteration - burn_in) % 20 == 0:
                 # Check whether the chains have converged...
                 R_list = _.gelman_rubin_calc(burn_in)
-                # print(iteration)
                 if plot_convergence:
                     assert len(R_list) == len(conv_vals)
                     for i, R in enumerate(R_list):
                         conv_vals[all_param_names[i]].append(R)
                     conv_iters.append(iteration)
 
-                    # for param in conv_vals:
-                    #     ax.plot(conv_iters, conv_vals[param], label=param)
-                    # ax.legend()
-                    # ax.axhline(gelman_rubin_limit, c='k', ls='--')
-                    # ax.set_xlim(left=burn_in)
-                    # ax.set_ylim(bottom = 1.)
-                    # ax.set_yscale('log')
-                    # conv_f.savefig(saving_folder+'/convergence_plot.png')
 
                 if np.all(R_list < gelman_rubin_limit):
                     # Convergence reached...
@@ -884,7 +841,6 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = Non
     rejected = 0
     accepted_flat = accepted.flatten()
     for m in range(len(accepted_flat)):
-        #print(m)
         if accepted_flat[m]:
             passed += 1
         if not accepted_flat[m]:
@@ -897,7 +853,6 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = Non
     print(" ---- %s minutes ----" % ((time.time() - start)/60))
     
     # Mixing plots
-    #plot.mixing_plot(iterations+4, hparam_chain, hparam_names, model_param_chain, model_param_names, LogL_chain)
     if mass:
         return logL_list, hparameter_list, model_parameter_list, mass0, mass1, completed_iterations
     
