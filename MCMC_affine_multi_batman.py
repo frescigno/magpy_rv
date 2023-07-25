@@ -146,7 +146,10 @@ def parameter_check_phot(parameters):
     if parameters[0]<0 or parameters[3]<0 or parameters[4]<0 or parameters[5]<0 or parameters[6]<0 or parameters[8]<0 or parameters[10]<0 or parameters[11]<0 or parameters[12]<0 or parameters[14]<0:
         check = False
         return check
-    if parameters[6]>0.95 or parameters[12]>0.95 or parameters[8]>1 or parameters[14]>1 or np.deg2rad(parameters[9])>(np.pi/2) or np.deg2rad(parameters[15])>(np.pi/2):
+    if parameters[6]>0.95 or parameters[12]>0.95 or parameters[8]>1 or parameters[14]>1:
+        check = False
+        return check
+    if parameters[9]>(95.) or parameters[9]<(85.) or parameters[15]>(95.) or parameters[15]<(85.):
         check = False
         return check
     '''b0 =  parameters[4]*  np.cos(np.deg2rad(parameters[9]) * (1-parameters[6]**2) / (1+parameters[6]*np.sin(parameters[7])))
@@ -217,7 +220,6 @@ class MCMC:
         self.yerr_phot = yerr_phot
         self.model_y_phot = model_y_phot
         self.model_param_phot = model_param_phot
-        
         
         # Set up storing arrays
         self.hparameter_list = []
@@ -472,7 +474,6 @@ class MCMC:
         S1_mod = []
         S2_mod = []
         
-        
         # Repeat how many splits you want
         for split in range(n_splits):
             # Do the separation
@@ -559,8 +560,7 @@ class MCMC:
                             model_param_check = parameter_check(Xk_new_mod, self.model_name, Rstar, Mstar)
                         else:
                             model_param_check = parameter_check(Xk_new_mod, self.model_name)
-                        phot_check = parameter_check_phot(Xk_new_phot)
-                            
+                        phot_check = parameter_check_phot(Xk_new_phot)                            
                 else:
                     while (np.min(Xk_new) < 0) or (not model_param_check):
                         # Compute the step and apply it
@@ -654,7 +654,6 @@ class MCMC:
         # Final result is self.hp which should be a 2d array, nrow=numb chains, ncol=numb parameters
         #print("full z", self.logz)
                 
-                
 
     
     def compute(self):
@@ -667,7 +666,6 @@ class MCMC:
         #print("hp", self.hp)
         #print("select", self.hp[0][1])
 
-        
         # Start by going chain by chain
         for chain in range(self.numb_chains):
             #print("chain", chain)
@@ -732,12 +730,10 @@ class MCMC:
             self.logL.append(logL_chain)
             
         # Final output: a logL 2d array, ncols = 1, nrows = numb_chains        
-        
 
         
     def compare(self):
 
-        
         # Create empty array to save decisions in to then concatenate to the list arrays
         hp_decision = []
         modpar_decision = []
