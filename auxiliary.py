@@ -221,11 +221,11 @@ def initial_pos_creator(param, param_err, numb_chains, allow_neg = False, param_
 
     '''
     
-    chains_param = []
+    chains_param = np.zeros(shape = (1, numb_chains, len(param)))
     # For the first chain, use the guesses themselves
-    chains_param.append(param)
+    chains_param[0,0,] = param
     
-    # For the rest create them by multipling a random number between -1
+    # For the rest create them by multipling a random number between -1 and 1
     for l in range(numb_chains-1):
         pos = param + param_err * np.random.uniform(-1.,1.,(1,len(param)))
         # Fix double parenthesis
@@ -245,7 +245,7 @@ def initial_pos_creator(param, param_err, numb_chains, allow_neg = False, param_
                             while pos[0][i] < 0:
                                 pos[0][i] = param[i] + param_err[i] * np.random.uniform(-1.,1.,(1,len(param[i])))
                                 #print("pos", pos)
-        chains_param.append(pos[0])
+        chains_param[0,l+1,] = pos[0]
     
     # chains_param should have on the horizontal the parameter values for each chain
     # on the vertical the number of chains

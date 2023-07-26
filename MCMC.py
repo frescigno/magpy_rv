@@ -76,11 +76,21 @@ class MCMC:
         self.prior_list = prior_list
         self.numb_chains = int(numb_chains)
         
+        
+        hlen = []
+        for key in hparam0.keys():
+            hlen.append(hparam0[key].value)
+        hlen = len(hlen)
+        plen = []
+        for key in model_par0.keys():
+            plen.append(model_par0[key].value)
+        plen = len(plen)
+        
         # Set up storing arrays
-        self.hparameter_list = []
-        self.model_parameter_list = []
-        self.logL_list = []
-        self.accepted = []
+        self.hparameter_list = np.zeros(shape = (1, self.numb_chains, hlen))
+        self.model_parameter_list = np.zeroes(shape = (1, self.numb_chains, plen))
+        self.logL_list = np.zeros(shape = (1, self.numb_chains, 1))
+        self.accepted = np.zeros(shape = (1, self.numb_chains, 1))
         self.mass = mass
         if self.mass:
             self.mass0_list = []
