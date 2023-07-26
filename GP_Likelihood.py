@@ -114,12 +114,12 @@ class GPLikelihood:
         message = "Gaussian Process Likelihood object, computed with a {} kernel \n".format(self.kernel_name)
         
         parameters = "Kernel parameters: \n"
-        for i in range(len(self.haparm_values)):
-            parameters += ("{} with initial value {} \n").format(self.hparam_names[i], self.haparam_values[i])
+        for i in range(len(self.hparam_values)):
+            parameters += ("{} with initial value {} \n").format(self.hparam_names[i], self.hparam_values[i])
         
         model_parameters = "Model parameters: \n"
         for i in range(len(self.model_param_values)):
-            model_parameters += ("{} with initial value {} \n").format(self.model_par_names[i], self.model_param_values[i])
+            model_parameters += ("{} with initial value {} \n").format(self.model_param_names[i], self.model_param_values[i])
         
         print(message)
         print(parameters)

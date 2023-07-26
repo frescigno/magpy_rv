@@ -80,15 +80,15 @@ class MCMC:
         hlen = []
         for key in hparam0.keys():
             hlen.append(hparam0[key].value)
-        hlen = len(hlen)
+        self.hlen = len(hlen)
         plen = []
         for key in model_par0.keys():
             plen.append(model_par0[key].value)
-        plen = len(plen)
+        self.plen = len(plen)
         
         # Set up storing arrays
-        self.hparameter_list = np.zeros(shape = (1, self.numb_chains, hlen))
-        self.model_parameter_list = np.zeroes(shape = (1, self.numb_chains, plen))
+        self.hparameter_list = np.zeros(shape = (1, self.numb_chains, self.hlen)) # don't think these need to be setup here
+        self.model_parameter_list = np.zeros(shape = (1, self.numb_chains, self.plen))
         self.logL_list = np.zeros(shape = (1, self.numb_chains, 1))
         self.accepted = np.zeros(shape = (1, self.numb_chains, 1))
         self.mass = mass
@@ -159,21 +159,21 @@ class MCMC:
         self.modpar0 = aux.initial_pos_creator(self.single_modpar0, self.modpar_err, self.numb_chains) #, param_names=self.modpar_info[0])
         
         # Append these first guesses (and their chains) to the storing arrays (check for right shape)
-        self.hparameter_list.append(self.hp0)
-        self.model_parameter_list.append(self.modpar0)
-        self.hparameter_list = np.array(self.hparameter_list[0])
-        self.hparameter_list.tolist()
-        self.model_parameter_list = np.array(self.model_parameter_list[0])
-        self.model_parameter_list.tolist()
+        self.hparameter_list[0] = self.hp0
+        self.model_parameter_list[0] = self.modpar0
+        #self.hparameter_list = np.array(self.hparameter_list[0])
+        #self.hparameter_list.tolist()
+        #self.model_parameter_list = np.array(self.model_parameter_list[0])
+        #self.model_parameter_list.tolist()
         #print("check shape", self.hparameter_list)
-        row = len(self.hparameter_list)
-        column = len(self.hparameter_list[0])
-        row = len(self.model_parameter_list)
-        column = len(self.model_parameter_list[0])
+        #row = len(self.hparameter_list)
+        #column = len(self.hparameter_list[0])
+        #row = len(self.model_parameter_list)
+        #column = len(self.model_parameter_list[0])
         # Expected output: 2d array with nrows=numb_chains, ncols=number of hyperparameters
         # We will then use np.concatenate(a.b) to make it into a 3d array with ndepth=steps
         
-        self.logL0 = []
+        self.logL0 = np.zeros(shape = (1, self.numb_chains, 1))
         if self.mass:
             self.mass0_0 = []
             self.mass1_0 = []
@@ -182,8 +182,8 @@ class MCMC:
         # Start looping over all chains to get initial models and logLs
         for chain in range(self.numb_chains):
             # Pick each row one at a time
-            hp_chain = self.hp0[chain]
-            modpar_chain = self.modpar0[chain]
+            hp_chain = self.hparameter_list[0,chain,]
+            modpar_chain = self.model_parameter_list[0,chain,]
 
             
             # Re-create parameter objects, kernel and model
@@ -215,7 +215,7 @@ class MCMC:
             logL_chain = self.likelihood.LogL(self.prior_list)
             
             # logL is initial likelihood of this chain, append it to logL0 of all chains
-            self.logL0.append(logL_chain)
+            self.logL0[0,chain,0] = logL_chain
             
             #### ATTENTION!!!! FOR SOME REASON AFTER GET_MODEL THE VALUES IN MODEL_PAR_CHAIN BECOME OMEGA AND ECCENTRICITY
             if self.mass:
@@ -224,11 +224,11 @@ class MCMC:
 
         
         # Save this set of likelihoods as the first ones of the overall likelihood array
-        self.logL_list.append(self.logL0)
+        self.logL_list[0] = self.logL0
         acc =  [True for i in range(self.numb_chains)]
-        self.accepted.append(acc)
-        self.logL_list = aux.transpose(self.logL_list)
-        self.accepted = aux.transpose(self.accepted)
+        self.accepted[0,:,0] = acc # numpy array reads 1.0 as true and 0.0 as false
+        #self.logL_list = aux.transpose(self.logL_list)
+        #self.accepted = aux.transpose(self.accepted)
         if self.mass:
             self.mass0_list.append(self.mass0_0)
             self.mass0_list = aux.transpose(self.mass0_list)
@@ -243,7 +243,7 @@ class MCMC:
         print("Initial model parameter guesses (ecc and omega are replaced by Sk and Ck): ")
         print(self.single_modpar0)
         print()
-        print("Initial Log Likelihood: ", self.logL0[0])
+        print("Initial Log Likelihood: ", self.logL_list[0,0,0])
         print()
         print("Number of chains: ", self.numb_chains)
         print()
@@ -293,11 +293,11 @@ class MCMC:
             # Do the separation
             for walker in range(len(inds)):
                 if inds[walker] == split:
-                    S1_hp.append(self.hp0[walker])
-                    S1_mod.append(self.modpar0[walker])
+                    S1_hp.append(self.hp0[0,walker,])
+                    S1_mod.append(self.modpar0[0,walker,])
                 else:
-                    S2_hp.append(self.hp0[walker])
-                    S2_mod.append(self.modpar0[walker])
+                    S2_hp.append(self.hp0[0,walker,])
+                    S2_mod.append(self.modpar0[0,walker,])
             S1_hp = np.array(S1_hp)
             S2_hp = np.array(S2_hp)
             S1_mod = np.array(S1_mod)
@@ -347,20 +347,20 @@ class MCMC:
                 # Save as the new value for the chain, by finding where the initial step was positioned and putting it in the same position
                 for o in range(self.numb_chains):
                     # Kernel and model parameters are still kept together after shuffling
-                    if (self.hp0[o][0] == S1_hp[chain][0]) and (self.modpar0[o][0] == S1_mod[chain][0]):
+                    if (self.hp0[0][o][0] == S1_hp[chain][0]) and (self.modpar0[0][o][0] == S1_mod[chain][0]):
                         position = o
                 
                 for v in range(len(self.hp_vary)):
                     if self.hp_vary[v]:
-                        self.hp[position][v] = Xk_new[v]
+                        self.hp[0][position][v] = Xk_new[v]
                     else:
-                        self.hp[position][v] = S1_hp[chain][v]
+                        self.hp[0][position][v] = S1_hp[chain][v]
                 for v in range(len(self.modpar_vary)):
                     if self.modpar_vary[v]:
-                        self.modpar[position][v] = Xk_new_mod[v]
+                        self.modpar[0][position][v] = Xk_new_mod[v]
                         #print("nope")
                     else:
-                        self.modpar[position][v] = S1_mod[chain][v]
+                        self.modpar[0][position][v] = S1_mod[chain][v]
                 self.logz[position] = log_z
                 
             
@@ -372,7 +372,7 @@ class MCMC:
             S1_mod = []
             S2_mod = []
             
-        # Final result is self.hp which should be a 2d array, nrow=numb chains, ncol=numb parameters
+        # Final result is self.hp which should be a 3d array, nrow=numb chains, ncol=numb parameters, dimensions=1
                 
                 
 
@@ -381,7 +381,7 @@ class MCMC:
         '''
 
         '''
-        self.logL = []
+        self.logL = np.zeros(shape = (1, self.numb_chains, 1))
         self.mass0 = []
         self.mass1 =[]
 
@@ -401,7 +401,7 @@ class MCMC:
             
             
             for i, key in zip(range(self.mod_numb_param), model_param.keys()):
-                model_param[key] = par.parameter(value=self.modpar[chain][i], error=self.modpar_err[i], vary=self.modpar_vary[i])
+                model_param[key] = par.parameter(value=self.modpar[0][chain][i], error=self.modpar_err[i], vary=self.modpar_vary[i])
             
             if self.mass:
                 mass0_chain = mc.mass_calc(model_param["P_0"].value, model_param["K_0"].value, model_param["omega_0"].value, model_param["ecc_0"].value, 0.743)
@@ -424,10 +424,10 @@ class MCMC:
             self.likelihood = gp.GPLikelihood(self.t, self.rv, self.rv_err, param, self.kernel_name, self.model_y, model_param)
             logL_chain = self.likelihood.LogL(self.prior_list)
             
-            self.logL.append(logL_chain)
+            self.logL[0,chain,0] = logL_chain
             
         
-        # Final output: a logL 2d array, ncols = 1, nrows = numb_chains        
+        # Final output: a logL 3d array, ncols = 1, nrows = numb_chains, dimensions = 1        
         
 
         
@@ -435,10 +435,10 @@ class MCMC:
 
         
         # Create empty array to save decisions in to then concatenate to the list arrays
-        hp_decision = []
-        modpar_decision = []
-        logL_decision = []
-        self.acceptance_chain = []
+        hp_decision = np.zeros(shape = (1, self.numb_chains, self.hlen))
+        modpar_decision = np.zeros(shape = (1, self.numb_chains, self.plen))
+        logL_decision = np.zeros(shape = (1, self.numb_chains, 1))
+        self.acceptance_chain = np.zeros(shape = (1,self.numb_chains,1))
         if self.mass:
             mass0_decision = []
             mass1_decision = []
@@ -449,7 +449,7 @@ class MCMC:
         for chain in range(self.numb_chains):
             # Compute the difference between the current and the previous likelihood (include affine invariant normalisation)
             
-            diff_logL_z = self.logL[chain] - self.logL0[chain] + self.logz[chain] * (self.numb_param - 1)
+            diff_logL_z = self.logL[0][chain][0] - self.logL0[0][chain][0] + self.logz[chain] * (self.numb_param - 1)
             
             hp = self.hp
             hp0 = self.hp0
@@ -458,20 +458,20 @@ class MCMC:
             
             # If the logL is larger than one, then it's exponent will definitely be larger than 1 and will automatically be accepted
             if diff_logL_z > 1:
-                logL_decision.append(self.logL[chain])
-                hp_decision.append(hp[chain])
-                modpar_decision.append(modpar[chain])
-                self.acceptance_chain.append(True)
+                logL_decision[0, chain, 0] = self.logL[0, chain, 0]
+                hp_decision[0, chain,] = hp[0, chain,]
+                modpar_decision[0, chain,] = modpar[0, chain,]
+                self.acceptance_chain[0,chain,0] = True
                 if self.mass:
                     mass0_decision.append(self.mass0[chain])
                     mass1_decision.append(self.mass1[chain])
                 
             # If the logL is ver small (eg. smaller than -35), automatic refusal
             if diff_logL_z < -35.:
-                logL_decision.append(self.logL0[chain])
-                hp_decision.append(hp0[chain])
-                modpar_decision.append(modpar0[chain])
-                self.acceptance_chain.append(False)
+                logL_decision[0, chain, 0] = self.logL0[0, chain, 0]
+                hp_decision[0, chain,] = hp0[0, chain,]
+                modpar_decision[0, chain,] = modpar0[0, chain,]
+                self.acceptance_chain[0,chain,0] = False
                 if self.mass:
                     mass0_decision.append(self.mass0_0[chain])
                     mass1_decision.append(self.mass1_0[chain])
@@ -481,19 +481,19 @@ class MCMC:
                 MH_rand = random.uniform(0,1)
                 # if diff_Lz is larger than the number, accept the step
                 if MH_rand <= (np.exp(diff_logL_z)):
-                    logL_decision.append(self.logL[chain])
-                    hp_decision.append(hp[chain])
-                    modpar_decision.append(modpar[chain])
-                    self.acceptance_chain.append(True)
+                    logL_decision[0, chain, 0] = self.logL[0, chain, 0]
+                    hp_decision[0, chain,] = hp[0, chain,]
+                    modpar_decision[0, chain,] = modpar[0, chain,]
+                    self.acceptance_chain[0,chain,0] = True
                     if self.mass:
                         mass0_decision.append(self.mass0[chain])
                         mass1_decision.append(self.mass1[chain])
                 # if it is smaller than the number reject the step
                 else:
-                    logL_decision.append(self.logL0[chain])
-                    hp_decision.append(hp0[chain])
-                    modpar_decision.append(modpar0[chain])
-                    self.acceptance_chain.append(False)
+                    logL_decision[0, chain, 0] = self.logL0[0,chain,0]
+                    hp_decision[0, chain,] = hp0[0,chain,]
+                    modpar_decision[0, chain,] = modpar0[0,chain,]
+                    self.acceptance_chain[0,chain,0] = False
                     if self.mass:
                         mass0_decision.append(self.mass0_0[chain])
                         mass1_decision.append(self.mass1_0[chain])
@@ -505,14 +505,18 @@ class MCMC:
         
         # Now concatenate all the 2D arrays into the 3D list arrays
         # Start with logL list and append, nrows = nchains, ncols = niterations
-        self.logL_list = np.column_stack((self.logL_list, logL_decision))
+        #self.logL_list = np.column_stack((self.logL_list, logL_decision))
+        self.logL_list = np.concatenate((self.logL_list, logL_decision))
         if self.mass:
             self.mass0_list = np.column_stack((self.mass0_list, mass0_decision))
             self.mass1_list = np.column_stack((self.mass1_list, mass1_decision))
-        self.accepted = np.column_stack((self.accepted, self.acceptance_chain))
+        #self.accepted = np.column_stack((self.accepted, self.acceptance_chain))
+        self.accepted = np.concatenate((self.accepted, self.acceptance_chain))
         # Rest of lists, nrows = nchains, ncols = nparam, ndepth = niterations
-        self.hparameter_list = np.dstack((self.hparameter_list, hp_decision))
-        self.model_parameter_list = np.dstack((self.model_parameter_list, modpar_decision))
+        #self.hparameter_list = np.dstack((self.hparameter_list, hp_decision))
+        self.hparameter_list = np.concatenate((self.hparameter_list, hp_decision))
+        #self.model_parameter_list = np.dstack((self.model_parameter_list, modpar_decision))
+        self.model_parameter_list = np.concatenate((self.model_parameter_list, modpar_decision))
         
         
 
@@ -535,17 +539,17 @@ class MCMC:
         
         # Set the zero values for nex step
         for chain in range(self.numb_chains):
-            if self.acceptance_chain[chain] is True:
-                self.logL0[chain] = self.logL[chain]
-                self.hp0[chain] = self.hp[chain]
-                self.modpar0[chain] = self.modpar[chain]
+            if self.acceptance_chain[0, chain, 0] is True:
+                self.logL0[0, chain, 0] = self.logL[0, chain, 0]
+                self.hp0[0, chain,] = self.hp[0, chain,]
+                self.modpar0[0, chain,] = self.modpar[0, chain,]
                 if self.mass:
                     self.mass0_0[chain] = self.mass0[chain]
                     self.mass1_0[chain] = self.mass1[chain]
-            if self.acceptance_chain[chain] is False:
-                self.logL0[chain] = self.logL0[chain]
-                self.hp0[chain] = self.hp0[chain]
-                self.modpar0[chain] = self.modpar0[chain]
+            if self.acceptance_chain[0, chain, 0] is False:
+                self.logL0[0, chain, 0] = self.logL0[0, chain, 0]
+                self.hp0[0, chain,] = self.hp0[0, chain]
+                self.modpar0[0, chain,] = self.modpar0[0, chain,]
                 if self.mass:
                     self.mass0_0[chain] = self.mass0_0[chain]
                     self.mass1_0[chain] = self.mass1_0[chain]
@@ -586,7 +590,7 @@ class MCMC:
                 intra_chain_vars = []
                 for chain in range(J):
                     # Calculate chain mean
-                    param_chain = self.hparameter_list[chain, hyper_param, burn_in:]
+                    param_chain = self.hparameter_list[burn_in, chain, hyper_param]
 
                     chain_means.append(np.nanmean(param_chain))
                     intra_chain_var = np.nanvar(param_chain, ddof=1)
@@ -617,7 +621,7 @@ class MCMC:
                 continue
             for chain in range(J):
                 # Calculate chain mean
-                param_chain = self.model_parameter_list[chain, param, burn_in:]
+                param_chain = self.model_parameter_list[burn_in, chain, param]
 
                 chain_means.append(np.nanmean(param_chain))
                 intra_chain_var = np.nanvar(param_chain, ddof=1)
