@@ -30,7 +30,7 @@ parameter_check = mcmcx.parameter_check
 
 class MCMC:
     
-    def __init__(self, t, rv, rv_err, hparam0, kernel_name, model_par0, model_name, prior_list, numb_chains=100, flags=None, mass=False):
+    def __init__(self, t, rv, rv_err, hparam0, kernel_name, model_par0, model_name, prior_list, numb_chains=100, flags=None, Mstar = 0):
         '''
         Parameters
         ----------
@@ -60,6 +60,7 @@ class MCMC:
         self.rv_err = rv_err
         self.kernel_name = kernel_name
         self.model_name = model_name
+        self.Mstar = Mstar
         if flags is not None:
             self.flags=flags
         else:
@@ -91,11 +92,25 @@ class MCMC:
         self.model_parameter_list = np.zeros(shape = (1, self.numb_chains, self.plen))
         self.logL_list = np.zeros(shape = (1, self.numb_chains, 1))
         self.accepted = np.zeros(shape = (1, self.numb_chains, 1))
-        self.mass = mass
-        if self.mass:
-            self.mass0_list = []
-            self.mass1_list = []
-        
+        #self.mass = mass
+        #if self.mass:
+        #    self.mass0_list = []
+        #    self.mass1_list = []
+        par_list = []
+        try:
+            model_par0['P'].value
+            self.mass_list = np.zeros(shape = (1, self.numb_chains, 1)) # mass array with rows = chains, columns = planets, dimensions = iterations, just one planet for this one
+        except KeyError:
+            for i in range(len(self.model_name)):
+                try:
+                    model_par0['P_'+str(i)]
+                    par_list.append(i)
+                except KeyError:
+                    continue
+            self.mass_list = np.zeros(shape = (1, self.numb_chains, len(par_list))) # mass array with rows = chains, columns = planets, dimensions = iterations
+                    
+            
+                    
         # Get initial guesses for hyperparameters and save them as 0
         # Save also errors for chains initial positions population
         self.single_hp0 = []
@@ -174,9 +189,10 @@ class MCMC:
         # We will then use np.concatenate(a.b) to make it into a 3d array with ndepth=steps
         
         self.logL0 = np.zeros(shape = (1, self.numb_chains, 1))
-        if self.mass:
-            self.mass0_0 = []
-            self.mass1_0 = []
+        #if self.mass:
+        #    self.mass0_0 = []
+        #    self.mass1_0 = []
+        self.mass0_list = np.zeros_like(self.mass_list) # set up initial mass list
         
         
         # Start looping over all chains to get initial models and logLs
@@ -194,13 +210,21 @@ class MCMC:
             for i, key in zip(range(len(modpar_chain)), model_par_chain.keys()):
                 model_par_chain[key] = par.parameter(value=modpar_chain[i], error=self.modpar_err[i], vary=self.modpar_vary[i])
                 
-            if self.mass:
-                mass0_chain = mc.mass_calc(model_par_chain["P_0"].value, model_par_chain["K_0"].value, model_par_chain["omega_0"].value, model_par_chain["ecc_0"].value, 0.743)
-                mass1_chain = mc.mass_calc(model_par_chain["P_1"].value, model_par_chain["K_1"].value, model_par_chain["omega_1"].value, model_par_chain["ecc_1"].value, 0.743)
+            #if self.mass:
+            #    mass0_chain = mc.mass_calc(model_par_chain["P_0"].value, model_par_chain["K_0"].value, model_par_chain["omega_0"].value, model_par_chain["ecc_0"].value, 0.743)
+            #    mass1_chain = mc.mass_calc(model_par_chain["P_1"].value, model_par_chain["K_1"].value, model_par_chain["omega_1"].value, model_par_chain["ecc_1"].value, 0.743)
                 #print("check", mass1_chain)
                 #print(model_par_chain["P_1"].value, model_par_chain["K_1"].value, model_par_chain["omega_1"].value, model_par_chain["ecc_1"].value)
-                self.mass0_0.append(mass0_chain)
-                self.mass1_0.append(mass1_chain)
+            #    self.mass0_0.append(mass0_chain)
+            #    self.mass1_0.append(mass1_chain)
+            try:
+                mass_chain = mc.mass_calc(model_par_chain["P"].value, model_par_chain["K"].value, model_par_chain["omega"].value, model_par_chain["ecc"].value, self.Mstar)
+                self.mass0_list[0, chain, 0] = mass_chain
+            except KeyError:
+                for i in range(len(self.mass0_list[0,0,])):
+                    mass_chain = mc.mass_calc(model_par_chain["P_"+str(i)].value, model_par_chain["K_"+str(i)].value, model_par_chain["omega_"+str(i)].value, model_par_chain["ecc_"+str(i)].value, self.Mstar)
+                    self.mass0_list[0, chain, i] = mass_chain
+                
             
             
             # Compute model y as sum of models
@@ -218,9 +242,7 @@ class MCMC:
             self.logL0[0,chain,0] = logL_chain
             
             #### ATTENTION!!!! FOR SOME REASON AFTER GET_MODEL THE VALUES IN MODEL_PAR_CHAIN BECOME OMEGA AND ECCENTRICITY
-            if self.mass:
-                mass0_chain, mass1_chain = None, None
-            hparam_chain, model_par_chain, logL_chain = None, None, None
+            hparam_chain, model_par_chain, logL_chain, mass_chain = None, None, None, None
 
         
         # Save this set of likelihoods as the first ones of the overall likelihood array
@@ -229,11 +251,12 @@ class MCMC:
         self.accepted[0,:,0] = acc # numpy array reads 1.0 as true and 0.0 as false
         #self.logL_list = aux.transpose(self.logL_list)
         #self.accepted = aux.transpose(self.accepted)
-        if self.mass:
-            self.mass0_list.append(self.mass0_0)
-            self.mass0_list = aux.transpose(self.mass0_list)
-            self.mass1_list.append(self.mass1_0)
-            self.mass1_list = aux.transpose(self.mass1_list)
+        #if self.mass:
+        #    self.mass0_list.append(self.mass0_0)
+        #    self.mass0_list = aux.transpose(self.mass0_list)
+        #    self.mass1_list.append(self.mass1_0)
+        #    self.mass1_list = aux.transpose(self.mass1_list)
+        self.mass_list[0] = self.mass0_list
         
         
         # Verbose
@@ -382,8 +405,9 @@ class MCMC:
 
         '''
         self.logL = np.zeros(shape = (1, self.numb_chains, 1))
-        self.mass0 = []
-        self.mass1 =[]
+        #self.mass0 = []
+        #self.mass1 =[]
+        self.mass = np.zeros_like(self.mass0_list)
 
         
         # Start by going chain by chain
@@ -403,11 +427,18 @@ class MCMC:
             for i, key in zip(range(self.mod_numb_param), model_param.keys()):
                 model_param[key] = par.parameter(value=self.modpar[0][chain][i], error=self.modpar_err[i], vary=self.modpar_vary[i])
             
-            if self.mass:
-                mass0_chain = mc.mass_calc(model_param["P_0"].value, model_param["K_0"].value, model_param["omega_0"].value, model_param["ecc_0"].value, 0.743)
-                mass1_chain = mc.mass_calc(model_param["P_1"].value, model_param["K_1"].value, model_param["omega_1"].value, model_param["ecc_1"].value, 0.743)
-                self.mass0.append(mass0_chain)
-                self.mass1.append(mass1_chain)
+            #if self.mass:
+            #    mass0_chain = mc.mass_calc(model_param["P_0"].value, model_param["K_0"].value, model_param["omega_0"].value, model_param["ecc_0"].value, 0.743)
+            #    mass1_chain = mc.mass_calc(model_param["P_1"].value, model_param["K_1"].value, model_param["omega_1"].value, model_param["ecc_1"].value, 0.743)
+            #    self.mass0.append(mass0_chain)
+            #    self.mass1.append(mass1_chain)
+            try:
+                mass_chain = mc.mass_calc(model_param["P"].value, model_param["K"].value, model_param["omega"].value, model_param["ecc"].value, self.Mstar)
+                self.mass[0, chain, 0] = mass_chain
+            except KeyError:
+                for i in range(len(self.mass[0,0,])):
+                    mass_chain = mc.mass_calc(model_param["P_"+str(i)].value, model_param["K_"+str(i)].value, model_param["omega_"+str(i)].value, model_param["ecc_"+str(i)].value, self.Mstar)
+                    self.mass[0, chain, i] = mass_chain
             
             
             # Get new model
@@ -439,9 +470,10 @@ class MCMC:
         modpar_decision = np.zeros(shape = (1, self.numb_chains, self.plen))
         logL_decision = np.zeros(shape = (1, self.numb_chains, 1))
         self.acceptance_chain = np.zeros(shape = (1,self.numb_chains,1))
-        if self.mass:
-            mass0_decision = []
-            mass1_decision = []
+        #if self.mass:
+        #    mass0_decision = []
+        #    mass1_decision = []
+        self.mass_decision = np.zeros_like(self.mass)
         
         
         
@@ -462,9 +494,10 @@ class MCMC:
                 hp_decision[0, chain,] = hp[0, chain,]
                 modpar_decision[0, chain,] = modpar[0, chain,]
                 self.acceptance_chain[0,chain,0] = True
-                if self.mass:
-                    mass0_decision.append(self.mass0[chain])
-                    mass1_decision.append(self.mass1[chain])
+                #if self.mass:
+                #    mass0_decision.append(self.mass0[chain])
+                #    mass1_decision.append(self.mass1[chain])
+                self.mass_decision[0, chain,] = self.mass[0, chain,]
                 
             # If the logL is ver small (eg. smaller than -35), automatic refusal
             if diff_logL_z < -35.:
@@ -472,9 +505,10 @@ class MCMC:
                 hp_decision[0, chain,] = hp0[0, chain,]
                 modpar_decision[0, chain,] = modpar0[0, chain,]
                 self.acceptance_chain[0,chain,0] = False
-                if self.mass:
-                    mass0_decision.append(self.mass0_0[chain])
-                    mass1_decision.append(self.mass1_0[chain])
+                #if self.mass:
+                #    mass0_decision.append(self.mass0_0[chain])
+                #    mass1_decision.append(self.mass1_0[chain])
+                self.mass_decision[0, chain,] = self.mass0_list[0, chain,]
             
             if (diff_logL_z >= -35.) and (diff_logL_z <= 1.):
                 # Generate random number from uniform distribution
@@ -485,18 +519,20 @@ class MCMC:
                     hp_decision[0, chain,] = hp[0, chain,]
                     modpar_decision[0, chain,] = modpar[0, chain,]
                     self.acceptance_chain[0,chain,0] = True
-                    if self.mass:
-                        mass0_decision.append(self.mass0[chain])
-                        mass1_decision.append(self.mass1[chain])
+                    #if self.mass:
+                    #    mass0_decision.append(self.mass0[chain])
+                    #    mass1_decision.append(self.mass1[chain])
+                    self.mass_decision[0, chain,] = self.mass[0, chain,]
                 # if it is smaller than the number reject the step
                 else:
                     logL_decision[0, chain, 0] = self.logL0[0,chain,0]
                     hp_decision[0, chain,] = hp0[0,chain,]
                     modpar_decision[0, chain,] = modpar0[0,chain,]
                     self.acceptance_chain[0,chain,0] = False
-                    if self.mass:
-                        mass0_decision.append(self.mass0_0[chain])
-                        mass1_decision.append(self.mass1_0[chain])
+                    #if self.mass:
+                    #    mass0_decision.append(self.mass0_0[chain])
+                    #    mass1_decision.append(self.mass1_0[chain])
+                    self.mass_decision[0, chain,] = self.mass0_list[0, chain,]
             
             
     
@@ -507,9 +543,10 @@ class MCMC:
         # Start with logL list and append, nrows = nchains, ncols = niterations
         #self.logL_list = np.column_stack((self.logL_list, logL_decision))
         self.logL_list = np.concatenate((self.logL_list, logL_decision))
-        if self.mass:
-            self.mass0_list = np.column_stack((self.mass0_list, mass0_decision))
-            self.mass1_list = np.column_stack((self.mass1_list, mass1_decision))
+        #if self.mass:
+        #    self.mass0_list = np.column_stack((self.mass0_list, mass0_decision))
+        #    self.mass1_list = np.column_stack((self.mass1_list, mass1_decision))
+        self.mass_list = np.concatenate((self.mass_list, self.mass_decision))
         #self.accepted = np.column_stack((self.accepted, self.acceptance_chain))
         self.accepted = np.concatenate((self.accepted, self.acceptance_chain))
         # Rest of lists, nrows = nchains, ncols = nparam, ndepth = niterations
@@ -543,23 +580,22 @@ class MCMC:
                 self.logL0[0, chain, 0] = self.logL[0, chain, 0]
                 self.hp0[0, chain,] = self.hp[0, chain,]
                 self.modpar0[0, chain,] = self.modpar[0, chain,]
-                if self.mass:
-                    self.mass0_0[chain] = self.mass0[chain]
-                    self.mass1_0[chain] = self.mass1[chain]
+                #if self.mass:
+                #    self.mass0_0[chain] = self.mass0[chain]
+                #    self.mass1_0[chain] = self.mass1[chain]
+                self.mass0_list[0, chain,] = self.mass[0, chain,]
             if self.acceptance_chain[0, chain, 0] is False:
                 self.logL0[0, chain, 0] = self.logL0[0, chain, 0]
                 self.hp0[0, chain,] = self.hp0[0, chain]
                 self.modpar0[0, chain,] = self.modpar0[0, chain,]
-                if self.mass:
-                    self.mass0_0[chain] = self.mass0_0[chain]
-                    self.mass1_0[chain] = self.mass1_0[chain]
+                #if self.mass:
+                #    self.mass0_0[chain] = self.mass0_0[chain]
+                #    self.mass1_0[chain] = self.mass1_0[chain]
+                self.mass0_list[0, chain,] = self.mass0_list[0, chain,]
         
         # IMPORTANT!! In model_parameter_list, if the model is a keplerian we have Sk and Ck, not ecc and omega
         
-        if self.mass:
-            return self.logL_list, self.hparameter_list, self.model_parameter_list, self.accepted, self.mass0_list, self.mass1_list
-        else:
-            return self.logL_list, self.hparameter_list, self.model_parameter_list, self.accepted
+        return self.logL_list, self.hparameter_list, self.model_parameter_list, self.accepted, self.mass_list
     
     
     
@@ -659,7 +695,7 @@ class MCMC:
 
 
 
-def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = None, model_name = ["no_model"], prior_list = [], numb_chains=None, n_splits=None, a=None, Rstar=None, Mstar=None, flags=None, plot_convergence=False, saving_folder=None, mass=False):
+def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = None, model_name = ["no_model"], prior_list = [], numb_chains=None, n_splits=None, a=None, Rstar=None, Mstar=None, flags=None, plot_convergence=False, saving_folder=None):
     """Function to run the MCMC to obtain posterior distributions for hyperparameters and model parameters
 
     Parameters
@@ -735,20 +771,7 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = Non
         else:
             raise KeyError("model parameters and model list must be provided when using a model")
     
-    if mass:
-        if flags is None:
-            if numb_chains is None:
-                _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, mass=True)
-                numb_chains=100
-            else:
-                _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, numb_chains, mass=True)
-        if flags is not None:
-            if numb_chains is None:
-                _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, flags=flags, mass=True)
-                numb_chains=100
-            else:
-                _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, numb_chains, flags=flags, mass=True)
-    else:
+    if Mstar is None:
         if flags is None:
             if numb_chains is None:
                 _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list)
@@ -761,6 +784,19 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = Non
                 numb_chains=100
             else:
                 _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, numb_chains, flags=flags)
+    else:
+        if flags is None:
+            if numb_chains is None:
+                _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, Mstar = Mstar)
+                numb_chains=100
+            else:
+                _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, numb_chains, Mstar = Mstar)
+        if flags is not None:
+            if numb_chains is None:
+                _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, flags=flags, Mstar = Mstar)
+                numb_chains=100
+            else:
+                _ = MCMC(t, rv, rv_err, hparam0, kernel_name, model_param0, model_name, prior_list, numb_chains, flags=flags, Mstar = Mstar)
     
     # Initialise progress bar
     print("Start Iterations")
@@ -804,10 +840,7 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = Non
         elif Rstar is None or Mstar is None:
             _.compare()
         
-        if mass:
-            logL_list, hparameter_list, model_parameter_list, accepted, mass0, mass1 = _.reset()
-        else:
-            logL_list, hparameter_list, model_parameter_list, accepted = _.reset()
+        logL_list, hparameter_list, model_parameter_list, accepted, mass = _.reset()
         if (iteration % 2==0) or iteration == iterations-1:
             aux.printProgressBar(iteration, iterations-1, length=50)
 
@@ -867,8 +900,4 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = Non
     print(" ---- %s minutes ----" % ((time.time() - start)/60))
     
     # Mixing plots
-    if mass:
-        return logL_list, hparameter_list, model_parameter_list, mass0, mass1, completed_iterations
-    
-    else:
-        return logL_list, hparameter_list, model_parameter_list, completed_iterations
+    return logL_list, hparameter_list, model_parameter_list, completed_iterations, mass
