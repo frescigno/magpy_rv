@@ -393,7 +393,7 @@ class MCMC:
             param = None
             param = par.par_create(self.kernel_name)
             for i, key in zip(range(self.k_numb_param), param.keys()):
-                param[key] = par.parameter(value=self.hp[chain][i], error=self.hp_err[i], vary=self.hp_vary[i])
+                param[key] = par.parameter(value=self.hp[0][chain][i], error=self.hp_err[i], vary=self.hp_vary[i])
             
             # Do the same for the model parameters
             model_param = None
