@@ -529,12 +529,7 @@ class MCMC:
                 self.hp0[0, chain,] = self.hp[0, chain,]
                 self.modpar0[0, chain,] = self.modpar[0, chain,]
                 self.mass0_list[0, chain,] = self.mass[0, chain,]
-            if self.acceptance_chain[0, chain, 0] is False:
-                # if the chain was rejected, set the new initial value to the current initial value
-                self.logL0[0, chain, 0] = self.logL0[0, chain, 0]
-                self.hp0[0, chain,] = self.hp0[0, chain]
-                self.modpar0[0, chain,] = self.modpar0[0, chain,]
-                self.mass0_list[0, chain,] = self.mass0_list[0, chain,]
+            # if the chain was rejected, leave the initial value as the current initial value
         
         # IMPORTANT!! In model_parameter_list, if the model is a keplerian we have Sk and Ck, not ecc and omega
         
