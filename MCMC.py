@@ -52,6 +52,8 @@ class MCMC:
             List inlcuding in order the name of parameter, the name of the prior and the dictionary of the prior parameters (see posterior function in GP_solar.py for better description)
         numb_chains : integer, optional
             Number of chains requested. The default is 100.
+        Mstar : float
+            mass of the host star in solar masses
         '''
         
         # Save unchanging inputs
@@ -77,7 +79,7 @@ class MCMC:
         self.prior_list = prior_list
         self.numb_chains = int(numb_chains)
         
-        
+
         hlen = []
         for key in hparam0.keys():
             hlen.append(hparam0[key].value)
@@ -92,10 +94,8 @@ class MCMC:
         self.model_parameter_list = np.zeros(shape = (1, self.numb_chains, self.plen))
         self.logL_list = np.zeros(shape = (1, self.numb_chains, 1))
         self.accepted = np.zeros(shape = (1, self.numb_chains, 1))
-        #self.mass = mass
-        #if self.mass:
-        #    self.mass0_list = []
-        #    self.mass1_list = []
+        
+        # par_list counts how many keplerians are being used which can be used as the number of columns (planets)
         par_list = []
         try:
             model_par0['P'].value
@@ -171,27 +171,14 @@ class MCMC:
         
         # Populate the positions based on those values for the starting point of all the chains
         self.hp0 = aux.initial_pos_creator(self.single_hp0,self.hp_err, self.numb_chains)
-        self.modpar0 = aux.initial_pos_creator(self.single_modpar0, self.modpar_err, self.numb_chains) #, param_names=self.modpar_info[0])
+        self.modpar0 = aux.initial_pos_creator(self.single_modpar0, self.modpar_err, self.numb_chains)
         
         # Append these first guesses (and their chains) to the storing arrays (check for right shape)
-        self.hparameter_list[0] = self.hp0
-        self.model_parameter_list[0] = self.modpar0
-        #self.hparameter_list = np.array(self.hparameter_list[0])
-        #self.hparameter_list.tolist()
-        #self.model_parameter_list = np.array(self.model_parameter_list[0])
-        #self.model_parameter_list.tolist()
-        #print("check shape", self.hparameter_list)
-        #row = len(self.hparameter_list)
-        #column = len(self.hparameter_list[0])
-        #row = len(self.model_parameter_list)
-        #column = len(self.model_parameter_list[0])
-        # Expected output: 2d array with nrows=numb_chains, ncols=number of hyperparameters
-        # We will then use np.concatenate(a.b) to make it into a 3d array with ndepth=steps
+        self.hparameter_list[0] = self.hp0 # set first dimension in hparameter array to initial guesses
+        self.model_parameter_list[0] = self.modpar0 # set first dimension in model_parameter array to initial guesses
+        # Expected output: 3d array with nrows=numb_chains, ncols=number of hyperparameters, ndepth=iterations
         
-        self.logL0 = np.zeros(shape = (1, self.numb_chains, 1))
-        #if self.mass:
-        #    self.mass0_0 = []
-        #    self.mass1_0 = []
+        self.logL0 = np.zeros(shape = (1, self.numb_chains, 1)) # set up initial logL list
         self.mass0_list = np.zeros_like(self.mass_list) # set up initial mass list
         
         
@@ -209,14 +196,8 @@ class MCMC:
             model_par_chain = modl.mod_create(self.model_name)
             for i, key in zip(range(len(modpar_chain)), model_par_chain.keys()):
                 model_par_chain[key] = par.parameter(value=modpar_chain[i], error=self.modpar_err[i], vary=self.modpar_vary[i])
-                
-            #if self.mass:
-            #    mass0_chain = mc.mass_calc(model_par_chain["P_0"].value, model_par_chain["K_0"].value, model_par_chain["omega_0"].value, model_par_chain["ecc_0"].value, 0.743)
-            #    mass1_chain = mc.mass_calc(model_par_chain["P_1"].value, model_par_chain["K_1"].value, model_par_chain["omega_1"].value, model_par_chain["ecc_1"].value, 0.743)
-                #print("check", mass1_chain)
-                #print(model_par_chain["P_1"].value, model_par_chain["K_1"].value, model_par_chain["omega_1"].value, model_par_chain["ecc_1"].value)
-            #    self.mass0_0.append(mass0_chain)
-            #    self.mass1_0.append(mass1_chain)
+            
+            # try for one keplerian model, if there is not then loop through the number of columns in the initial mass list    
             try:
                 mass_chain = mc.mass_calc(model_par_chain["P"].value, model_par_chain["K"].value, model_par_chain["omega"].value, model_par_chain["ecc"].value, self.Mstar)
                 self.mass0_list[0, chain, 0] = mass_chain
@@ -246,17 +227,10 @@ class MCMC:
 
         
         # Save this set of likelihoods as the first ones of the overall likelihood array
-        self.logL_list[0] = self.logL0
+        self.logL_list[0] = self.logL0 # set first dimension in logL array to the initial logL
         acc =  [True for i in range(self.numb_chains)]
-        self.accepted[0,:,0] = acc # numpy array reads 1.0 as true and 0.0 as false
-        #self.logL_list = aux.transpose(self.logL_list)
-        #self.accepted = aux.transpose(self.accepted)
-        #if self.mass:
-        #    self.mass0_list.append(self.mass0_0)
-        #    self.mass0_list = aux.transpose(self.mass0_list)
-        #    self.mass1_list.append(self.mass1_0)
-        #    self.mass1_list = aux.transpose(self.mass1_list)
-        self.mass_list[0] = self.mass0_list
+        self.accepted[0,:,0] = acc # numpy array reads 1.0 as true and 0.0 as false, all initial values are accepted
+        self.mass_list[0] = self.mass0_list # set first dimension in mass array to initial masses
         
         
         # Verbose
@@ -276,14 +250,14 @@ class MCMC:
     
     def split_step(self, n_splits=2, a=2., Rstar=None, Mstar=None):
         '''
-        self, n_splits=2, a=1.25, Rstar=None, Mstar=None
+        self, n_splits=2, a=2, Rstar=None, Mstar=None
         
         Parameters
         ----------
         n_splits : integer, optional
             Number of subsplits of the total number of chains. The default is 2.
         a : float, optional
-            Adjustable scale parameter. The default is 1.25.
+            Adjustable scale parameter. The default is 2.
         Rstar : float, optional
             Radius of the host star in solar radii. The default is None.
         Mstar : float, optional
@@ -370,20 +344,20 @@ class MCMC:
                 # Save as the new value for the chain, by finding where the initial step was positioned and putting it in the same position
                 for o in range(self.numb_chains):
                     # Kernel and model parameters are still kept together after shuffling
-                    if (self.hp0[0][o][0] == S1_hp[chain][0]) and (self.modpar0[0][o][0] == S1_mod[chain][0]):
+                    if (self.hp0[0, o, 0] == S1_hp[chain, 0]) and (self.modpar0[0, o, 0] == S1_mod[chain, 0]):
                         position = o
                 
                 for v in range(len(self.hp_vary)):
                     if self.hp_vary[v]:
-                        self.hp[0][position][v] = Xk_new[v]
+                        self.hp[0, position, v] = Xk_new[v]
                     else:
-                        self.hp[0][position][v] = S1_hp[chain][v]
+                        self.hp[0, position, v] = S1_hp[chain, v]
                 for v in range(len(self.modpar_vary)):
                     if self.modpar_vary[v]:
-                        self.modpar[0][position][v] = Xk_new_mod[v]
+                        self.modpar[0, position, v] = Xk_new_mod[v]
                         #print("nope")
                     else:
-                        self.modpar[0][position][v] = S1_mod[chain][v]
+                        self.modpar[0, position, v] = S1_mod[chain, v]
                 self.logz[position] = log_z
                 
             
@@ -402,11 +376,11 @@ class MCMC:
     
     def compute(self):
         '''
-
+        Computes the current logL and mass
         '''
+        
+        # create empty arrays for current step
         self.logL = np.zeros(shape = (1, self.numb_chains, 1))
-        #self.mass0 = []
-        #self.mass1 =[]
         self.mass = np.zeros_like(self.mass0_list)
 
         
@@ -417,7 +391,7 @@ class MCMC:
             param = None
             param = par.par_create(self.kernel_name)
             for i, key in zip(range(self.k_numb_param), param.keys()):
-                param[key] = par.parameter(value=self.hp[0][chain][i], error=self.hp_err[i], vary=self.hp_vary[i])
+                param[key] = par.parameter(value=self.hp[0, chain, i], error=self.hp_err[i], vary=self.hp_vary[i])
             
             # Do the same for the model parameters
             model_param = None
@@ -425,13 +399,9 @@ class MCMC:
             
             
             for i, key in zip(range(self.mod_numb_param), model_param.keys()):
-                model_param[key] = par.parameter(value=self.modpar[0][chain][i], error=self.modpar_err[i], vary=self.modpar_vary[i])
+                model_param[key] = par.parameter(value=self.modpar[0, chain, i], error=self.modpar_err[i], vary=self.modpar_vary[i])
             
-            #if self.mass:
-            #    mass0_chain = mc.mass_calc(model_param["P_0"].value, model_param["K_0"].value, model_param["omega_0"].value, model_param["ecc_0"].value, 0.743)
-            #    mass1_chain = mc.mass_calc(model_param["P_1"].value, model_param["K_1"].value, model_param["omega_1"].value, model_param["ecc_1"].value, 0.743)
-            #    self.mass0.append(mass0_chain)
-            #    self.mass1.append(mass1_chain)
+            # same method as the previous mass calculation
             try:
                 mass_chain = mc.mass_calc(model_param["P"].value, model_param["K"].value, model_param["omega"].value, model_param["ecc"].value, self.Mstar)
                 self.mass[0, chain, 0] = mass_chain
@@ -450,7 +420,6 @@ class MCMC:
             #For some reason after going through get model we get the ecc and omega instead???
             
             self.likelihood = None
-            #logL_chain = None
             # Use current hp and model to compute the logL
             self.likelihood = gp.GPLikelihood(self.t, self.rv, self.rv_err, param, self.kernel_name, self.model_y, model_param)
             logL_chain = self.likelihood.LogL(self.prior_list)
@@ -463,16 +432,15 @@ class MCMC:
 
         
     def compare(self):
-
+        """
+        Compares current step with previous step, appends current or previous step to storing array based on the difference in logL 
+        """
         
         # Create empty array to save decisions in to then concatenate to the list arrays
         hp_decision = np.zeros(shape = (1, self.numb_chains, self.hlen))
         modpar_decision = np.zeros(shape = (1, self.numb_chains, self.plen))
         logL_decision = np.zeros(shape = (1, self.numb_chains, 1))
         self.acceptance_chain = np.zeros(shape = (1,self.numb_chains,1))
-        #if self.mass:
-        #    mass0_decision = []
-        #    mass1_decision = []
         self.mass_decision = np.zeros_like(self.mass)
         
         
@@ -494,9 +462,6 @@ class MCMC:
                 hp_decision[0, chain,] = hp[0, chain,]
                 modpar_decision[0, chain,] = modpar[0, chain,]
                 self.acceptance_chain[0,chain,0] = True
-                #if self.mass:
-                #    mass0_decision.append(self.mass0[chain])
-                #    mass1_decision.append(self.mass1[chain])
                 self.mass_decision[0, chain,] = self.mass[0, chain,]
                 
             # If the logL is ver small (eg. smaller than -35), automatic refusal
@@ -505,9 +470,6 @@ class MCMC:
                 hp_decision[0, chain,] = hp0[0, chain,]
                 modpar_decision[0, chain,] = modpar0[0, chain,]
                 self.acceptance_chain[0,chain,0] = False
-                #if self.mass:
-                #    mass0_decision.append(self.mass0_0[chain])
-                #    mass1_decision.append(self.mass1_0[chain])
                 self.mass_decision[0, chain,] = self.mass0_list[0, chain,]
             
             if (diff_logL_z >= -35.) and (diff_logL_z <= 1.):
@@ -519,9 +481,6 @@ class MCMC:
                     hp_decision[0, chain,] = hp[0, chain,]
                     modpar_decision[0, chain,] = modpar[0, chain,]
                     self.acceptance_chain[0,chain,0] = True
-                    #if self.mass:
-                    #    mass0_decision.append(self.mass0[chain])
-                    #    mass1_decision.append(self.mass1[chain])
                     self.mass_decision[0, chain,] = self.mass[0, chain,]
                 # if it is smaller than the number reject the step
                 else:
@@ -529,9 +488,6 @@ class MCMC:
                     hp_decision[0, chain,] = hp0[0,chain,]
                     modpar_decision[0, chain,] = modpar0[0,chain,]
                     self.acceptance_chain[0,chain,0] = False
-                    #if self.mass:
-                    #    mass0_decision.append(self.mass0_0[chain])
-                    #    mass1_decision.append(self.mass1_0[chain])
                     self.mass_decision[0, chain,] = self.mass0_list[0, chain,]
             
             
@@ -539,21 +495,12 @@ class MCMC:
             
 
         
-        # Now concatenate all the 2D arrays into the 3D list arrays
-        # Start with logL list and append, nrows = nchains, ncols = niterations
-        #self.logL_list = np.column_stack((self.logL_list, logL_decision))
-        self.logL_list = np.concatenate((self.logL_list, logL_decision))
-        #if self.mass:
-        #    self.mass0_list = np.column_stack((self.mass0_list, mass0_decision))
-        #    self.mass1_list = np.column_stack((self.mass1_list, mass1_decision))
-        self.mass_list = np.concatenate((self.mass_list, self.mass_decision))
-        #self.accepted = np.column_stack((self.accepted, self.acceptance_chain))
-        self.accepted = np.concatenate((self.accepted, self.acceptance_chain))
-        # Rest of lists, nrows = nchains, ncols = nparam, ndepth = niterations
-        #self.hparameter_list = np.dstack((self.hparameter_list, hp_decision))
-        self.hparameter_list = np.concatenate((self.hparameter_list, hp_decision))
-        #self.model_parameter_list = np.dstack((self.model_parameter_list, modpar_decision))
-        self.model_parameter_list = np.concatenate((self.model_parameter_list, modpar_decision))
+        # Now concatenate the storing arrays with the decision arrays to add the current step as a new dimension
+        self.logL_list = np.concatenate((self.logL_list, logL_decision)) # nrows = chains, ndimensions = iterations
+        self.mass_list = np.concatenate((self.mass_list, self.mass_decision)) # nrows = chains, ncolumns = planets, ndimensions = iterations
+        self.accepted = np.concatenate((self.accepted, self.acceptance_chain)) # nrows = chains, ndimensions = iterations
+        self.hparameter_list = np.concatenate((self.hparameter_list, hp_decision)) # nrows = chains, ncolumns = parameters, ndimensions = iterations
+        self.model_parameter_list = np.concatenate((self.model_parameter_list, modpar_decision)) # nrows = chains, ncolumns = parameters, ndimensions = iterations
         
         
 
@@ -577,20 +524,16 @@ class MCMC:
         # Set the zero values for nex step
         for chain in range(self.numb_chains):
             if self.acceptance_chain[0, chain, 0] is True:
+                # if the chain was accepted, set the new initial value to the accepted one
                 self.logL0[0, chain, 0] = self.logL[0, chain, 0]
                 self.hp0[0, chain,] = self.hp[0, chain,]
                 self.modpar0[0, chain,] = self.modpar[0, chain,]
-                #if self.mass:
-                #    self.mass0_0[chain] = self.mass0[chain]
-                #    self.mass1_0[chain] = self.mass1[chain]
                 self.mass0_list[0, chain,] = self.mass[0, chain,]
             if self.acceptance_chain[0, chain, 0] is False:
+                # if the chain was rejected, set the new initial value to the current initial value
                 self.logL0[0, chain, 0] = self.logL0[0, chain, 0]
                 self.hp0[0, chain,] = self.hp0[0, chain]
                 self.modpar0[0, chain,] = self.modpar0[0, chain,]
-                #if self.mass:
-                #    self.mass0_0[chain] = self.mass0_0[chain]
-                #    self.mass1_0[chain] = self.mass1_0[chain]
                 self.mass0_list[0, chain,] = self.mass0_list[0, chain,]
         
         # IMPORTANT!! In model_parameter_list, if the model is a keplerian we have Sk and Ck, not ecc and omega
@@ -742,14 +685,13 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = Non
     saving_folder : string, optional
         folder location to save outputs to
         defaults to None
-    mass : int, optional
-        number of planetary masses to be calculated from the data
-        defaults to 0   -------- not currently how it works, will need to change this
 
     Raises
     ------
     KeyError
         Raised if a model is in use and no model parameters have been provided
+    Assertion
+        Raised if the number of chains is less than double the number of free parameters
 
     Returns:
     logL_list : array of floats
@@ -758,9 +700,10 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = Non
         array of the hyperparameters of every iteration
     model_parameter_list : array of floats
         array of the model parameters of every iteration
-    mass0 : 
-    mass1 :
-    completed_iterations : 
+    mass : array of floats
+        array of calculated masses from the model for each iteraiton, where the columns represent the different planets
+    completed_iterations : integer
+        number of completed iterations
     """
     gelman_rubin_limit = 1.1
     
