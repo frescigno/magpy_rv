@@ -771,6 +771,9 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = Non
         else:
             raise KeyError("model parameters and model list must be provided when using a model")
     
+    if numb_chains is not None:
+        assert numb_chains > (len(model_param0)+len(hparam0)) * 2, "number of chains should be larger than the number of free parameters"
+    
     if Mstar is None:
         if flags is None:
             if numb_chains is None:
