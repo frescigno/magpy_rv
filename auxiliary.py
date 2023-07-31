@@ -339,6 +339,9 @@ def model_param_names(model_list, SkCk=False):
         
         if model_list[0].startswith("Offset") or model_list[0].startswith("offset"):
             param_names = ["offset"]
+        
+        if model_list[0].startswith("Polynomial") or model_list[0].startswith("polynomial"):
+            param_names = ["polynomial"]
     else:
         # Check how many times each model is called
         n_kep = 0
@@ -363,6 +366,10 @@ def model_param_names(model_list, SkCk=False):
                 param_names_mods = ["offset_"+str(n_off)]
                 param_names.extend(param_names_mods)
                 n_off += 1
+            if mod_name.startswith("Polynomial") or mod_name.startswith("polynomial"):
+                param_names_mods = ["polynomial_"+str(n_off)]
+                param_names.extend(param_names_mods)
+                n_off += 1
     
     return param_names
 
@@ -383,13 +390,17 @@ def hparam_names(kernel_name):
     """
     if kernel_name.startswith("Cos") or kernel_name.startswith("cos"):
         hparam_names = ['gp_amp', 'gp_per']
-    if kernel_name.startswith("Exp") or kernel_name.startswith("exp"):
-        hparam_names = ['gp_amp', 'gp_length', 'gp_per']
+    if kernel_name.startswith("expsquare") or kernel_name.startswith("ExpSquare") or kernel_name.startswith("Expsquare") or kernel_name.startswith("expSquare"):
+        hparam_names = ['gp_amp', 'gp_timescale']
+    if kernel_name.startswith("ExpSin") or kernel_name.startswith("expsin") or kernel_name.startswith("expSin") or kernel_name.startswith("Expsin"):
+        hparam_names = ['gp_amp', 'gp_timescale', 'gp_per']
     if kernel_name.startswith("Quas") or kernel_name.startswith("quas"):
         hparam_names = ['gp_per', 'gp_perlegth', 'gp_explength', 'gp_amp']
     if kernel_name.startswith("Jit") or kernel_name.startswith("jit"):
         hparam_names = ['gp_per', 'gp_perlegth', 'gp_explength', 'gp_amp', 'jitter']
-    if kernel_name.startswith("Mat") or kernel_name.startswith("mat"):
+    if kernel_name.startswith("Matern5") or kernel_name.startswith("matern5"):
+        hparam_names = ['gp_amp', 'gp_timescale']
+    if kernel_name.startswith("Matern3") or kernel_name.startswith("matern3"):
         hparam_names = ['gp_amp', 'gp_timescale', 'gp_jit']
     
     return hparam_names

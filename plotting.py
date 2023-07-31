@@ -252,7 +252,7 @@ def mixing_plot(iterations, numb_chains, hparam_chain, kernel_name, model_param_
     model_param_names = aux.model_param_names(model_name, SkCk=True)
     
     xs = list(range(iterations+1))
-    n_subplots = len(hparam_chain[0])+len(model_param_chain[0])+1
+    n_subplots = len(hparam_chain[0,0,:])+len(model_param_chain[0,0,:])+1
     
     fig, axs = plt.subplots(n_subplots, sharex=True, figsize=(15,15))
     fig.subplots_adjust(hspace=0.)
@@ -262,15 +262,15 @@ def mixing_plot(iterations, numb_chains, hparam_chain, kernel_name, model_param_
     for chain in range(numb_chains):
         for i in range(n_subplots):
             if i == 0:
-                axs[i].plot(xs, LogL_chain[chain][:], c='xkcd:bluish', alpha=0.2)
+                axs[i].plot(xs, LogL_chain[:, chain, :], c='xkcd:bluish', alpha=0.2)
                 axs[i].set_ylabel("logL")
-            if i != 0 and i <= len(hparam_chain[0]):
-                axs[i].plot(xs, hparam_chain[chain][i-1][:], c='xkcd:bluish', alpha=0.2)
+            if i != 0 and i <= len(hparam_chain[0, 0, :]):
+                axs[i].plot(xs, hparam_chain[:, chain, i-1], c='xkcd:bluish', alpha=0.2)
                 axs[i].set_ylabel("{}".format(hparam_names[i-1]))
-            if i != 0 and i > len(hparam_chain[0]):
+            if i != 0 and i > len(hparam_chain[0, 0, :]):
                 #print(model_param_chain[chain][i-1-len(hparam_chain[0])][:])
-                axs[i].plot(xs, model_param_chain[chain][i-1-len(hparam_chain[0])][:], c='xkcd:bluish', alpha=0.2)
-                axs[i].set_ylabel("{}".format(model_param_names[i-1-len(hparam_chain[0])]))
+                axs[i].plot(xs, model_param_chain[:, chain, i-1-len(hparam_chain[0, 0, :])], c='xkcd:bluish', alpha=0.2)
+                axs[i].set_ylabel("{}".format(model_param_names[i-1-len(hparam_chain[0, 0, :])]))
     
     if save_folder is not None:
         assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
@@ -309,9 +309,9 @@ def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, save_f
     hp = np.array(hparam_chain)
     shapes = hp.shape
     #print("shape",shapes)
-    numb_chains = shapes[0]
-    nparam = shapes[1]
-    depth = shapes[2]
+    numb_chains = shapes[1]
+    nparam = shapes[2]
+    depth = shapes[0]
     
     
     hparams = np.zeros((((depth)*numb_chains),nparam))
@@ -319,23 +319,23 @@ def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, save_f
         numb=0
         for c in range(numb_chains):
             for i in range(depth):
-                hparams[numb][p] = hparam_chain[c][p][i]
+                hparams[numb][p] = hparam_chain[i][c][p]
                 numb += 1
     
     
     par = np.array(model_param_chain)
     shapes2 = par.shape
     #print("shape",shapes)
-    numb_chains2 = shapes2[0]
-    nparam2 = shapes2[1]
-    depth2 = shapes2[2]
+    numb_chains2 = shapes2[1]
+    nparam2 = shapes2[2]
+    depth2 = shapes2[0]
     
     modpar = np.zeros((((depth2)*numb_chains2),nparam2))
     for p in range(nparam2):
         numb=0
         for c in range(numb_chains2):
             for i in range(depth2):
-                modpar[numb][p] = model_param_chain[c][p][i]
+                modpar[numb][p] = model_param_chain[i][c][p]
                 numb += 1
     
     
@@ -377,12 +377,12 @@ def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, save_f
         final_param_erru = []
         final_param_errd = []
         
-        for a in range(len(hparam_chain[0])):
-            errd, quantile, erru = corner.quantile(hparam_chain[:,a], [0.16,0.5,0.84])
+        for a in range(len(hparam_chain[0,0,:])):
+            errd, quantile, erru = corner.quantile(hparam_chain[:,:,a], [0.16,0.5,0.84])
             final_param_values.append(quantile)
             final_param_erru.append(erru)
             final_param_errd.append(errd)
-        for b in range(len(model_param_chain[0])):
+        for b in range(len(model_param_chain[0,0,:])):
             errd, quantile, erru = corner.quantile(modpar[:,b], [0.16,0.5,0.84])
             final_param_values.append(quantile)
             final_param_erru.append(erru)
@@ -396,8 +396,8 @@ def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, save_f
             final_param_erru = []
             final_param_errd = []
             
-            for a in range(len(hparam_chain[0])):
-                errd, quantile, erru = corner.quantile(hparam_chain[:,a], [0.16,0.5,0.84])
+            for a in range(len(hparam_chain[0,0,:])):
+                errd, quantile, erru = corner.quantile(hparam_chain[:,:,a], [0.16,0.5,0.84])
                 final_param_values.append(quantile)
                 final_param_erru.append(erru)
                 final_param_errd.append(errd)
@@ -409,7 +409,7 @@ def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, save_f
             final_param_erru = []
             final_param_errd = []
             
-            for a in range(len(model_param_chain[0])):
+            for a in range(len(model_param_chain[0,0,:])):
                 errd, quantile, erru = corner.quantile(modpar[:,a], [0.16,0.5,0.84])
                 final_param_values.append(quantile)
                 final_param_erru.append(erru)
