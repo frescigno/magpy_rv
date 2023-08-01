@@ -1,9 +1,10 @@
 '''
-
+Auxiliary functions for the MCMC code to use
 
 Contains:
     Number of expected parameters per model function
-    
+    Get model function
+    Parameter check function
     
 
 Author: Bryce Dixon

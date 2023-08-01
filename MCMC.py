@@ -1,8 +1,9 @@
 '''
-
+MCMC code for the gaussian model
 
 Contains:
-    
+    MCMC class
+    run_mcmc function
 
 Author: Bryce Dixon
 Version 21.07.2023
