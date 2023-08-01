@@ -394,11 +394,11 @@ def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, masses
     
     
     
-    
+    CORNER_KWARGS = dict(label_kwargs=dict(fontsize=15), title_kwargs=dict(fontsize=15))
     
     # Corner plot of the hyperparameters
     try:
-        fig = corner.corner(hparams, labels = hparam_names, show_titles=True)
+        fig = corner.corner(hparams, labels = hparam_names, show_titles=True, **CORNER_KWARGS)
         if save_folder is not None:
             assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
             plt.savefig(str(save_folder)+"/"+str(savefilename)+"_hparam"+".pdf")
@@ -409,7 +409,7 @@ def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, masses
     
     try:
         # Corner plot of model parameters
-        fig = corner.corner(modpar, labels=model_param_names, show_titles=True)
+        fig = corner.corner(modpar, labels=model_param_names, show_titles=True, **CORNER_KWARGS)
         if save_folder is not None:
             assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
             plt.savefig(str(save_folder)+"/"+str(savefilename)+"_modelpar"+".pdf")
@@ -420,7 +420,7 @@ def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, masses
     if masses is not None:
         try:
             #corner plot of the masses
-            fig = corner.corner(massval, labels=mass_list, show_titles=True)
+            fig = corner.corner(massval, labels=mass_list, show_titles=True, **CORNER_KWARGS)
             if save_folder is not None:
                 assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
                 plt.savefig(str(save_folder)+"/"+str(savefilename)+"_masses"+".pdf")
@@ -433,7 +433,7 @@ def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, masses
         try:
             full_param_chain = np.concatenate((hparams, modpar), axis=1)
             full_names = hparam_names + model_param_names
-            fig = corner.corner(full_param_chain, labels=full_names, show_titles=True)
+            fig = corner.corner(full_param_chain, labels=full_names, show_titles=True, **CORNER_KWARGS)
             if save_folder is not None:
                 assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
                 plt.savefig(str(save_folder)+"/"+str(savefilename)+"_full"+".pdf")
@@ -484,7 +484,7 @@ def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, masses
         try:
             full_param_chain = np.concatenate((hparams, modpar, massval), axis=1)
             full_names = hparam_names + model_param_names + mass_list
-            fig = corner.corner(full_param_chain, labels=full_names, show_titles=True)
+            fig = corner.corner(full_param_chain, labels=full_names, show_titles=True, **CORNER_KWARGS)
             if save_folder is not None:
                 assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
                 plt.savefig(str(save_folder)+"/"+str(savefilename)+"_full"+".pdf")
