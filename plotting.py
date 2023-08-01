@@ -223,14 +223,10 @@ def GP_plot(time_obs, y_obs, y_err, model_y, pred_time, pred_y, pred_err, residu
 
 
 
-def mixing_plot(iterations, numb_chains, hparam_chain, kernel_name, model_param_chain, model_name, LogL_chain, save_folder=None, savefilename="mixing"):
+def mixing_plot(hparam_chain, kernel_name, model_param_chain, model_name, LogL_chain, mass = None, save_folder=None, savefilename="mixing"):
     '''
     Parameters
     ----------
-    iterations : integer
-        Number of iterations in MCMC
-    numb_chains : integer
-        Number of chains
     hparam_chain : array
         Array of all the sets of hyperparameters of the MCMC, now in chains
     kernel_name : string
@@ -241,36 +237,68 @@ def mixing_plot(iterations, numb_chains, hparam_chain, kernel_name, model_param_
         Name of the model
     LogL_chain : array
         Array containing all the Log Likelihood
+    mass: array, optional
+        Array of all the masses for all planets produced by the MCMC, defaults to None
     save_folder : str, optional
         Folder to save the plot, by default None. If None, the plot is not saved.
     savefilename : str, optional
         Name of the file to save the plot, by default Mixing.
     '''
-    
+    iterations = len(LogL_chain[:,0,0])-1
+    numb_chains = len(LogL_chain[0,:,0])
     
     hparam_names = aux.hparam_names(kernel_name)
     model_param_names = aux.model_param_names(model_name, SkCk=True)
     
-    xs = list(range(iterations+1))
-    n_subplots = len(hparam_chain[0,0,:])+len(model_param_chain[0,0,:])+1
+    if mass is None:
+        xs = list(range(iterations+1))
+        n_subplots = len(hparam_chain[0,0,:])+len(model_param_chain[0,0,:])+1
     
-    fig, axs = plt.subplots(n_subplots, sharex=True, figsize=(15,15))
-    fig.subplots_adjust(hspace=0.)
-    axs[0].set_title("Mixing Chains")
-    plt.xlabel("Number of iterations")
+        fig, axs = plt.subplots(n_subplots, sharex=True, figsize=(15,15))
+        fig.subplots_adjust(hspace=0.)
+        axs[0].set_title("Mixing Chains")
+        plt.xlabel("Number of iterations")
     
-    for chain in range(numb_chains):
-        for i in range(n_subplots):
-            if i == 0:
-                axs[i].plot(xs, LogL_chain[:, chain, :], c='xkcd:bluish', alpha=0.2)
-                axs[i].set_ylabel("logL")
-            if i != 0 and i <= len(hparam_chain[0, 0, :]):
-                axs[i].plot(xs, hparam_chain[:, chain, i-1], c='xkcd:bluish', alpha=0.2)
-                axs[i].set_ylabel("{}".format(hparam_names[i-1]))
-            if i != 0 and i > len(hparam_chain[0, 0, :]):
-                #print(model_param_chain[chain][i-1-len(hparam_chain[0])][:])
-                axs[i].plot(xs, model_param_chain[:, chain, i-1-len(hparam_chain[0, 0, :])], c='xkcd:bluish', alpha=0.2)
-                axs[i].set_ylabel("{}".format(model_param_names[i-1-len(hparam_chain[0, 0, :])]))
+        for chain in range(numb_chains):
+            for i in range(n_subplots):
+                if i == 0:
+                    axs[i].plot(xs, LogL_chain[:, chain, :], c='xkcd:bluish', alpha=0.2)
+                    axs[i].set_ylabel("logL")
+                if i != 0 and i <= len(hparam_chain[0, 0, :]):
+                    axs[i].plot(xs, hparam_chain[:, chain, i-1], c='xkcd:bluish', alpha=0.2)
+                    axs[i].set_ylabel("{}".format(hparam_names[i-1]))
+                if i != 0 and i > len(hparam_chain[0, 0, :]):
+                    #print(model_param_chain[chain][i-1-len(hparam_chain[0])][:])
+                    axs[i].plot(xs, model_param_chain[:, chain, i-1-len(hparam_chain[0, 0, :])], c='xkcd:bluish', alpha=0.2)
+                    axs[i].set_ylabel("{}".format(model_param_names[i-1-len(hparam_chain[0, 0, :])]))
+    else:
+        xs = list(range(iterations+1))
+        n_subplots = len(hparam_chain[0,0,:])+len(model_param_chain[0,0,:])+len(mass[0,0,:])+1
+    
+        fig, axs = plt.subplots(n_subplots, sharex=True, figsize=(15,15))
+        fig.subplots_adjust(hspace=0.)
+        axs[0].set_title("Mixing Chains")
+        plt.xlabel("Number of iterations")
+    
+        for chain in range(numb_chains):
+            for i in range(n_subplots):
+                if i == 0:
+                    axs[i].plot(xs, LogL_chain[:, chain, :], c='xkcd:bluish', alpha=0.2)
+                    axs[i].set_ylabel("logL")
+                if i != 0 and i <= len(hparam_chain[0, 0, :]):
+                    axs[i].plot(xs, hparam_chain[:, chain, i-1], c='xkcd:bluish', alpha=0.2)
+                    axs[i].set_ylabel("{}".format(hparam_names[i-1]))
+                if i != 0 and i > len(hparam_chain[0, 0, :]) and i <= len(hparam_chain[0, 0, :])+len(model_param_chain[0, 0, :]):
+                    #print(model_param_chain[chain][i-1-len(hparam_chain[0])][:])
+                    axs[i].plot(xs, model_param_chain[:, chain, i-1-len(hparam_chain[0, 0, :])], c='xkcd:bluish', alpha=0.2)
+                    axs[i].set_ylabel("{}".format(model_param_names[i-1-len(hparam_chain[0, 0, :])]))
+                if i != 0 and i > len(hparam_chain[0, 0, :])+len(model_param_chain[0, 0, :]):
+                    if len(mass[0,0,:]) == 1 and len(model_name) == 1:
+                        axs[i].plot(xs, mass[:, chain, 0], c='xkcd:bluish', alpha = 0.2)
+                        axs[i].set_ylabel("mass")
+                    else:
+                        axs[i].plot(xs, mass[:, chain, i-1-len(hparam_chain[0,0,:])-len(model_param_chain[0,0,:])], c='xkcd:bluish', alpha = 0.2)
+                        axs[i].set_ylabel("mass_{}".format(i-1-len(hparam_chain[0,0,:])-len(model_param_chain[0,0,:])))
     
     if save_folder is not None:
         assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
@@ -279,7 +307,7 @@ def mixing_plot(iterations, numb_chains, hparam_chain, kernel_name, model_param_
     
 
 
-def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, save_folder=None, savefilename="corner", errors=False):
+def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, masses = None, save_folder=None, savefilename="corner", errors=False):
     '''
     Parameters
     ----------
@@ -291,6 +319,8 @@ def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, save_f
         Array of all the sets of model parameters of the MCMC.
     model_name : string
         Name of the model
+    masses: array, optional
+        Array of all the masses for all planets produced by the MCMC, defaults to None
     save_folder : str, optional
         Folder to save the plot, by default None. If None, the plot is not saved.
     savefilename : str, optional
@@ -319,7 +349,7 @@ def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, save_f
         numb=0
         for c in range(numb_chains):
             for i in range(depth):
-                hparams[numb][p] = hparam_chain[i][c][p]
+                hparams[numb,p] = hparam_chain[i,c,p]
                 numb += 1
     
     
@@ -335,8 +365,32 @@ def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, save_f
         numb=0
         for c in range(numb_chains2):
             for i in range(depth2):
-                modpar[numb][p] = model_param_chain[i][c][p]
+                modpar[numb,p] = model_param_chain[i,c,p]
                 numb += 1
+    
+    if masses is not None:
+        mass = np.array(masses)
+        shapes3 = mass.shape
+        numb_chains3 = shapes3[1]
+        nparam3 = shapes3[2]
+        depth3 = shapes3[0]
+        
+        massval = np.zeros((((depth3)*numb_chains3), nparam3))
+        for p in range(nparam3):
+            numb = 0
+            for c in range(numb_chains3):
+                for i in range(depth2):
+                    massval[numb][p] = masses[i,c,p]
+                    numb += 1
+        
+        mass_list = []
+        if len(masses[0,0,:]) == 1 and len(model_name) == 1:
+            name = "mass"
+            mass_list.append(name)
+        else:
+            for i in range(len(masses[0,0,:])):
+                name = "mass_{}".format(i)
+                mass_list.append(name)
     
     
     
@@ -363,58 +417,202 @@ def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, save_f
     except ValueError:
         print("Inside: No dynamic range in model")
     
-    # Full corner plot
-    try:
-        full_param_chain = np.concatenate((hparams, modpar), axis=1)
-        full_names = hparam_names + model_param_names
-        fig = corner.corner(full_param_chain, labels=full_names, show_titles=True)
-        if save_folder is not None:
-            assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
-            plt.savefig(str(save_folder)+"/"+str(savefilename)+"_full"+".pdf")
-        plt.show()
-        
-        final_param_values = []
-        final_param_erru = []
-        final_param_errd = []
-        
-        for a in range(len(hparam_chain[0,0,:])):
-            errd, quantile, erru = corner.quantile(hparam_chain[:,:,a], [0.16,0.5,0.84])
-            final_param_values.append(quantile)
-            final_param_erru.append(erru)
-            final_param_errd.append(errd)
-        for b in range(len(model_param_chain[0,0,:])):
-            errd, quantile, erru = corner.quantile(modpar[:,b], [0.16,0.5,0.84])
-            final_param_values.append(quantile)
-            final_param_erru.append(erru)
-            final_param_errd.append(errd)
-    except ValueError:
+    if masses is not None:
         try:
+            #corner plot of the masses
+            fig = corner.corner(massval, labels=mass_list, show_titles=True)
+            if save_folder is not None:
+                assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
+                plt.savefig(str(save_folder)+"/"+str(savefilename)+"_masses"+".pdf")
             plt.show()
-            print("Inside: No dynamic range in model")
-            
+        except ValueError:
+            print("insideL No dynamic range in masses")
+    
+    # Full corner plot
+    if masses is None:
+        try:
+            full_param_chain = np.concatenate((hparams, modpar), axis=1)
+            full_names = hparam_names + model_param_names
+            fig = corner.corner(full_param_chain, labels=full_names, show_titles=True)
+            if save_folder is not None:
+                assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
+                plt.savefig(str(save_folder)+"/"+str(savefilename)+"_full"+".pdf")
+            plt.show()
+        
             final_param_values = []
             final_param_erru = []
             final_param_errd = []
-            
+        
             for a in range(len(hparam_chain[0,0,:])):
                 errd, quantile, erru = corner.quantile(hparam_chain[:,:,a], [0.16,0.5,0.84])
                 final_param_values.append(quantile)
                 final_param_erru.append(erru)
                 final_param_errd.append(errd)
-        except ValueError:
-            plt.show()
-            print("Inside: No dynamic range in kernel")
-            
-            final_param_values = []
-            final_param_erru = []
-            final_param_errd = []
-            
-            for a in range(len(model_param_chain[0,0,:])):
-                errd, quantile, erru = corner.quantile(modpar[:,a], [0.16,0.5,0.84])
+            for b in range(len(model_param_chain[0,0,:])):
+                errd, quantile, erru = corner.quantile(modpar[:,b], [0.16,0.5,0.84])
                 final_param_values.append(quantile)
                 final_param_erru.append(erru)
                 final_param_errd.append(errd)
-    
+        except ValueError:
+            try:
+                plt.show()
+                print("Inside: No dynamic range in model")
+            
+                final_param_values = []
+                final_param_erru = []
+                final_param_errd = []
+            
+                for a in range(len(hparam_chain[0,0,:])):
+                    errd, quantile, erru = corner.quantile(hparam_chain[:,:,a], [0.16,0.5,0.84])
+                    final_param_values.append(quantile)
+                    final_param_erru.append(erru)
+                    final_param_errd.append(errd)
+            except ValueError:
+                plt.show()
+                print("Inside: No dynamic range in kernel")
+            
+                final_param_values = []
+                final_param_erru = []
+                final_param_errd = []
+            
+                for a in range(len(model_param_chain[0,0,:])):
+                    errd, quantile, erru = corner.quantile(modpar[:,a], [0.16,0.5,0.84])
+                    final_param_values.append(quantile)
+                    final_param_erru.append(erru)
+                    final_param_errd.append(errd)
+    else:
+        try:
+            full_param_chain = np.concatenate((hparams, modpar, massval), axis=1)
+            full_names = hparam_names + model_param_names + mass_list
+            fig = corner.corner(full_param_chain, labels=full_names, show_titles=True)
+            if save_folder is not None:
+                assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
+                plt.savefig(str(save_folder)+"/"+str(savefilename)+"_full"+".pdf")
+            plt.show()
+        
+            final_param_values = []
+            final_param_erru = []
+            final_param_errd = []
+        
+            for a in range(len(hparam_chain[0,0,:])):
+                errd, quantile, erru = corner.quantile(hparam_chain[:,:,a], [0.16,0.5,0.84])
+                final_param_values.append(quantile)
+                final_param_erru.append(erru)
+                final_param_errd.append(errd)
+            for b in range(len(model_param_chain[0,0,:])):
+                errd, quantile, erru = corner.quantile(modpar[:,b], [0.16,0.5,0.84])
+                final_param_values.append(quantile)
+                final_param_erru.append(erru)
+                final_param_errd.append(errd)
+            for c in range(len(masses[0,0,:])):
+                errd, quantile, erru = corner.quantile(masses[:,:,c], [0.16, 0.5, 0.84])
+                final_param_values.append(quantile)
+                final_param_erru.append(erru)
+                final_param_errd.append(errd)
+        except ValueError:
+            try:
+                plt.show()
+                print("Inside: No dynamic range in model")
+            
+                final_param_values = []
+                final_param_erru = []
+                final_param_errd = []
+            
+                for a in range(len(hparam_chain[0,0,:])):
+                    errd, quantile, erru = corner.quantile(hparam_chain[:,:,a], [0.16,0.5,0.84])
+                    final_param_values.append(quantile)
+                    final_param_erru.append(erru)
+                    final_param_errd.append(errd)
+                for c in range(len(masses[0,0,:])):
+                    errd, quantile, erru = corner.quantile(masses[:,:,c], [0.16, 0.5, 0.84])
+                    final_param_values.append(quantile)
+                    final_param_erru.append(erru)
+                    final_param_errd.append(errd)
+                    
+            except ValueError:
+                try:
+                    plt.show()
+                    print("Inside: No dynamic range in kernel")
+            
+                    final_param_values = []
+                    final_param_erru = []
+                    final_param_errd = []
+            
+                    for a in range(len(model_param_chain[0,0,:])):
+                        errd, quantile, erru = corner.quantile(modpar[:,a], [0.16,0.5,0.84])
+                        final_param_values.append(quantile)
+                        final_param_erru.append(erru)
+                        final_param_errd.append(errd)
+                    for c in range(len(masses[0,0,:])):
+                        errd, quantile, erru = corner.quantile(masses[:,:,c], [0.16, 0.5, 0.84])
+                        final_param_values.append(quantile)
+                        final_param_erru.append(erru)
+                        final_param_errd.append(errd)
+                
+                except ValueError:
+                    try:
+                        plt.show()
+                        print("Inside: No dynamic range in mass")
+                        
+                        final_param_values = []
+                        final_param_erru = []
+                        final_param_errd = []
+                    
+                        for a in range(len(model_param_chain[0,0,:])):
+                            errd, quantile, erru = corner.quantile(modpar[:,a], [0.16,0.5,0.84])
+                            final_param_values.append(quantile)
+                            final_param_erru.append(erru)
+                            final_param_errd.append(errd)
+                        for a in range(len(hparam_chain[0,0,:])):
+                            errd, quantile, erru = corner.quantile(hparam_chain[:,:,a], [0.16,0.5,0.84])
+                            final_param_values.append(quantile)
+                            final_param_erru.append(erru)
+                            final_param_errd.append(errd)
+                    except ValueError:
+                        try:
+                            plt.show()
+                            print("Inside: No dynamic range in kernel or model")
+                            
+                            final_param_values = []
+                            final_param_erru = []
+                            final_param_errd = []
+                            
+                            for c in range(len(masses[0,0,:])):
+                                errd, quantile, erru = corner.quantile(masses[:,:,c], [0.16, 0.5, 0.84])
+                                final_param_values.append(quantile)
+                                final_param_erru.append(erru)
+                                final_param_errd.append(errd)
+                        
+                        except ValueError:
+                            try:
+                                plt.show()
+                                print("Inside: No dynamic range in kernel or mass")
+                                
+                                final_param_values = []
+                                final_param_erru = []
+                                final_param_errd = []
+                            
+                                for a in range(len(model_param_chain[0,0,:])):
+                                    errd, quantile, erru = corner.quantile(modpar[:,a], [0.16,0.5,0.84])
+                                    final_param_values.append(quantile)
+                                    final_param_erru.append(erru)
+                                    final_param_errd.append(errd)
+                            
+                            except ValueError:
+                                plt.show()
+                                print("Inside: No dynamic range in model or mass")
+                                
+                                final_param_values = []
+                                final_param_erru = []
+                                final_param_errd = []
+                                
+                                for a in range(len(hparam_chain[0,0,:])):
+                                    errd, quantile, erru = corner.quantile(hparam_chain[:,:,a], [0.16,0.5,0.84])
+                                    final_param_values.append(quantile)
+                                    final_param_erru.append(erru)
+                                    final_param_errd.append(errd)
+                            
+                                
     print("Parameter values after MCMC: ", final_param_values)
     if errors:
         return final_param_values, final_param_erru, final_param_errd
