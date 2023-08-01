@@ -842,4 +842,7 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = Non
     print(" ---- %s minutes ----" % ((time.time() - start)/60))
     
     # Mixing plots
-    return logL_list, hparameter_list, model_parameter_list, completed_iterations, mass
+    if Mstar is None:
+        return logL_list, hparameter_list, model_parameter_list, completed_iterations
+    else:
+        return logL_list, hparameter_list, model_parameter_list, completed_iterations, mass
