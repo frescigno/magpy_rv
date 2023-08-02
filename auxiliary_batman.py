@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Set of auxiliary functions for the GP_solar and MCMC codes.
 
