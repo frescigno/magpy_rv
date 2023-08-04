@@ -270,14 +270,15 @@ def GP_plot(time, rv, hparam, kernel_name, rv_err = None, model_list = None, mod
                 else:
                     new_model_list.append(i)
             
-            # remove offsets from the model parameters so they can be used with the new model y
-            mod_key = list(model_param.keys())
+            # create a new model parameter dictionary without offsets so they can be used with the new model y
+            new_model_param = dict(model_param)
+            mod_key = list(new_model_param.keys())
             for i in mod_key:
                 if i.startswith('off'):
-                    del model_param[i]
+                    del new_model_param[i]
             
             # smooth_model_y is generated from the offset subtracted data so there is no need to have offsets in the model parameters or model list any more
-            smooth_model_y = get_model(new_model_list, xpred, model_param, to_ecc=False)
+            smooth_model_y = get_model(new_model_list, xpred, new_model_param, to_ecc=False)
             gp_mod_y = smooth_model_y + GP_y
             
             # set up the list of colours for points, currently can support 6 datasets
@@ -364,7 +365,560 @@ def GP_plot(time, rv, hparam, kernel_name, rv_err = None, model_list = None, mod
         print("Figure not saved, you need to provide savefilename and save_folder both")
             
             
-    
     plt.show()
+
+
+
+
+# mixing plots
+
+
+def mixing_plot(hparam_chain, kernel_name, model_param_chain, model_name, LogL_chain, mass = None, save_folder=None, savefilename="mixing"):
+    '''
+    Parameters
+    ----------
+    hparam_chain : array
+        Array of all the sets of hyperparameters of the MCMC, now in chains
+    kernel_name : string
+        Name of the kernel
+    model_param_chain : array
+        Array of all the sets of model parameters of the MCMC, now in chains
+    model_name : string
+        Name of the model
+    LogL_chain : array
+        Array containing all the Log Likelihood
+    mass: array, optional
+        Array of all the masses for all planets produced by the MCMC, defaults to None
+    save_folder : str, optional
+        Folder to save the plot, by default None. If None, the plot is not saved.
+    savefilename : str, optional
+        Name of the file to save the plot, by default Mixing.
+    '''
+    iterations = len(LogL_chain[:,0,0])-1
+    numb_chains = len(LogL_chain[0,:,0])
+    
+    hparam_names = aux.hparam_names(kernel_name)
+    model_param_names = aux.model_param_names(model_name, SkCk=True)
+    
+    if mass is None:
+        xs = list(range(iterations+1))
+        n_subplots = len(hparam_chain[0,0,:])+len(model_param_chain[0,0,:])+1
+    
+        fig, axs = plt.subplots(n_subplots, sharex=True, figsize=(15,15))
+        fig.subplots_adjust(hspace=0.)
+        axs[0].set_title("Mixing Chains")
+        plt.xlabel("Number of iterations")
+    
+        for chain in range(numb_chains):
+            for i in range(n_subplots):
+                if i == 0:
+                    axs[i].plot(xs, LogL_chain[:, chain, :], c='xkcd:bluish', alpha=0.2)
+                    axs[i].set_ylabel("logL")
+                if i != 0 and i <= len(hparam_chain[0, 0, :]):
+                    axs[i].plot(xs, hparam_chain[:, chain, i-1], c='xkcd:bluish', alpha=0.2)
+                    axs[i].set_ylabel("{}".format(hparam_names[i-1]))
+                if i != 0 and i > len(hparam_chain[0, 0, :]):
+                    #print(model_param_chain[chain][i-1-len(hparam_chain[0])][:])
+                    axs[i].plot(xs, model_param_chain[:, chain, i-1-len(hparam_chain[0, 0, :])], c='xkcd:bluish', alpha=0.2)
+                    axs[i].set_ylabel("{}".format(model_param_names[i-1-len(hparam_chain[0, 0, :])]))
+    else:
+        xs = list(range(iterations+1))
+        n_subplots = len(hparam_chain[0,0,:])+len(model_param_chain[0,0,:])+len(mass[0,0,:])+1
+    
+        fig, axs = plt.subplots(n_subplots, sharex=True, figsize=(15,15))
+        fig.subplots_adjust(hspace=0.)
+        axs[0].set_title("Mixing Chains")
+        plt.xlabel("Number of iterations")
+    
+        for chain in range(numb_chains):
+            for i in range(n_subplots):
+                if i == 0:
+                    axs[i].plot(xs, LogL_chain[:, chain, :], c='xkcd:bluish', alpha=0.2)
+                    axs[i].set_ylabel("logL")
+                if i != 0 and i <= len(hparam_chain[0, 0, :]):
+                    axs[i].plot(xs, hparam_chain[:, chain, i-1], c='xkcd:bluish', alpha=0.2)
+                    axs[i].set_ylabel("{}".format(hparam_names[i-1]))
+                if i != 0 and i > len(hparam_chain[0, 0, :]) and i <= len(hparam_chain[0, 0, :])+len(model_param_chain[0, 0, :]):
+                    #print(model_param_chain[chain][i-1-len(hparam_chain[0])][:])
+                    axs[i].plot(xs, model_param_chain[:, chain, i-1-len(hparam_chain[0, 0, :])], c='xkcd:bluish', alpha=0.2)
+                    axs[i].set_ylabel("{}".format(model_param_names[i-1-len(hparam_chain[0, 0, :])]))
+                if i != 0 and i > len(hparam_chain[0, 0, :])+len(model_param_chain[0, 0, :]):
+                    if len(mass[0,0,:]) == 1 and len(model_name) == 1:
+                        axs[i].plot(xs, mass[:, chain, 0], c='xkcd:bluish', alpha = 0.2)
+                        axs[i].set_ylabel("mass")
+                    else:
+                        axs[i].plot(xs, mass[:, chain, i-1-len(hparam_chain[0,0,:])-len(model_param_chain[0,0,:])], c='xkcd:bluish', alpha = 0.2)
+                        axs[i].set_ylabel("mass_{}".format(i-1-len(hparam_chain[0,0,:])-len(model_param_chain[0,0,:])))
+    
+    if save_folder is not None:
+        assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
+        plt.savefig(str(save_folder)+"/"+str(savefilename)+".png")
         
+    plt.show()
+
+
+
+
+# corner plots
+
+
+def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, masses = None, save_folder=None, savefilename="corner", errors=False):
+    '''
+    Parameters
+    ----------
+    hparam_chain : array
+        Array of all the sets of hyperparameters of the MCMC
+    kernel_name : string
+        Name of the kernel
+    model_param_chain : array
+        Array of all the sets of model parameters of the MCMC.
+    model_name : string
+        Name of the model
+    masses: array, optional
+        Array of all the masses for all planets produced by the MCMC, defaults to None
+    save_folder : str, optional
+        Folder to save the plot, by default None. If None, the plot is not saved.
+    savefilename : str, optional
+        Name of the file to save the plot, by default Corner.
+    '''
+    
+    
+    import corner
+    
+    
+    hparam_names = aux.hparam_names(kernel_name)
+    model_param_names = aux.model_param_names(model_name, SkCk=True)
+    
+    
+    # Resizing of arrays: create 2d array, nrows=iteration*chians, ncols = nparam
+    hp = np.array(hparam_chain)
+    shapes = hp.shape
+    #print("shape",shapes)
+    numb_chains = shapes[1]
+    nparam = shapes[2]
+    depth = shapes[0]
+    
+    
+    hparams = np.zeros((((depth)*numb_chains),nparam))
+    for p in range(nparam):
+        numb=0
+        for c in range(numb_chains):
+            for i in range(depth):
+                hparams[numb,p] = hparam_chain[i,c,p]
+                numb += 1
+    
+    
+    par = np.array(model_param_chain)
+    shapes2 = par.shape
+    #print("shape",shapes)
+    numb_chains2 = shapes2[1]
+    nparam2 = shapes2[2]
+    depth2 = shapes2[0]
+    
+    modpar = np.zeros((((depth2)*numb_chains2),nparam2))
+    for p in range(nparam2):
+        numb=0
+        for c in range(numb_chains2):
+            for i in range(depth2):
+                modpar[numb,p] = model_param_chain[i,c,p]
+                numb += 1
+    
+    if masses is not None:
+        mass = np.array(masses)
+        shapes3 = mass.shape
+        numb_chains3 = shapes3[1]
+        nparam3 = shapes3[2]
+        depth3 = shapes3[0]
         
+        massval = np.zeros((((depth3)*numb_chains3), nparam3))
+        for p in range(nparam3):
+            numb = 0
+            for c in range(numb_chains3):
+                for i in range(depth2):
+                    massval[numb][p] = masses[i,c,p]
+                    numb += 1
+        
+        mass_list = []
+        if len(masses[0,0,:]) == 1 and len(model_name) == 1:
+            name = "mass"
+            mass_list.append(name)
+        else:
+            for i in range(len(masses[0,0,:])):
+                name = "mass_{}".format(i)
+                mass_list.append(name)
+    
+    
+    
+    CORNER_KWARGS = dict(label_kwargs=dict(fontsize=10), title_kwargs=dict(fontsize=10))
+    
+    # Corner plot of the hyperparameters
+    try:
+        fig = corner.corner(hparams, labels = hparam_names, show_titles=True, **CORNER_KWARGS)
+        if save_folder is not None:
+            assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
+            plt.savefig(str(save_folder)+"/"+str(savefilename)+"_hparam"+".pdf")
+        plt.show()
+    except ValueError:
+        print("Inside: No dynamic range in kernel")
+    
+    
+    try:
+        # Corner plot of model parameters
+        fig = corner.corner(modpar, labels=model_param_names, show_titles=True, **CORNER_KWARGS)
+        if save_folder is not None:
+            assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
+            plt.savefig(str(save_folder)+"/"+str(savefilename)+"_modelpar"+".pdf")
+        plt.show()
+    except ValueError:
+        print("Inside: No dynamic range in model")
+    
+    if masses is not None:
+        try:
+            #corner plot of the masses
+            fig = corner.corner(massval, labels=mass_list, show_titles=True, **CORNER_KWARGS)
+            if save_folder is not None:
+                assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
+                plt.savefig(str(save_folder)+"/"+str(savefilename)+"_masses"+".pdf")
+            plt.show()
+        except ValueError:
+            print("insideL No dynamic range in masses")
+    
+    # Full corner plot
+    if masses is None:
+        try:
+            full_param_chain = np.concatenate((hparams, modpar), axis=1)
+            full_names = hparam_names + model_param_names
+            fig = corner.corner(full_param_chain, labels=full_names, show_titles=True, **CORNER_KWARGS)
+            if save_folder is not None:
+                assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
+                plt.savefig(str(save_folder)+"/"+str(savefilename)+"_full"+".pdf")
+            plt.show()
+        
+            final_param_values = []
+            final_param_erru = []
+            final_param_errd = []
+        
+            for a in range(len(hparam_chain[0,0,:])):
+                errd, quantile, erru = corner.quantile(hparam_chain[:,:,a], [0.16,0.5,0.84])
+                final_param_values.append(quantile)
+                final_param_erru.append(erru)
+                final_param_errd.append(errd)
+            for b in range(len(model_param_chain[0,0,:])):
+                errd, quantile, erru = corner.quantile(modpar[:,b], [0.16,0.5,0.84])
+                final_param_values.append(quantile)
+                final_param_erru.append(erru)
+                final_param_errd.append(errd)
+        except ValueError:
+            try:
+                plt.show()
+                print("Inside: No dynamic range in model")
+            
+                final_param_values = []
+                final_param_erru = []
+                final_param_errd = []
+            
+                for a in range(len(hparam_chain[0,0,:])):
+                    errd, quantile, erru = corner.quantile(hparam_chain[:,:,a], [0.16,0.5,0.84])
+                    final_param_values.append(quantile)
+                    final_param_erru.append(erru)
+                    final_param_errd.append(errd)
+            except ValueError:
+                plt.show()
+                print("Inside: No dynamic range in kernel")
+            
+                final_param_values = []
+                final_param_erru = []
+                final_param_errd = []
+            
+                for a in range(len(model_param_chain[0,0,:])):
+                    errd, quantile, erru = corner.quantile(modpar[:,a], [0.16,0.5,0.84])
+                    final_param_values.append(quantile)
+                    final_param_erru.append(erru)
+                    final_param_errd.append(errd)
+    else:
+        try:
+            full_param_chain = np.concatenate((hparams, modpar, massval), axis=1)
+            full_names = hparam_names + model_param_names + mass_list
+            fig = corner.corner(full_param_chain, labels=full_names, show_titles=True, **CORNER_KWARGS)
+            if save_folder is not None:
+                assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
+                plt.savefig(str(save_folder)+"/"+str(savefilename)+"_full"+".pdf")
+            plt.show()
+        
+            final_param_values = []
+            final_param_erru = []
+            final_param_errd = []
+        
+            for a in range(len(hparam_chain[0,0,:])):
+                errd, quantile, erru = corner.quantile(hparam_chain[:,:,a], [0.16,0.5,0.84])
+                final_param_values.append(quantile)
+                final_param_erru.append(erru)
+                final_param_errd.append(errd)
+            for b in range(len(model_param_chain[0,0,:])):
+                errd, quantile, erru = corner.quantile(modpar[:,b], [0.16,0.5,0.84])
+                final_param_values.append(quantile)
+                final_param_erru.append(erru)
+                final_param_errd.append(errd)
+            for c in range(len(masses[0,0,:])):
+                errd, quantile, erru = corner.quantile(masses[:,:,c], [0.16, 0.5, 0.84])
+                final_param_values.append(quantile)
+                final_param_erru.append(erru)
+                final_param_errd.append(errd)
+        except ValueError:
+            try:
+                plt.show()
+                print("Inside: No dynamic range in model")
+            
+                final_param_values = []
+                final_param_erru = []
+                final_param_errd = []
+            
+                for a in range(len(hparam_chain[0,0,:])):
+                    errd, quantile, erru = corner.quantile(hparam_chain[:,:,a], [0.16,0.5,0.84])
+                    final_param_values.append(quantile)
+                    final_param_erru.append(erru)
+                    final_param_errd.append(errd)
+                for c in range(len(masses[0,0,:])):
+                    errd, quantile, erru = corner.quantile(masses[:,:,c], [0.16, 0.5, 0.84])
+                    final_param_values.append(quantile)
+                    final_param_erru.append(erru)
+                    final_param_errd.append(errd)
+                    
+            except ValueError:
+                try:
+                    plt.show()
+                    print("Inside: No dynamic range in kernel")
+            
+                    final_param_values = []
+                    final_param_erru = []
+                    final_param_errd = []
+            
+                    for a in range(len(model_param_chain[0,0,:])):
+                        errd, quantile, erru = corner.quantile(modpar[:,a], [0.16,0.5,0.84])
+                        final_param_values.append(quantile)
+                        final_param_erru.append(erru)
+                        final_param_errd.append(errd)
+                    for c in range(len(masses[0,0,:])):
+                        errd, quantile, erru = corner.quantile(masses[:,:,c], [0.16, 0.5, 0.84])
+                        final_param_values.append(quantile)
+                        final_param_erru.append(erru)
+                        final_param_errd.append(errd)
+                
+                except ValueError:
+                    try:
+                        plt.show()
+                        print("Inside: No dynamic range in mass")
+                        
+                        final_param_values = []
+                        final_param_erru = []
+                        final_param_errd = []
+                    
+                        for a in range(len(model_param_chain[0,0,:])):
+                            errd, quantile, erru = corner.quantile(modpar[:,a], [0.16,0.5,0.84])
+                            final_param_values.append(quantile)
+                            final_param_erru.append(erru)
+                            final_param_errd.append(errd)
+                        for a in range(len(hparam_chain[0,0,:])):
+                            errd, quantile, erru = corner.quantile(hparam_chain[:,:,a], [0.16,0.5,0.84])
+                            final_param_values.append(quantile)
+                            final_param_erru.append(erru)
+                            final_param_errd.append(errd)
+                    except ValueError:
+                        try:
+                            plt.show()
+                            print("Inside: No dynamic range in kernel or model")
+                            
+                            final_param_values = []
+                            final_param_erru = []
+                            final_param_errd = []
+                            
+                            for c in range(len(masses[0,0,:])):
+                                errd, quantile, erru = corner.quantile(masses[:,:,c], [0.16, 0.5, 0.84])
+                                final_param_values.append(quantile)
+                                final_param_erru.append(erru)
+                                final_param_errd.append(errd)
+                        
+                        except ValueError:
+                            try:
+                                plt.show()
+                                print("Inside: No dynamic range in kernel or mass")
+                                
+                                final_param_values = []
+                                final_param_erru = []
+                                final_param_errd = []
+                            
+                                for a in range(len(model_param_chain[0,0,:])):
+                                    errd, quantile, erru = corner.quantile(modpar[:,a], [0.16,0.5,0.84])
+                                    final_param_values.append(quantile)
+                                    final_param_erru.append(erru)
+                                    final_param_errd.append(errd)
+                            
+                            except ValueError:
+                                plt.show()
+                                print("Inside: No dynamic range in model or mass")
+                                
+                                final_param_values = []
+                                final_param_erru = []
+                                final_param_errd = []
+                                
+                                for a in range(len(hparam_chain[0,0,:])):
+                                    errd, quantile, erru = corner.quantile(hparam_chain[:,:,a], [0.16,0.5,0.84])
+                                    final_param_values.append(quantile)
+                                    final_param_erru.append(erru)
+                                    final_param_errd.append(errd)
+                            
+                                
+    print("Parameter values after MCMC: ", final_param_values)
+    if errors:
+        return final_param_values, final_param_erru, final_param_errd
+    else:
+        return final_param_values
+        
+
+
+
+# keplerian only plot
+
+
+def keplerian_only_plot(time, rv, hparam, kernel_name, model_list, model_param, rv_err = None, keplerian_number = 0, flags = None, xpred = None, residuals=False, xlabel='Time [BJD]', ylabel='RV [m/s]', legend = True, save_folder=None, savefilename=None):
+    """
+    
+    
+    """  
+    
+    # generate a predicted x array for the smooth models if none is given
+    if xpred is None:
+        xpred = np.arange(time[0]-1, time[-1]+1, 0.1)
+    
+    if not 'keplerian' in model_list and not 'Keplerian' in model_list:
+        raise KeyError("no keplerain in model")
+        
+    if len(model_list) == 1:
+            
+        model_y = get_model(model_list, time, model_param, to_ecc=False)
+        loglik = gp.GPLikelihood(time, rv, rv_err, hparam, kernel_name, model_y, model_param)
+        GP_y, GP_err = loglik.predict(xpred)
+        # smooth model generated based on xpred
+        smooth_model_y = get_model(model_list, xpred, model_param, to_ecc=False)
+            
+        f = interp.interp1d(xpred, GP_y, kind='cubic', bounds_error=False)
+        new_pred_y = f(time)
+        # subtract the points relating to the time array from the rv data to get residuals
+        rv = (rv-new_pred_y)
+        
+    else:
+        if flags is None:
+            # no flags suggests no offsets are in use, check if this is the case
+            for i in model_list:
+                if i.startswith('off') or i.startswith('Off'):
+                    raise KeyError("flags must be provided if using offsets")
+        if flags is not None:
+            # flags suggests an offset model is in use, check if this is the case
+            if 'offset' in model_list:
+                pass
+            elif 'Offset' in model_list:
+                pass
+            else:
+                raise KeyError("offsets should be provided if flags are given")
+            
+            c_list = ['darkgreen', 'darkred', 'magenta', 'cyan', 'gold', 'saddlebrown']
+            c_dict = {'darkgreen':'Subtracted Dataset_1', 'darkred':'Subtracted Dataset_2', 'magenta':'Subtracted Dataset_3', 'cyan':'Subtracted Dataset_4', 'gold':'Subtracted Dataset_5', 'saddlebrown':'Subtracted Dataset_6'}
+            c_array = []
+            for i in range(len(flags)):
+                for a in range(len(c_list)):
+                    if flags[i] == a:
+                        c_array.append(c_list[a])
+            # c_array is an array in the same form as the flags but where numbers are replaced by colours
+            c_array = np.array(c_array)
+        
+        model_y = get_model(model_list, time, model_param, to_ecc=False, flags = flags)
+        loglik = gp.GPLikelihood(time, rv, rv_err, hparam, kernel_name, model_y, model_param)
+        GP_y, GP_err = loglik.predict(xpred)
+        # smooth model generated based on xpred
+        data_model_y = get_model(model_list, time, model_param, to_ecc=False, flags = flags)
+            
+        f = interp.interp1d(xpred, GP_y, kind='cubic', bounds_error=False)
+        new_pred_y = f(time)
+        # subtract the points relating to the time array from the rv data to get residuals
+        blank_rv = (rv-new_pred_y)
+        blank_rv = blank_rv - data_model_y
+        
+        kep_num_list = []
+        for i in model_list:
+            if i.startswith('kep') or i.startswith('Kep'):
+                kep_num_list.append(i)
+        new_model_list = ["Keplerian"]
+        
+        for i in range(len(kep_num_list)):
+            if keplerian_number == i:
+                new_mod_par = {"P":model_param["P_"+str(i)], "K":model_param["K_"+str(i)], "ecc":model_param["ecc_"+str(i)], "omega":model_param["omega_"+str(i)], "t0":model_param["t0_"+str(i)]}
+                smooth_model_y = get_model(new_model_list, xpred, new_mod_par, to_ecc=False)
+                new_data_model_y = get_model(new_model_list, time, new_mod_par, to_ecc=False)
+                rv = blank_rv + new_data_model_y
+                
+        
+           
+    if residuals is False:
+        
+        # set up one plot for no residuals
+        fig = plt.figure(figsize = (10,7))
+        ax = fig.add_subplot(1,1,1)
+        
+        try:
+            # try plotting multiple colours for if offsets are present
+            rv_err = np.array(rv_err)
+            for g in np.unique(c_array):
+                ix = np.where(c_array == g)
+                ax.errorbar(time[ix], rv[ix], yerr = rv_err[ix], fmt = '.', c = g, label = c_dict[g])
+        except:
+            # plot data if no offsets are present
+            ax.errorbar(time, rv, yerr = rv_err, fmt = '.', color = 'darkgreen', label = 'Subtracted Data')
+            
+        ax.plot(xpred, smooth_model_y, color = 'blue', label = 'Predicted Keplerian Model')
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        if legend is True:
+            ax.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize = 10)
+        
+    if residuals is True:
+        # set up two plots for residuals
+        fig, axs = plt.subplots(ncols=1, nrows=2, sharex=True, figsize=(10,7), gridspec_kw={'height_ratios': [3,1]})
+        fig.subplots_adjust(hspace=0)
+            
+        try:
+            # try plotting multiple colours for if offsets are present
+            rv_err = np.array(rv_err)
+            for g in np.unique(c_array):
+                ix = np.where(c_array == g)
+                axs[0].errorbar(time[ix], rv[ix], yerr = rv_err[ix], fmt = '.', c = g, label = c_dict[g])
+        except:
+            # plot data if no offsets are present
+            axs[0].errorbar(time, rv, yerr = rv_err, fmt = '.', color = 'darkgreen', label = 'Subtracted Data')
+            
+        # plots for predicted GP and model+GP on the first plot
+        axs[0].plot(xpred, smooth_model_y, color = 'blue', label = 'Predicted Keplerian Model')
+        axs[0].set_ylabel(ylabel)
+        if legend is True:
+            axs[0].legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize = 10)
+
+        # interpolate the smooth GP+model to get the points relating to the time array
+        f = interp.interp1d(xpred, smooth_model_y, kind='cubic', bounds_error=False)
+        new_pred_y = f(time)
+        # subtract the points relating to the time array from the rv data to get residuals
+        res = (rv-new_pred_y)
+
+        try:
+            # try plotting multiple colours for offsets on the second plot
+            axs[1].scatter(time, res, c = c_array, s = 10)
+        except:
+            # plotting for no offsets on the second plot
+            axs[1].scatter(time, res, c='darkgreen', s = 10)
+        axs[1].set_ylabel("Residuals")
+        axs[1].set_xlabel(xlabel)
+    
+    plt.show()    
+        
+            
+            
+            
+         
