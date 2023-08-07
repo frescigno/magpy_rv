@@ -161,6 +161,9 @@ def combine_data(times, ys, y_errs):
     flags = np.concatenate(flag_list)
     time, y, y_err, flags = zip(*sorted(zip(time, y, y_err, flags)))
     time = np.array(time)
+    y = np.array(y)
+    y_err = np.array(y_err)
+    flags = np.array(flags)
     return(time, y, y_err, flags)
        
     

@@ -100,6 +100,8 @@ def data_plot(time, rv, xlabel = "time [BJD]", ylabel = "RV [m/s]", legend = Tru
         ax.errorbar(time, rv, yerr = y_err, fmt = '.', color = 'darkgreen')
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
+        if legend is True:
+            ax.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize = 10)
     elif offsets is None and flags is not None:
         raise KeyError("offsets must be provided when flags are given")
     elif offsets is not None and flags is None:
@@ -193,23 +195,45 @@ def GP_plot(time, rv, hparam, kernel_name, rv_err = None, model_list = None, mod
     
     if model_list is None and model_param is None:
         # if no model is in use there should be no flags and residuals
-        assert flags == None, "flags should not be provided if no model is in use"
-        assert residuals ==  False, "residuals cannot be provided when using no model"
+        assert flags is None, "flags should not be provided if no model is in use"
         # calculate GP_y for no model
         loglik = gp.GPLikelihood(time, rv, rv_err, hparam, kernel_name)
         GP_y, GP_err = loglik.predict(xpred)
         
-        fig = plt.figure(figsize = (10,7))
-        ax = fig.add_subplot(1,1,1)
+        if residuals is False:
+            fig = plt.figure(figsize = (10,7))
+            ax = fig.add_subplot(1,1,1)
         
-        # plots for no model
-        ax.errorbar(time, rv, yerr = rv_err, fmt = '.', color = 'darkgreen', label = 'Data')
-        ax.plot(xpred, GP_y, linestyle = '--', color = 'orange', label = 'Predicted GP')
-        ax.fill_between(xpred, GP_y+GP_err, GP_y-GP_err, alpha=0.5, color='gray')
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        if legend is True:
-            ax.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize = 10)
+            # plots for no model
+            ax.errorbar(time, rv, yerr = rv_err, fmt = '.', color = 'darkgreen', label = 'Data')
+            ax.plot(xpred, GP_y, linestyle = '--', color = 'orange', label = 'Predicted GP')
+            ax.fill_between(xpred, GP_y+GP_err, GP_y-GP_err, alpha=0.5, color='gray')
+            ax.set_xlabel(xlabel)
+            ax.set_ylabel(ylabel)
+            if legend is True:
+                ax.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize = 10)
+        
+        if residuals is True:
+            # set up two plots for residuals
+            fig, ax = plt.subplots(ncols=1, nrows=2, sharex=True, figsize=(10,7), gridspec_kw={'height_ratios': [3,1]})
+            fig.subplots_adjust(hspace=0)
+            
+            ax[0].errorbar(time, rv, yerr = rv_err, fmt = '.', color = 'darkgreen', label = 'Data')
+            ax[0].plot(xpred, GP_y, linestyle = '--', color = 'orange', label = 'Predicted GP')
+            ax[0].fill_between(xpred, GP_y+GP_err, GP_y-GP_err, alpha=0.5, color='gray')
+            ax[0].set_ylabel(ylabel)
+            if legend is True:
+                ax[0].legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize = 10)
+            
+            # interpolate the smooth GP to get the points relating to the time array
+            f = interp.interp1d(xpred, GP_y, kind='cubic')
+            new_pred_y = f(time)
+            # subtract the points relating to the time array from the rv data to get residuals
+            res = (rv-new_pred_y)
+
+            ax[1].scatter(time, res, c='darkgreen', s = 10)
+            ax[1].set_ylabel("Residuals")
+            ax[1].set_xlabel(xlabel)
     
     # check inputs are correct
     elif model_list is None and model_param is not None:
@@ -224,6 +248,8 @@ def GP_plot(time, rv, hparam, kernel_name, rv_err = None, model_list = None, mod
             for i in model_list:
                 if i.startswith('off') or i.startswith('Off'):
                     raise KeyError("flags must be provided if using offsets")
+                else:
+                    pass
             # ganerate model and GP_y for no offsets
             model_y = get_model(model_list, time, model_param, to_ecc=False)
             loglik = gp.GPLikelihood(time, rv, rv_err, hparam, kernel_name, model_y, model_param)
@@ -341,7 +367,7 @@ def GP_plot(time, rv, hparam, kernel_name, rv_err = None, model_list = None, mod
                 axs[0].legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize = 10)
 
             # interpolate the smooth GP+model to get the points relating to the time array
-            f = interp.interp1d(xpred, gp_mod_y, kind='cubic', bounds_error=False)
+            f = interp.interp1d(xpred, gp_mod_y, kind='cubic')
             new_pred_y = f(time)
             # subtract the points relating to the time array from the rv data to get residuals
             res = (rv-new_pred_y)
@@ -780,7 +806,7 @@ def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, masses
 # keplerian only plot
 
 
-def keplerian_only_plot(time, rv, hparam, kernel_name, model_list, model_param, rv_err = None, keplerian_number = 0, flags = None, xpred = None, residuals=False, xlabel='Time [BJD]', ylabel='RV [m/s]', legend = True, save_folder=None, savefilename=None):
+def keplerian_only_plot(time, rv, hparam, kernel_name, model_list, model_param, rv_err = None, keplerian_number = 0, flags = None, xpred = None, residuals=False, xlabel='Time [BJD]', ylabel='RV [m/s]', legend = True, save_folder=None, savefilename=None, plot = True):
     """
     Function to return a plot of the data with the GP and all models except from the chosen keplerian subtracted from it, with the chosen keplerian model plotted on top
     
@@ -818,10 +844,14 @@ def keplerian_only_plot(time, rv, hparam, kernel_name, model_list, model_param, 
         folder to save the plot, defaults to None
     savefilename: string, optional
         name of the save file, defaults to None
+    plot: bool, optional
+        true returns the plot, false returns parameter and rv data, defaults to True
     
     Returns
     -------
-    plot of subtracted data and chosen keplerian model
+    plot of subtracted data and chosen keplerian model if plot is True
+    
+    parameter and rv data with optional residuals if plot is False
     """  
     
     # generate a predicted x array for the smooth models if none is given
@@ -896,10 +926,11 @@ def keplerian_only_plot(time, rv, hparam, kernel_name, model_list, model_param, 
         for i in range(len(kep_num_list)):
             if keplerian_number == i:
                 # create a new model parameter dictionary based on the chosen keplerian
-                new_mod_par = {"P":model_param["P_"+str(i)], "K":model_param["K_"+str(i)], "ecc":model_param["ecc_"+str(i)], "omega":model_param["omega_"+str(i)], "t0":model_param["t0_"+str(i)]}
+                new_model_param = {"P":model_param["P_"+str(i)], "K":model_param["K_"+str(i)], "ecc":model_param["ecc_"+str(i)], "omega":model_param["omega_"+str(i)], "t0":model_param["t0_"+str(i)]}
+                model_param = new_model_param
                 # create a smooth model and data model based on just this keplerian using the new model list and parameters for one keplerain
-                smooth_model_y = get_model(new_model_list, xpred, new_mod_par, to_ecc=False)
-                new_data_model_y = get_model(new_model_list, time, new_mod_par, to_ecc=False)
+                smooth_model_y = get_model(new_model_list, xpred, model_param, to_ecc=False)
+                new_data_model_y = get_model(new_model_list, time, model_param, to_ecc=False)
                 # add the data model back onto the rv data as this was subtracted earlier as a part of subtracting the whole model
                 rv = blank_rv + new_data_model_y
                 
@@ -970,9 +1001,237 @@ def keplerian_only_plot(time, rv, hparam, kernel_name, model_list, model_param, 
     if savefilename is not None and save_folder is None:
         print("Figure not saved, you need to provide savefilename and save_folder both")
     
-    plt.show()    
+    if plot is True:
+        plt.show()
+    if plot is False:
+        plt.close()
+        if residuals is False:
+            try:
+                return model_param, rv, c_array, c_dict  
+            except:
+                return model_param, rv 
+        if residuals is True:
+            try:
+                return model_param, rv, c_array, c_dict, res
+            except:
+                return model_param, rv, res
+
+
+
+
+# phase folded plot
+
+
+def phase_plot(time, rv, hparam, kernel_name, model_list, model_param, rv_err = None, keplerian_number = 0, flags = None, xpred = None, residuals=False, xlabel='Time [BJD]', ylabel='RV [m/s]', legend = True, save_folder=None, savefilename=None):
+    """
+
+
+    Parameters
+    ----------
+    time: array of floats
+        x-axis array of the observation times
+    rv: array of floats
+        y-axis array of the RVs
+    hparam: dictionary
+        dictionary of the hyperparameters
+    kernel_name: string
+        name of the kernel
+    model_list: list of strings
+        list of the models in use
+    model_param: dictionary
+        dictionary of model parameters
+    rv_err: array of floats, optional
+        array of rv errors, defaults to None
+    keplerian_number: int, optional
+        number representing the chosen keplerian to plot, 0 to plot first keplerian, 1 to plot second keplerian etc... defaults to None
+    flags: array of floats, optional
+        array of flags representing offsets generated by the combine_data function, defaults to None
+    xpred: array of floats, optional
+        array of prediced times to be used for the smooth model, defaults to intervals of 0.1 between the max and min times
+    residuals: bool, optional
+        enable the plotting of residuals, defaults to false
+    xlabel: string, optional
+        label of x-axis, defaults to "time [BJD]"
+    ylabel: string, optional
+        label of y-axis, defaults to "RV [m/s]"
+    legend: bool, optional
+        enable the plotting of a legend, defaults to True
+    save_folder: string, optional
+        folder to save the plot, defaults to None
+    savefilename: string, optional
+        name of the save file, defaults to None
+
+    Returns
+    -------
+    phase-folded plot of the chosen keplerian along with the subtracted data
+    """
+    
+    # get essential data from keplerian only function depending on whether residuals and offsets are present
+    if residuals is False:
+        try:
+            model_param, rv, c_array, c_dict = keplerian_only_plot(time, rv, hparam, kernel_name, model_list, model_param, rv_err, keplerian_number, flags, xpred, residuals, xlabel, ylabel, legend, save_folder, savefilename, plot = False)
+        except:
+            model_param, rv = keplerian_only_plot(time, rv, hparam, kernel_name, model_list, model_param, rv_err, keplerian_number, flags, xpred, residuals, xlabel, ylabel, legend, save_folder, savefilename, plot = False)
+    if residuals is True:
+        try:
+            model_param, rv, c_array, c_dict, res = keplerian_only_plot(time, rv, hparam, kernel_name, model_list, model_param, rv_err, keplerian_number, flags, xpred, residuals, xlabel, ylabel, legend, save_folder, savefilename, plot = False)
+        except:
+            model_param, rv, res = keplerian_only_plot(time, rv, hparam, kernel_name, model_list, model_param, rv_err, keplerian_number, flags, xpred, residuals, xlabel, ylabel, legend, save_folder, savefilename, plot = False)
+    
+    # only one keplerian will be present in the model params due to how the keplerian only function works
+    model_list = ["Keplerian"]
+    # obtain period and t0 values to phase fold the time
+    period = model_param["P"].value
+    t0 = model_param["t0"].value
+    
+    # phase fold the times
+    phase = (time - t0)/period
+    # Want phase to be between 0 and 1
+    epoch = np.floor(phase)
+    true_phase = phase - epoch
+    # set the center at zero
+    end = np.where(true_phase >= 0.5)[0]
+    true_phase[end] -= 1.0
+    
+    # create an xpred array in order to make a smooth model
+    phase_xpred = np.arange(-0.5, 0.5, 0.001)
+    # phase of the keplerian has effectively been set to 1 by the phase folding, set it to 1 to run the model
+    model_param["P"].value = 1.
+    # similarly with t0
+    model_param["t0"].value = 0.
+    
+    # generate the smooth model
+    smooth_model_y = get_model(model_list, phase_xpred, model_param, to_ecc = False)
+    
+    # put the new phase folded times in order and order the RVs, c_array, and residuals in the same order
+    if residuals is False:
+        try:
+            true_phase, rv, c_array = zip(*sorted(zip(true_phase, rv, c_array)))
+        except:
+            true_phase, rv = zip(*sorted(zip(true_phase, rv)))
+    if residuals is True:
+        try:
+            true_phase, rv, c_array, res = zip(*sorted(zip(true_phase, rv, c_array, res)))
+        except:
+            true_phase, rv , res = zip(*sorted(zip(true_phase, rv, res)))
+    
+    # generate empty lists to hold information needed to extend the plot
+    end_rv_num = []
+    start_rv_num = []
+    start_time = []
+    end_time = []
+    for N,i in enumerate(true_phase):
+        if i < -0.4:
+            # append the indices of all times less than -0.4 to an start list
+            start_rv_num.append(N)
+            # append all times less than -0.4 to an start list and add 1 to them so they extend the data
+            start_time.append(i+1)
+        if i > 0.4:
+            # append the indices of all times larger than 0.4 to an end list
+            end_rv_num.append(N)
+            # append all times larger than 0.4 to an end list and minus 1 to them so they extend the data
+            end_time.append(i-1)
+        else:
+            pass
+    
+    # start and end rv is a list of RVs correlating to those start and end time positions
+    start_rv = rv[:start_rv_num[-1]+1]
+    end_rv = rv[end_rv_num[0]:]
+    # similarly for the rv_err
+    start_yerr = rv_err[:start_rv_num[-1]+1]
+    end_yerr = rv_err[end_rv_num[0]:]
+    # create xpreds for extending the model
+    end_xpred = np.arange(0.5, 0.6, 0.001)
+    start_xpred = np.arange(-0.6, -0.5, 0.001)
+    # generate extended models for the start and the end
+    end_model = get_model(model_list, end_xpred, model_param, to_ecc = False)
+    start_model = get_model(model_list, start_xpred, model_param, to_ecc = False)
+    
+    if residuals is False:
+
+        fig = plt.figure(figsize = (10,7))
+        ax = fig.add_subplot(1,1,1)
         
+        try:
+            # try plotting multiple colours for if offsets are present
+            rv_err = np.array(rv_err)
+            true_phase = np.array(true_phase)
+            rv = np.array(rv)
+            c_array = np.array(c_array)
+
+            for g in np.unique(c_array):
+                ix = np.where(c_array == g)
+                ax.errorbar(true_phase[ix], rv[ix], yerr = rv_err[ix], fmt = '.', c = g, label = c_dict[g])
+        except:
+            # plot data if no offsets are present
+            ax.errorbar(true_phase, rv, yerr = rv_err, fmt = '.', color = 'darkgreen', label = 'Subtracted Data')
+
+        # plot the model for the data in blue
+        ax.plot(phase_xpred, smooth_model_y, c = 'blue', label = 'Keplerian Model')
+        # plot the extended data points and model in grey
+        ax.errorbar(start_time, start_rv, yerr = start_yerr, fmt = '.', color = 'gray')
+        ax.errorbar(end_time, end_rv, yerr = end_yerr, fmt = '.', color = 'gray')
+        ax.plot(start_xpred, start_model, c = 'grey')
+        ax.plot(end_xpred, end_model, c = 'grey')
+        ax.set_ylabel(ylabel)
+        ax.set_xlabel(xlabel)
+        if legend is True:
+            ax.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize = 10)
             
+    if residuals is True:
+        
+        # set up two plots for residuals
+        fig, axs = plt.subplots(ncols=1, nrows=2, sharex=True, figsize=(10,7), gridspec_kw={'height_ratios': [3,1]})
+        fig.subplots_adjust(hspace=0)
+        
+        try:
+            # try plotting multiple colours for if offsets are present
+            rv_err = np.array(rv_err)
+            true_phase = np.array(true_phase)
+            rv = np.array(rv)
+            c_array = np.array(c_array)
+
+            for g in np.unique(c_array):
+                ix = np.where(c_array == g)
+                axs[0].errorbar(true_phase[ix], rv[ix], yerr = rv_err[ix], fmt = '.', c = g, label = c_dict[g])
+        except:
+            # plot data if no offsets are present
+            axs[0].errorbar(true_phase, rv, yerr = rv_err, fmt = '.', color = 'darkgreen', label = 'Subtracted Data')
+
+        # plot the model for the data in blue
+        axs[0].plot(phase_xpred, smooth_model_y, c = 'blue', label = 'Keplerian Model')
+        # plot the extended data points and model in grey
+        axs[0].errorbar(start_time, start_rv, yerr = start_yerr, fmt = '.', color = 'gray')
+        axs[0].errorbar(end_time, end_rv, yerr = end_yerr, fmt = '.', color = 'gray')
+        axs[0].plot(start_xpred, start_model, c = 'grey')
+        axs[0].plot(end_xpred, end_model, c = 'grey')
+        axs[0].set_ylabel(ylabel)
+        if legend is True:
+            axs[0].legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize = 10)
+        
+        try:
+            # try plotting multiple colours for offsets on the second plot
+            axs[1].scatter(true_phase, res, c = c_array, s = 10)
+        except:
+            # plotting for no offsets on the second plot
+            axs[1].scatter(true_phase, res, c='darkgreen', s = 10)
+        start_res = res[:start_rv_num[-1]+1]
+        end_res = res[end_rv_num[0]:]
+        # plotting extended residuals
+        axs[1].scatter(start_time, start_res, c = 'gray', s = 10)
+        axs[1].scatter(end_time, end_res, c = 'gray', s = 10)
+        axs[1].set_ylabel("Residuals")
+        axs[1].set_xlabel(xlabel)
+    
+    if save_folder is not None:
+        assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
+        plt.savefig(str(save_folder)+"/"+str(savefilename)+".png", bbox_inches='tight')
+
+    if savefilename is not None and save_folder is None:
+        print("Figure not saved, you need to provide savefilename and save_folder both")
+    
+    plt.show()
+    
             
             
          
