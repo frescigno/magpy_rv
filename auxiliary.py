@@ -301,7 +301,7 @@ def transpose(arr):
 
 
 
-def model_param_names(model_list, SkCk=False):
+def model_param_names(model_list, SkCk=False, plotting = True):
     """
     Function to get model names
 
@@ -353,22 +353,37 @@ def model_param_names(model_list, SkCk=False):
             param_names_mods = None
             if mod_name.startswith("Kepler") or mod_name.startswith("kepler"):
                 if SkCk:
-                    param_names_mods = [r"P$_{}$".format(n_kep), r"K$_{}$".format(n_kep), r"Ck$_{}$".format(n_kep), r"Sk$_{}$".format(n_kep), r"t0$_{}$".format(n_kep)]
+                    if plotting is True:
+                        param_names_mods = [r"P$_{}$".format(n_kep), r"K$_{}$".format(n_kep), r"Ck$_{}$".format(n_kep), r"Sk$_{}$".format(n_kep), r"t0$_{}$".format(n_kep)]
+                    else:
+                        param_names_mods = ["P_{}".format(n_kep), "K_{}".format(n_kep), "Ck_{}".format(n_kep), "Sk_{}".format(n_kep), "t0_{}".format(n_kep)]
                     param_names.extend(param_names_mods) 
                 if not SkCk:
-                    param_names_mods = [r"P$_{}$".format(n_kep), r"K$_{}$".format(n_kep), r"ecc$_{}$".format(n_kep), r"omega$_{}$".format(n_kep), r"t0$_{}$".format(n_kep)]
+                    if plotting is True:
+                        param_names_mods = [r"P$_{}$".format(n_kep), r"K$_{}$".format(n_kep), r"ecc$_{}$".format(n_kep), r"omega$_{}$".format(n_kep), r"t0$_{}$".format(n_kep)]
+                    else:
+                        param_names_mods = ["P_{}".format(n_kep), "K_{}".format(n_kep), "ecc_{}".format(n_kep), "omega_{}".format(n_kep), "t0_{}".format(n_kep)]
                     param_names.extend(param_names_mods)
                 n_kep += 1
             if mod_name.startswith("No_Model") or mod_name.startswith("No") or mod_name.startswith("no"):
-                param_names_mods = [r"no$_{}$".format(n_no)]
+                if plotting is True:
+                    param_names_mods = [r"no$_{}$".format(n_no)]
+                else:
+                    param_names_mods = ["no_{}".format(n_no)]
                 param_names.extend(param_names_mods)
                 n_no += 1
             if mod_name.startswith("Offset") or mod_name.startswith("offset"):
-                param_names_mods = [r"offset$_{}$".format(n_off)]
+                if plotting is True:
+                    param_names_mods = [r"offset$_{}$".format(n_off)]
+                else:
+                    param_names_mods = ["offset_{}".format(n_off)]
                 param_names.extend(param_names_mods)
                 n_off += 1
             if mod_name.startswith("Polynomial") or mod_name.startswith("polynomial"):
-                param_names_mods = [r"polynomial$_{}$".format(n_poly)]
+                if plotting is True:
+                    param_names_mods = [r"polynomial$_{}$".format(n_poly)]
+                else:
+                    param_names_mods = ["polynomial_{}".format(n_poly)]
                 param_names.extend(param_names_mods)
                 n_poly += 1
     

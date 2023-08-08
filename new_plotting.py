@@ -1233,5 +1233,4 @@ def phase_plot(time, rv, hparam, kernel_name, model_list, model_param, rv_err = 
     plt.show()
     
             
-            
-         
+                     
