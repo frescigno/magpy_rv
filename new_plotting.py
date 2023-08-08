@@ -474,7 +474,7 @@ def mixing_plot(hparam_chain, kernel_name, model_param_chain, model_name, LogL_c
                         axs[i].set_ylabel("mass")
                     else:
                         axs[i].plot(xs, mass[:, chain, i-1-len(hparam_chain[0,0,:])-len(model_param_chain[0,0,:])], c='xkcd:bluish', alpha = 0.2)
-                        axs[i].set_ylabel("mass_{}".format(i-1-len(hparam_chain[0,0,:])-len(model_param_chain[0,0,:])))
+                        axs[i].set_ylabel(r"mass$_{}$".format(i-1-len(hparam_chain[0,0,:])-len(model_param_chain[0,0,:])))
     
     if save_folder is not None:
         assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
@@ -570,7 +570,7 @@ def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, masses
             mass_list.append(name)
         else:
             for i in range(len(masses[0,0,:])):
-                name = "mass_{}".format(i)
+                name = r"mass$_{}$".format(i)
                 mass_list.append(name)
     
     
