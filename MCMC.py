@@ -17,7 +17,6 @@ import Models as modl
 import GP_Likelihood as gp
 import random
 import math
-import plotting as plot
 import auxiliary as aux
 import time
 import mass_calc as mc

@@ -13,7 +13,7 @@ import numpy as np
 import random
 import GP_solar_multi as gp
 import math
-import plotting as plot
+import old_code.plotting as plot
 import auxiliary as aux
 import time
 import mass_calc as mc

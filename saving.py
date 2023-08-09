@@ -1,7 +1,8 @@
 """
-
+Function to allow the user to save any or all outputs from the mcmc
 
 Contains:
+    saving function
 
     
 Author: Bryce Dixon
@@ -14,8 +15,7 @@ import Parameters as par
 import Models as mod
 import GP_Likelihood as gp
 from MCMC_aux import get_model
-from new_plotting import offset_subtract
-import new_plotting as plot
+from plotting import offset_subtract
 import auxiliary as aux
 import os
 
@@ -23,7 +23,7 @@ import os
 # saving function
 
 
-def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, kernel = None, init_param = None, prior_list = None, fin_hparam_post = None, fin_param_post = None, logl_chain = None, masses = None, fin_param_values = None, fin_param_erru = None, fin_param_errd = None, flags = None):
+def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, kernel = None, init_param = None, prior_list = [], fin_hparam_post = None, fin_param_post = None, logl_chain = None, masses = None, fin_param_values = None, fin_param_erru = None, fin_param_errd = None, flags = None, fin_to_skck = False):
     """
     Saves offset subtracted and combined RVs and times, rv_error, kernel name, model list, initial hyperparameters and parameters, initial LogL, priors, final hyperparameter and parameter posteriors, final LogL posterior, mass posteriors, final hyperparameter, parameter and mass values along with errors, final logL value
     
@@ -37,18 +37,51 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
         array of the time values
     rv_err: array of floats
         array of the rv error values
+    model_list: list of strings, optional
+        list of the names of the model in use, defaults to None
+    init_hparam: dictionary, optional
+        dictionary of the initial hyperparameters, defaults to None
+    kernel: string, optional
+        name of the chosen kernel, defaults to None
+    init_param: dictionary, optional
+        dictionary of the initial model parameters, defaults to None
+    prior_list: dictionary, optional
+        dictionary of the priors, defaults to empty list
+    fin_hparam_post: array of floats, optional
+        3d array of the hypermarater posteriors, defaults to None
+    fin_param_post: array of floats, optional
+        3d array of the model parameter posteriors, defaults to None
+    logl_chain: array of floats, optional
+        3d array of the logL posteriors, defaults to None
+    masses: array of floats, optional
+        3d array of the mass posteriors, defaults to None
+    fin_param_values: list of floats, optional
+        list of the final hyperparameter, parameter, and mass values from the posteriors, defaults to None
+    fin_param_erru: list of floats, optional
+        list of the final hyperparameter, parameter, and mass upper errors from the posteriors, defaults to None
+    fin_param_errd: list of floats, optional
+        list of the final hyperparameter, parameter, and mass lower errors form the posteriors, defaults to None
+    flags: array of floats, optional
+        array of floats representing the offsets, defaults to None
+    fin_to_skck: bool, optional
+        if True, returns final keplerian parameters with Sk and Ck, if False returns final keplerian parameters with ecc and omega, defaults to False
+
     """
+    
+    # create new folder titled current run, at the moment the code will not run if the folder already exists
     current = "current_run"
     path = os.path.join(folder_name, current)
     path = os.mkdir(path)
     folder_name = folder_name+'/current_run/'
     
+    # create files for rv, time, and rv error
     rv_file = os.path.join(folder_name, "rv_data.txt")
     time_file = os.path.join(folder_name, "time_data.txt")
     rv_err_file = os.path.join(folder_name, "rv_err.txt")
     
     if flags is not None:
         
+        # if offsets exist append them to a list
         offsets = []
         try:
             off = init_param['offset'].value
@@ -60,15 +93,18 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
                     offsets.append(off)
                 except:
                     continue
-                
-        off_rv = plot.offset_subtract(rv, flags, offsets)
+        
+        # subtract the offsets and save the offset rv to a file        
+        off_rv = offset_subtract(rv, flags, offsets)
         rv_off_file = os.path.join(folder_name, "rv_data_offset_sub.txt")
         np.savetxt(rv_off_file, off_rv)
     
+    # save the times, rvs, and rv error to their files
     np.savetxt(time_file, time)
     np.savetxt(rv_file, rv)
     np.savetxt(rv_err_file, rv_err)
     
+    # if a kernel has been entered, save all the hyperparameter information to an initial conditions file
     if kernel is not None:
         initial_file = os.path.join(folder_name, "initial_conditions.txt")
         initial_cond_file = open(initial_file, "w+")
@@ -76,19 +112,23 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
         initial_cond_file.write(kernel)
         initial_cond_file.write("\nInitial Hyperparameters:\n")
         initial_cond_file.write(init_hparam.__str__())
+    # if a model has been entered, add the model parameters to this file
     if model_list is not None:
         initial_cond_file.write("\nModel List:\n")
         initial_cond_file.write(model_list.__str__())
         initial_cond_file.write("\nInitial Parameters:\n")
         initial_cond_file.write(init_param.__str__())
         
+        # generate the model to get the log likelihood
         model_y = get_model(model_list, time, init_param, to_ecc = False, flags = flags)    
         loglik = gp.GPLikelihood(time, rv, rv_err, init_hparam, kernel, model_y, init_param)
         logL = loglik.LogL(prior_list)
         
+        # add the initial log likelihood to the file
         initial_cond_file.write("\nInitial LogL:\n")
         initial_cond_file.write(logL.__str__())
         try:
+            # if a hyperparameter posterior chain has been entered, add the number of chains and iterations to the initial conditions file
             num_chains = len(fin_hparam_post[0,:,0])
             iterations = len(fin_hparam_post[:,0,0])-1
             initial_cond_file.write("\nNumber of Chains:\n")
@@ -99,27 +139,33 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
             pass
         initial_cond_file.close()
     
+    # create a prior file and save the prior list to the file
     prior_file = os.path.join(folder_name, "priors.txt")
     prior_file = open(prior_file, "w+")
     prior_file.write("\nPriors:\n")
     prior_file.write(prior_list.__str__())
+    prior_file.close()
 
+    # if a hyperparameter posterior has been entered, save these to files based on hyperparameter as arrays with ncolumns = chains, and nrows = iterations
     if fin_hparam_post is not None:
         hparams = aux.hparam_names(kernel)
         for N,i in enumerate(hparams):
             hparam_post = os.path.join(folder_name, "{}_posteriors.txt".format(i))
             np.savetxt(hparam_post, fin_hparam_post[:,:,N])
-        
+    
+    # do the same with model parameters    
     if fin_param_post is not None:
         params = aux.model_param_names(model_list, SkCk = True, plotting = False)
         for N,i in enumerate(params):
             param_post = os.path.join(folder_name, "{}_posteriors.txt".format(i))
             np.savetxt(param_post, fin_param_post[:,:,N])
     
+    # do the same with the logL chain
     if logl_chain is not None:
         logl_post = os.path.join(folder_name, "logL_posteriors.txt")
         np.savetxt(logl_post, logl_chain[:,:,0])
     
+    # do the same with the masses
     if masses is not None:
         mass_list = []
         if len(masses[0,0,:]) == 1 and len(model_list) == 1:
@@ -133,7 +179,159 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
         for N,i in enumerate(mass_list):
             mass_post = os.path.join(folder_name, "{}_posteriors.txt".format(i))
             np.savetxt(mass_post, masses[:,:,N])
+    
+    # if final parameter values have been entered, start by getting a list of all the existing parameters, should match the length of the final parameter values list        
+    if fin_param_values is not None:
+        try:
+            hparams = aux.hparam_names(kernel)
+            # SkCk will acocunt for whether the user wants ecc and omega returned or Sk and Ck returned
+            params = aux.model_param_names(model_list, SkCk = fin_to_skck, plotting = False)
+            mass_list = []
+            try:
+                init_param['P'].value
+                mass_list.append('mass')
+            except:
+                for i in range(len(model_list)):
+                    try:
+                        init_param['P_'+str(i)].value
+                        mass_list.append('mass'+str(i))
+                    except:
+                        continue
+            # mass list will just be empty if there are no masses
+            param_list = hparams + params + mass_list
+        except:
+            # if there is no model the list will just be hyperparameters
+            param_list = hparams
+
+        # create the final parameter file
+        fin_param_file = os.path.join(folder_name, "final_parameter_values.txt")
+        fin_param_file = open(fin_param_file, "w+")
         
+        # if the user wants to return Sk and Ck, read the values as they are form the fin_param_values list, naming the files after the parameter in param_list
+        if fin_to_skck is True:
+            for N,i in enumerate(param_list):
+                fin_param_file.write("\n{}:\n".format(i))
+                fin_param_file.write(fin_param_values[N].__str__())
+                try:
+                    # if errors are given try to include the errors
+                    fin_param_file.write("\n+")
+                    # noting the errors given in fin_param_err and fin_param_errd do not have the value subtracted from them so this must be done
+                    erru = fin_param_erru[N] - fin_param_values[N]
+                    fin_param_file.write(erru.__str__())
+                except:
+                    continue
+                try:
+                    fin_param_file.write("\n-")
+                    errd = fin_param_values[N] - fin_param_errd[N]
+                    fin_param_file.write(errd.__str__())
+                except:
+                    continue
+            
+        if fin_to_skck is False:
+            # if the user wants to return ecc and omega, Sk and Ck in fin_param_values will need converting
+            for N,i in enumerate(param_list):
+                if i.startswith('ecc'):
+                    # if we are on ecc in the list, this corresponds to ck in fin_param_values, pull that out along with the next value, sk
+                    ck = fin_param_values[N]
+                    sk = fin_param_values[N+1]
+                    # run them through to_ecc to get ecc and omega
+                    ecc, omega = aux.to_ecc(sk, ck)
+                    # add ecc to the file
+                    fin_param_file.write("\n{}:\n".format(i))
+                    fin_param_file.write(ecc.__str__())
+                elif i.startswith('omega'):
+                    # omega is checked next so can just be added to the file
+                    fin_param_file.write("\n{}:\n".format(i))
+                    fin_param_file.write(omega.__str__())
+                else:
+                    # the rest added as normal
+                    fin_param_file.write("\n{}:\n".format(i))
+                    fin_param_file.write(fin_param_values[N].__str__())
+                try:
+                    if i.startswith('ecc'):
+                        # perform similar steps for errors
+                        ck_erru = fin_param_erru[N]
+                        sk_erru = fin_param_erru[N+1]
+                        ecc_erru, omega_erru = aux.to_ecc(sk_erru, ck_erru)
+                        fin_param_file.write("\n+")
+                        ecc_erru = ecc_erru - ecc
+                        fin_param_file.write(ecc_erru.__str__())
+                    elif i.startswith('omega'):
+                        fin_param_file.write("\n+")
+                        omega_erru = omega_erru - omega
+                        fin_param_file.write(omega_erru.__str__())
+                    else:
+                        fin_param_file.write("\n+")
+                        erru = fin_param_erru[N] - fin_param_values[N]
+                        fin_param_file.write(erru.__str__())
+                except:
+                    continue
+                try:
+                    if i.startswith('ecc'):
+                        ck_errd = fin_param_errd[N]
+                        sk_errd = fin_param_errd[N+1]
+                        ecc_errd, omega_errd = aux.to_ecc(sk_errd, ck_errd)
+                        fin_param_file.write("\n-")
+                        ecc_errd = ecc - ecc_errd
+                        fin_param_file.write(ecc_errd.__str__())
+                    elif i.startswith('omega'):
+                        fin_param_file.write("\n-")
+                        omega_errd = omega - omega_errd
+                        fin_param_file.write(omega_errd.__str__())
+                    else:
+                        fin_param_file.write("\n-")
+                        errd = fin_param_values[N] - fin_param_errd[N]
+                        fin_param_file.write(errd.__str__())
+                except:
+                    continue
+        fin_param_file.close()
+        
+        # try to create a final logl value if we have the correct inputs
+        try:
+            # require a new hparam and param list from the fin_param_values
+            hparams_list = aux.hparam_names(kernel)
+            params_list = aux.model_param_names(model_list, SkCk = False, plotting = False)
+            new_hparam = par.par_create(kernel)
+            for N,i in enumerate(hparams_list):
+                # new hparam list can be created by taking the first few values from fin_param_values (based on the length of hparams_list)
+                value = fin_param_values[N]
+                error = fin_param_erru[N] - fin_param_values[N]
+                new_hparam[i] = par.parameter(value, error, True)
+            new_param = mod.mod_create(model_list)
+            for N,i in enumerate(params_list):
+                # new param list can be made similarly but requires ck and sk to be converted into ecc and omega, done in a similar way to above
+                if i.startswith('ecc'):
+                    # read the correct fin_param_values value by adding the length of hparams
+                    ck = fin_param_values[N + len(hparams)]
+                    sk = fin_param_values[N + len(hparams) +1]
+                    ck_err = fin_param_erru[N + len(hparams)]
+                    sk_err = fin_param_erru[N + len(hparams) +1]
+                    # convert to ecc and omega
+                    ecc, omega = aux.to_ecc(sk, ck)
+                    ecc_err, omega_err = aux.to_ecc(sk_err, ck_err)
+                    ecc_err = ecc_err - ecc
+                    new_param[i] = par.parameter(ecc, ecc_err, True)
+                elif i.startswith('omega'):
+                    omega_err = omega_err - omega
+                    new_param[i] = par.parameter(omega, omega_err, True)
+                else:
+                    # create the rest as normal
+                    value = fin_param_values[N + len(hparams)]
+                    error = fin_param_erru[N + len(hparams)] - value
+                    new_param[i] = par.parameter(value, error, True)
+
+            # create a new model y based on the new parameters in order to get a new logL based on the new parameters
+            model_y = get_model(model_list, time, new_param, to_ecc = False, flags = flags)    
+            loglik = gp.GPLikelihood(time, rv, rv_err, new_hparam, kernel, model_y, new_param)
+            logL = loglik.LogL(prior_list)
+            # save the final logL to a final logL file
+            fin_logl_file = os.path.join(folder_name, "final_logL.txt")
+            fin_logl_file = open(fin_logl_file, "w+")
+            fin_logl_file.write("\nFinal LogL:\n")
+            fin_logl_file.write(logL.__str__())
+            fin_logl_file.close()
+        except:
+            pass
     
         
     
