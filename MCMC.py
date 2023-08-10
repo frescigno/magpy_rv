@@ -159,7 +159,7 @@ class MCMC:
         # omega = arctan(Sk/Ck)
         # Sk = sqrt(ecc) * sin(omega), Ck = sqrt(ecc) * cos(omega)
         for g in range(len(self.single_modpar0)):
-            if self.modpar_info[0][g].startswith('ecc') and (self.modpar_info[2][g].startswith('kepl') or self.modpar_info[2][g].startswith('Kepl')):
+            if self.modpar_info[0][g].startswith('ecc') and (self.modpar_info[2][g].startswith('kep') or self.modpar_info[2][g].startswith('Kep')):
                 self.single_modpar0[g], self.single_modpar0[g+1], self.modpar_err[g], self.modpar_err[g+1] = aux.to_SkCk(self.single_modpar0[g], self.single_modpar0[g+1], self.modpar_err[g], self.modpar_err[g+1])
 
         
@@ -834,7 +834,6 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = Non
         if not accepted_flat[m]:
             rejected += 1
     
-    print(passed, rejected)
     ratio = passed/(iterations*numb_chains + numb_chains)
     print("Acceptance Rate = ", ratio)
     

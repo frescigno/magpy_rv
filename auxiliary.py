@@ -139,7 +139,7 @@ def star_cross(Sk, Ck, Rstar, P, Mstar):
     
 
 
-def to_SkCk(ecc, omega, ecc_err, omega_err):
+def to_SkCk(ecc, omega, ecc_err=None, omega_err=None):
     '''
 
     Parameters
@@ -148,10 +148,10 @@ def to_SkCk(ecc, omega, ecc_err, omega_err):
         Eccentricity
     omega : float, radians
         Angle of periastron
-    ecc_err : float
-        Error on the eccentricity
-    omega_err : float
-        Error on angle of periastron
+    ecc_err : float, optional
+        Error on the eccentricity, defaults to None
+    omega_err : float, optional
+        Error on angle of periastron, defaults to None
 
     Returns
     -------
@@ -169,14 +169,17 @@ def to_SkCk(ecc, omega, ecc_err, omega_err):
     Sk = np.sqrt(ecc) * np.sin(omega)
     Ck = np.sqrt(ecc) * np.cos(omega)
     
-    if ecc == 0.:
-        Sk_err = ecc_err
-        Ck_err = ecc_err
+    if ecc_err is not None and omega_err is not None:
+        if ecc == 0.:
+            Sk_err = ecc_err
+            Ck_err = ecc_err
+        else:
+            Sk_err = np.sqrt((ecc_err**2 * (np.sin(omega))**2 / (4*ecc)) + (omega_err**2 * ecc * (np.cos(omega))**2))
+            Ck_err = np.sqrt((ecc_err**2 * (np.cos(omega))**2 / (4*ecc)) + (omega_err**2 * ecc * (np.sin(omega))**2))
+            
+        return Sk, Ck,Sk_err, Ck_err
     else:
-        Sk_err = np.sqrt((ecc_err**2 * (np.sin(omega))**2 / (4*ecc)) + (omega_err**2 * ecc * (np.cos(omega))**2))
-        Ck_err = np.sqrt((ecc_err**2 * (np.cos(omega))**2 / (4*ecc)) + (omega_err**2 * ecc * (np.sin(omega))**2))
-    
-    return Sk, Ck, Sk_err, Ck_err
+        return Sk, Ck
 
 
 
@@ -254,7 +257,7 @@ def initial_pos_creator(param, param_err, numb_chains, allow_neg = False, param_
 
 
 
-def mass_calc(model_param, Mstar):
+def mass_calc(model_param, Mstar, earth_mass = False):
     '''
     Parameters
     ----------
@@ -262,12 +265,15 @@ def mass_calc(model_param, Mstar):
         Array of all the model parameter in the mcmc (with Sk and Ck instead of ecc and omega)
     Mstar : float
         Stellar mass in solar masses
+    earth_mass : bool, optional
+        True returns the planet mass in Earth masses, False returns the planet mass in Jupiter masses
 
     Returns
     -------
     Mpl_sini : float
         Minimum mass of the planet in Jupiter masses
-
+    Mpl_sini_e : float
+        Minimum mass of the planet in Earth masses
     '''
     
     P, K, Ck, Sk, t0 = model_param[-1][0], model_param[-1][1], model_param[-1][2], model_param[-1][3], model_param[-1][4]
@@ -275,7 +281,11 @@ def mass_calc(model_param, Mstar):
     omega = np.arctan(Sk/Ck)
     Mpl_sini = 4.9191*10**(-3) * K * np.sqrt(1-ecc**2) * P**(1/3) * Mstar**(2/3)
     
-    return Mpl_sini
+    if earth_mass == False:
+        return Mpl_sini
+    if earth_mass == True:
+        Mpl_sini_e = Mpl_sini * 317.9
+        return Mpl_sini_e
 
 
 
@@ -331,13 +341,13 @@ def model_param_names(model_list, SkCk=False, plotting = True):
         
     # If it's a single model
     if numb == 1:
-        if model_list[0].startswith("Kepler") or model_list[0].startswith("kepler"):
+        if model_list[0].startswith("Kep") or model_list[0].startswith("kep"):
             param_names = ["P", "K", "Ck", "Sk", "t0"]
             
         if model_list[0].startswith("No_Model") or model_list[0].startswith("No") or model_list[0].startswith("no"):
             param_names = ["no"]
         
-        if model_list[0].startswith("Offset") or model_list[0].startswith("offset"):
+        if model_list[0].startswith("Off") or model_list[0].startswith("off"):
             param_names = ["offset"]
         
         if model_list[0].startswith("Polynomial") or model_list[0].startswith("polynomial"):
@@ -351,7 +361,7 @@ def model_param_names(model_list, SkCk=False, plotting = True):
         param_names = []
         for mod_name in model_list:
             param_names_mods = None
-            if mod_name.startswith("Kepler") or mod_name.startswith("kepler"):
+            if mod_name.startswith("Kep") or mod_name.startswith("kep"):
                 if SkCk:
                     if plotting is True:
                         param_names_mods = [r"P$_{}$".format(n_kep), r"K$_{}$".format(n_kep), r"Ck$_{}$".format(n_kep), r"Sk$_{}$".format(n_kep), r"t0$_{}$".format(n_kep)]
@@ -372,14 +382,14 @@ def model_param_names(model_list, SkCk=False, plotting = True):
                     param_names_mods = ["no_{}".format(n_no)]
                 param_names.extend(param_names_mods)
                 n_no += 1
-            if mod_name.startswith("Offset") or mod_name.startswith("offset"):
+            if mod_name.startswith("Off") or mod_name.startswith("off"):
                 if plotting is True:
                     param_names_mods = [r"offset$_{}$".format(n_off)]
                 else:
                     param_names_mods = ["offset_{}".format(n_off)]
                 param_names.extend(param_names_mods)
                 n_off += 1
-            if mod_name.startswith("Polynomial") or mod_name.startswith("polynomial"):
+            if mod_name.startswith("Poly") or mod_name.startswith("poly"):
                 if plotting is True:
                     param_names_mods = [r"polynomial$_{}$".format(n_poly)]
                 else:

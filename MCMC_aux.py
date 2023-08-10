@@ -22,7 +22,7 @@ def numb_param_per_model(model_name):
         model_param_number = 1
     if model_name.startswith("off") or model_name.startswith("Off"):
         model_param_number = 1
-    if model_name.startswith("kepl") or model_name.startswith("Kepl"):
+    if model_name.startswith("kep") or model_name.startswith("Kep"):
         model_param_number = 5
     if model_name.startswith("poly") or model_name.startswith("Poly"):
         model_param_number = 4
@@ -56,23 +56,19 @@ def get_model(model_name, time, model_par, to_ecc=True, flags=None):
         parameters ={key: value for key, value in model_par.items() if (list(model_par).index(key) >= i and list(model_par).index(key) < i+numb_param_mod)}
         if name.startswith("no") or name.startswith("No"):
             model = mod.No_Model(time, parameters)
-            model_y += model.model()
         if name.startswith("off") or name.startswith("Off"):
             model = mod.Offset(flags, parameters)
-            model_y += model.model()
         if name.startswith("poly") or name.startswith("Poly"):
             model = mod.Polynomial(time, parameters)
-            model_y += model.model()
-        if name.startswith("kepl") or name.startswith("Kepl"):
+        if name.startswith("kep") or name.startswith("Kep"):
             if to_ecc:
                 if len(model_name) == 1:
                     parameters['ecc'].value, parameters['omega'].value = aux.to_ecc(parameters['ecc'].value, parameters['omega'].value)
                 else:
                     parameters['ecc_'+str(a)].value, parameters['omega_'+str(a)].value = aux.to_ecc(parameters['ecc_'+str(a)].value, parameters['omega_'+str(a)].value)
-            #print('check', parameters)
             model = mod.Keplerian(time, parameters)
-            model_y += model.model()
             a +=1
+        model_y += model.model()
         i += numb_param_mod
         
     parameter=None
