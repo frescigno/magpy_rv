@@ -67,14 +67,14 @@ def mod_create(model):
         
     # If it's a single model
     if numb == 1:
-        if model[0].startswith("Kepler") or model[0].startswith("kepler"):
+        if model[0].startswith("Kep") or model[0].startswith("kep"):
             model_params = dict(P='period', K='semi-amplitude', ecc='eccentricity', omega='angle of periastron', t0='t of per pass')
                 
         if model[0].startswith("No_Model") or model[0].startswith("No") or model[0].startswith("no"):
             model_params = dict(no='no')
             model_params['no'] = par.parameter(value=0., error=0., vary=False)
             
-        if model[0].startswith("Offset") or model[0].startswith("offset"):
+        if model[0].startswith("Off") or model[0].startswith("off"):
             model_params = dict(offset='offset')
             
         if model[0].startswith("Poly") or model[0].startswith("poly"):
@@ -87,13 +87,13 @@ def mod_create(model):
         n_poly = 0
         model_params = {}
         for mod_name in model:
-            if mod_name.startswith("Kepler") or mod_name.startswith("kepler"):
+            if mod_name.startswith("Kep") or mod_name.startswith("kep"):
                 model_params.update({'P_'+str(n_kep):'period','K_'+str(n_kep):'semi-amplitude', 'ecc_'+str(n_kep):'eccentricity', 'omega_'+str(n_kep):'angle of periastron', 't0_'+str(n_kep):'t of periastron passage'})
                 n_kep += 1
             if mod_name.startswith("No_Model") or mod_name.startswith("No") or mod_name.startswith("no"):
                 model_params.update({'no_'+str(n_no):'no'})
                 n_no += 1
-            if mod_name.startswith("Offset") or mod_name.startswith("offset"):
+            if mod_name.startswith("Off") or mod_name.startswith("off"):
                 model_params.update({'offset_'+str(n_off):'offset'})
                 n_off += 1
             if mod_name.startswith("Poly") or mod_name.startswith("poly"):
