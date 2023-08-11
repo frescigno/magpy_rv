@@ -446,7 +446,7 @@ def mixing_plot(hparam_chain, kernel_name, model_param_chain, model_name, LogL_c
             for i in range(n_subplots):
                 if i == 0:
                     axs[i].plot(xs, LogL_chain[:, chain, :], c='xkcd:bluish', alpha=0.2)
-                    axs[i].set_ylabel("logL")
+                    axs[i].set_ylabel(r"log$\mathcal{L}$")
                 if i != 0 and i <= len(hparam_chain[0, 0, :]):
                     axs[i].plot(xs, hparam_chain[:, chain, i-1], c='xkcd:bluish', alpha=0.2)
                     axs[i].set_ylabel("{}".format(hparam_names[i-1]))
@@ -467,7 +467,7 @@ def mixing_plot(hparam_chain, kernel_name, model_param_chain, model_name, LogL_c
             for i in range(n_subplots):
                 if i == 0:
                     axs[i].plot(xs, LogL_chain[:, chain, :], c='xkcd:bluish', alpha=0.2)
-                    axs[i].set_ylabel("logL")
+                    axs[i].set_ylabel(r"log$\mathcal{L}$")
                 if i != 0 and i <= len(hparam_chain[0, 0, :]):
                     axs[i].plot(xs, hparam_chain[:, chain, i-1], c='xkcd:bluish', alpha=0.2)
                     axs[i].set_ylabel("{}".format(hparam_names[i-1]))
