@@ -68,7 +68,8 @@ def offset_subtract(rv, flags, offsets):
 
 
 def data_plot(time, rv, xlabel = "time [BJD]", ylabel = "RV [m/s]", legend = True, y_err = None, flags = None, offsets = None, save_folder = None, savefilename = None):
-    """_summary_
+    """
+    Function to plot the rv data against the times with any given offsets subtracted from the data.
 
     Parameters
     ----------
@@ -157,6 +158,7 @@ import scipy.interpolate as interp
 
 def GP_plot(time, rv, hparam, kernel_name, rv_err = None, model_list = None, model_param = None, flags = None, xpred = None, residuals=False, xlabel='Time [BJD]', ylabel='RV [m/s]', legend = True, save_folder=None, savefilename=None):
     """
+    Function to plot the rv data against the times with any offsets subtracted and the gp and models plotted on top
 
     Parameters
     ----------
@@ -408,6 +410,8 @@ def GP_plot(time, rv, hparam, kernel_name, rv_err = None, model_list = None, mod
 
 def mixing_plot(hparam_chain, kernel_name, model_param_chain, model_name, LogL_chain, mass = None, save_folder=None, savefilename="mixing"):
     '''
+    Function to plot the mixing chains from the mcmc for each parameter
+    
     Parameters
     ----------
     hparam_chain : array
@@ -497,6 +501,8 @@ def mixing_plot(hparam_chain, kernel_name, model_param_chain, model_name, LogL_c
 
 def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, masses = None, save_folder=None, savefilename="corner", errors=False):
     '''
+    Function to plot the posteriors of each parameter from the mcmc as corner plots
+    
     Parameters
     ----------
     hparam_chain : array
@@ -1031,7 +1037,7 @@ def keplerian_only_plot(time, rv, hparam, kernel_name, model_list, model_param, 
 
 def phase_plot(time, rv, hparam, kernel_name, model_list, model_param, rv_err = None, keplerian_number = 0, flags = None, xpred = None, residuals=False, xlabel='Time [BJD]', ylabel='RV [m/s]', legend = True, save_folder=None, savefilename=None):
     """
-
+    Function to plot the phase folded rv curve of the chosen keplerian model along with the data representing that model
 
     Parameters
     ----------
