@@ -206,9 +206,8 @@ class Cosine(Kernel):
         # Adding errors along the diagonal
         try:
             self.covmatrix += (errors**2) * np.identity(K.shape[0])
-        except  ValueError:     #if errors are not present or the array is non-square
+        except:     #if errors are not present or the array is non-square
             pass
-        
         return self.covmatrix
     
     
