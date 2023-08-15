@@ -23,7 +23,7 @@ import os
 # saving function
 
 
-def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, kernel = None, init_param = None, prior_list = [], fin_hparam_post = None, fin_param_post = None, logl_chain = None, masses = None, fin_param_values = None, fin_param_erru = None, fin_param_errd = None, flags = None, fin_to_skck = False, burnin = None):
+def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, kernel = None, init_param = None, prior_list = [], fin_hparam_post = None, fin_param_post = None, logl_chain = None, masses = None, fin_param_values = None, fin_param_erru = None, fin_param_errd = None, flags = None, Mstar = None, fin_to_skck = False, burnin = None):
     """
     Saves offset subtracted and combined RVs and times, rv_error, kernel name, model list, initial hyperparameters and parameters, initial LogL, priors, final hyperparameter and parameter posteriors, final LogL posterior, mass posteriors, final hyperparameter, parameter and mass values along with errors, final logL value
     
@@ -63,6 +63,8 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
         list of the final hyperparameter, parameter, and mass lower errors form the posteriors, defaults to None
     flags: array of floats, optional
         array of floats representing the offsets, defaults to None
+    Mstar: float, optional
+        mass of the host star in solar masses
     fin_to_skck: bool, optional
         if True, returns final keplerian parameters with Sk and Ck, if False returns final keplerian parameters with ecc and omega, defaults to False
     burnin: integer, optional
@@ -123,6 +125,11 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
         initial_cond_file.write(model_list.__str__())
         initial_cond_file.write("\nInitial Parameters:\n")
         initial_cond_file.write(init_param.__str__())
+    # if Mstar is given, save that aswell
+    if Mstar is not None:
+        initial_cond_file.write("\nHost Star Mass:\n")
+        initial_cond_file.write(Mstar.__str__())
+        initial_cond_file.write("Solar Masses")
         
         # generate the model to get the log likelihood
         model_y = get_model(model_list, time, init_param, to_ecc = False, flags = flags)    

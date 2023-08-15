@@ -25,6 +25,7 @@ import auxiliary as aux
 import matplotlib.ticker as plticker
 import GP_Likelihood as gp
 from MCMC_aux import get_model
+import Parameters as par
 
 poster=False
 
@@ -456,7 +457,6 @@ def mixing_plot(hparam_chain, kernel_name, model_param_chain, model_name, LogL_c
                     axs[i].plot(xs, hparam_chain[:, chain, i-1], c='xkcd:bluish', alpha=0.2)
                     axs[i].set_ylabel("{}".format(hparam_names[i-1]))
                 if i != 0 and i > len(hparam_chain[0, 0, :]):
-                    #print(model_param_chain[chain][i-1-len(hparam_chain[0])][:])
                     axs[i].plot(xs, model_param_chain[:, chain, i-1-len(hparam_chain[0, 0, :])], c='xkcd:bluish', alpha=0.2)
                     axs[i].set_ylabel("{}".format(model_param_names[i-1-len(hparam_chain[0, 0, :])]))
     else:
@@ -477,7 +477,6 @@ def mixing_plot(hparam_chain, kernel_name, model_param_chain, model_name, LogL_c
                     axs[i].plot(xs, hparam_chain[:, chain, i-1], c='xkcd:bluish', alpha=0.2)
                     axs[i].set_ylabel("{}".format(hparam_names[i-1]))
                 if i != 0 and i > len(hparam_chain[0, 0, :]) and i <= len(hparam_chain[0, 0, :])+len(model_param_chain[0, 0, :]):
-                    #print(model_param_chain[chain][i-1-len(hparam_chain[0])][:])
                     axs[i].plot(xs, model_param_chain[:, chain, i-1-len(hparam_chain[0, 0, :])], c='xkcd:bluish', alpha=0.2)
                     axs[i].set_ylabel("{}".format(model_param_names[i-1-len(hparam_chain[0, 0, :])]))
                 if i != 0 and i > len(hparam_chain[0, 0, :])+len(model_param_chain[0, 0, :]):
@@ -486,7 +485,7 @@ def mixing_plot(hparam_chain, kernel_name, model_param_chain, model_name, LogL_c
                         axs[i].set_ylabel("mass")
                     else:
                         axs[i].plot(xs, mass[:, chain, i-1-len(hparam_chain[0,0,:])-len(model_param_chain[0,0,:])], c='xkcd:bluish', alpha = 0.2)
-                        axs[i].set_ylabel(r"mass$_{}$".format(i-1-len(hparam_chain[0,0,:])-len(model_param_chain[0,0,:])))
+                        axs[i].set_ylabel(r"mass$_{}$".format(i-1-len(hparam_chain[0,0,:])-len(model_param_chain[0,0,:])))              
     
     if save_folder is not None:
         assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
@@ -1110,12 +1109,13 @@ def phase_plot(time, rv, hparam, kernel_name, model_list, model_param, rv_err = 
     # create an xpred array in order to make a smooth model
     phase_xpred = np.arange(-0.5, 0.5, 0.001)
     # phase of the keplerian has effectively been set to 1 by the phase folding, set it to 1 to run the model
-    model_param["P"].value = 1.
+    new_model_param = {"P":0, "K":model_param["K"], "ecc":model_param["ecc"], "omega":model_param["omega"], "t0":0}
+    new_model_param["P"] = par.parameter(1., 0., True)
     # similarly with t0
-    model_param["t0"].value = 0.
+    new_model_param["t0"] = par.parameter(0., 0., True)
     
     # generate the smooth model
-    smooth_model_y = get_model(model_list, phase_xpred, model_param, to_ecc = False)
+    smooth_model_y = get_model(model_list, phase_xpred, new_model_param, to_ecc = False)
     
     # put the new phase folded times in order and order the RVs, c_array, and residuals in the same order
     if residuals is False:
@@ -1158,8 +1158,8 @@ def phase_plot(time, rv, hparam, kernel_name, model_list, model_param, rv_err = 
     end_xpred = np.arange(0.5, 0.6, 0.001)
     start_xpred = np.arange(-0.6, -0.5, 0.001)
     # generate extended models for the start and the end
-    end_model = get_model(model_list, end_xpred, model_param, to_ecc = False)
-    start_model = get_model(model_list, start_xpred, model_param, to_ecc = False)
+    end_model = get_model(model_list, end_xpred, new_model_param, to_ecc = False)
+    start_model = get_model(model_list, start_xpred, new_model_param, to_ecc = False)
     
     if residuals is False:
 
