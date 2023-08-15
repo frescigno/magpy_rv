@@ -17,6 +17,8 @@ Version 18.07.2023
 
 import numpy as np
 import scipy as sc
+import abc
+ABC = abc.ABC
 
 
 
@@ -232,10 +234,29 @@ def defPriorList():
     """Function to return the list of all currently available PRIORS"""
     return PRIORS
     
+
+# parent prior
+
+class Prior(ABC):
+    '''
+    Parent class for all priors. All new priors should inherit from this class and follow its structure.
+    Each new prior will require a __init__() method to override the parent class. In the __init__ function, call the neccesary parameters.
+    '''
     
+    @abc.abstractproperty
+    def __repr__(self):
+        '''Prints message with name of the Prior and assigned parameters'''       
+        pass
+    
+    @abc.abstractmethod
+    def logprob(self, x):
+        '''computes the natural logarithm of the probability of x being the best fit'''
+        pass
+    
+       
 # Gaussian prior
 
-class Gaussian:
+class Gaussian(Prior):
     '''Gaussian prior computed as:
         
         -0.5 * ((x - mu) / sigma)**2 -0.5 * np.log(2*pi * sigma**2)
@@ -261,7 +282,8 @@ class Gaussian:
         self.mu = float(mu)
         self.sigma = float(sigma)
         
-        
+    
+    @property    
     def __repr__(self):
         '''
         Returns
@@ -292,7 +314,7 @@ class Gaussian:
 
 # Jeffrey Prior
 
-class Jeffrey:
+class Jeffrey(Prior):
     '''Jeffrey prior computed as:
         
         p(x) proportional to  1/x
@@ -325,6 +347,7 @@ class Jeffrey:
         assert self.minval < self.maxval, "Minimum value {} must be smaller than the maximum value {}".format(self.minval, self.maxval)
     
     
+    @property
     def __repr__(self):
         '''
         Returns
@@ -361,7 +384,7 @@ class Jeffrey:
 
 # Modified Jeffrey Prior
 
-class Modified_Jeffrey:
+class Modified_Jeffrey(Prior):
     ''' Modified Jeffrey prior computed as:
         
         p(x) proportional to  1/(x-x0)
@@ -398,6 +421,7 @@ class Modified_Jeffrey:
         
     
     
+    @property
     def __repr__(self):
         '''
         Returns
@@ -434,7 +458,7 @@ class Modified_Jeffrey:
 
 # Uniform Prior
 
-class Uniform:
+class Uniform(Prior):
     ''' Uniform prior
     
     Args:
@@ -462,6 +486,7 @@ class Uniform:
         assert self.maxval > self.minval, "Minimum value {} must be smaller than the maximum value {}".format(self.minval, self.maxval)
     
     
+    @property
     def __repr__(self):
         '''
         Returns

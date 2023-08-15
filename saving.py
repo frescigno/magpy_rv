@@ -23,7 +23,7 @@ import os
 # saving function
 
 
-def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, kernel = None, init_param = None, prior_list = [], fin_hparam_post = None, fin_param_post = None, logl_chain = None, masses = None, fin_param_values = None, fin_param_erru = None, fin_param_errd = None, flags = None, fin_to_skck = False):
+def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, kernel = None, init_param = None, prior_list = [], fin_hparam_post = None, fin_param_post = None, logl_chain = None, masses = None, fin_param_values = None, fin_param_erru = None, fin_param_errd = None, flags = None, fin_to_skck = False, burnin = None):
     """
     Saves offset subtracted and combined RVs and times, rv_error, kernel name, model list, initial hyperparameters and parameters, initial LogL, priors, final hyperparameter and parameter posteriors, final LogL posterior, mass posteriors, final hyperparameter, parameter and mass values along with errors, final logL value
     
@@ -65,14 +65,19 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
         array of floats representing the offsets, defaults to None
     fin_to_skck: bool, optional
         if True, returns final keplerian parameters with Sk and Ck, if False returns final keplerian parameters with ecc and omega, defaults to False
-
+    burnin: integer, optional
+        integer value to specify the length of the burn in, defaults to None for no burn in
     """
     
     # create new folder titled current run, at the moment the code will not run if the folder already exists
-    current = "current_run"
-    path = os.path.join(folder_name, current)
-    path = os.mkdir(path)
-    folder_name = folder_name+'/current_run/'
+    #current = "current_run"
+    #path = os.path.join(folder_name, current)
+    #path = os.mkdir(path)
+    #folder_name = folder_name+'/current_run/'
+    if os.path.exists(folder_name):
+        pass
+    else:
+        os.mkdir(folder_name)
     
     # create files for rv, time, and rv error
     rv_file = os.path.join(folder_name, "rv_data.txt")
@@ -151,19 +156,37 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
         hparams = aux.hparam_names(kernel)
         for N,i in enumerate(hparams):
             hparam_post = os.path.join(folder_name, "{}_posteriors.txt".format(i))
-            np.savetxt(hparam_post, fin_hparam_post[:,:,N])
+            if burnin is not None:
+                assert type(burnin) == int, "burnin should be an integer or None"
+                post_hparam = fin_hparam_post[:,:,N]
+                burn_hparam = post_hparam[burnin:, :]
+                np.savetxt(hparam_post, burn_hparam)
+            else:
+                np.savetxt(hparam_post, fin_hparam_post[:,:,N])
     
     # do the same with model parameters    
     if fin_param_post is not None:
         params = aux.model_param_names(model_list, SkCk = True, plotting = False)
         for N,i in enumerate(params):
             param_post = os.path.join(folder_name, "{}_posteriors.txt".format(i))
-            np.savetxt(param_post, fin_param_post[:,:,N])
+            if burnin is not None:
+                assert type(burnin) == int, "burnin should be an integer or None"
+                post_param = fin_param_post[:,:,N]
+                burn_param = post_param[burnin:, :]
+                np.savetxt(param_post, burn_param)
+            else:
+                np.savetxt(param_post, fin_param_post[:,:,N])
     
     # do the same with the logL chain
     if logl_chain is not None:
         logl_post = os.path.join(folder_name, "logL_posteriors.txt")
-        np.savetxt(logl_post, logl_chain[:,:,0])
+        if burnin is not None:
+            assert type(burnin) == int, "burnin should be an integer or None"
+            post_logl = logl_chain[:,:,0]
+            burn_logl = post_logl[burnin:, :]
+            np.savetxt(logl_post, burn_logl)
+        else:
+            np.savetxt(logl_post, logl_chain[:,:,0])
     
     # do the same with the masses
     if masses is not None:
@@ -178,7 +201,13 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
         
         for N,i in enumerate(mass_list):
             mass_post = os.path.join(folder_name, "{}_posteriors.txt".format(i))
-            np.savetxt(mass_post, masses[:,:,N])
+            if burnin is not None:
+                assert type(burnin) == int, "burnin should be an integer or None"
+                post_mass = masses[:,:,N]
+                burn_mass = post_mass[burnin:, :]
+                np.savetxt(mass_post, burn_mass)
+            else:
+                np.savetxt(mass_post, masses[:,:,N])
     
     # if final parameter values have been entered, start by getting a list of all the existing parameters, should match the length of the final parameter values list        
     if fin_param_values is not None:

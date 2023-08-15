@@ -5,6 +5,7 @@ Contains:
     Model List
     Model parameter creator function
     Combine data function
+    Parent model class
     No model class
     Offset model class
     Polynomial model class
@@ -17,6 +18,8 @@ Version 18.07.2023
 import numpy as np
 import scipy as sc
 import Parameters as par
+import abc
+ABC = abc.ABC
 
 
 # List of the models for possible planets or offsets
@@ -172,11 +175,41 @@ def combine_data(times, ys, y_errs):
 # Models
 
 
+##################################
+########## Parent Model ##########
+##################################
+
+
+class Model(ABC):
+    '''
+    Parent class for all models. All new models should inherit from this class and follow its structure.
+    Each new model will require a __init__() method to override the parent class. In the __init__ function, call the neccesary parameters.
+    '''
+    
+    @abc.abstractstaticmethod
+    def numb_param():
+        '''returns the number of model parameters'''
+        pass
+    
+    @abc.abstractstaticmethod
+    def params(model_num = None, plotting = True):
+        'returns the list of model parameters'
+        pass
+    
+    @abc.abstractmethod
+    def model(self):
+        '''computes the model, returning model_y'''
+        pass
+
+
+
+
 ##############################
 ########## No Model ##########
 ##############################
 
-class No_Model:
+
+class No_Model(Model):
     '''The subtracted model from the RV is null
     '''
     
@@ -189,6 +222,20 @@ class No_Model:
         '''
         
         self.y = y
+    
+    @staticmethod
+    def numb_param():
+        return 1
+    
+    @staticmethod
+    def params(model_num = None, plotting = True):
+        if model_num is None:
+            return ["no"]
+        else:
+            if plotting is True:
+                return [r"no$_{}$".format(model_num)]
+            else:
+                return ["no_{}".format(model_num)]
     
     def model(self):
         '''
@@ -206,7 +253,7 @@ class No_Model:
 ################################
 
 
-class Polynomial:
+class Polynomial(Model):
     '''The model of the rv data follows a polynomial up to the 3rd degree with equation
         a_3*time^3 + a_2*time^2 + a_1*time + a_0
     '''
@@ -251,6 +298,20 @@ class Polynomial:
                         raise KeyError("Offset Model requires 4 parameters")
                     else:
                         continue
+    
+    @staticmethod
+    def numb_param():
+        return 4
+    
+    @staticmethod
+    def params(model_num = None, plotting = True):
+        if model_num is None:
+            return ["a_0", "a_1", "a_2", "a_3"]
+        else:
+            if plotting is True:
+                return [r"a_0$_{}$".format(model_num), r"a_1$_{}$".format(model_num), r"a_2$_{}$".format(model_num), r"a_3$_{}$".format(model_num)]
+            else:
+                return ["a_0_{}".format(model_num), "a_1_{}".format(model_num), "a_2_{}".format(model_num), "a_3_{}".format(model_num)]
             
             
     def model(self):
@@ -269,7 +330,7 @@ class Polynomial:
 ############################
 
 
-class Offset:
+class Offset(Model):
     '''The subtracted model from RV is a constant offset chosen explicitlty
     '''
     
@@ -311,7 +372,20 @@ class Offset:
                         + "'offset'")
                     else:
                         continue
-        
+    
+    @staticmethod
+    def numb_param():
+        return 1    
+    
+    @staticmethod
+    def params(model_num = None, plotting = True):
+        if model_num is None:
+            return ["offset"]
+        else:
+            if plotting is True:
+                return [r"offset$_{}$".format(model_num)]
+            else:
+                return ["offset_{}".format(model_num)]
     
     def model(self):
         '''
@@ -340,7 +414,7 @@ class Offset:
 ###############################
 
 
-class Keplerian:
+class Keplerian(Model):
     '''The generalized Keplerian RV model (only use when dealing with RV observation
     of star with possible planet).
     If multiple planets are involved, the model parameters should be inputted as list (not fully implemented yet).
@@ -416,7 +490,30 @@ class Keplerian:
         print(message)
         return message
     
+    @staticmethod
+    def numb_param():
+        return 5
     
+    @staticmethod
+    def params(model_num = None, plotting = True, SkCk = False):
+        if model_num is None:
+            if SkCk is True:
+                return ["P", "K", "Ck", "Sk", "t0"]
+            if SkCk is False:
+                return ["P", "K", "ecc", "omega", "t0"]
+        if model_num is not None:
+            if SkCk is True:
+                if plotting is True:
+                    return [r"P$_{}$".format(model_num), r"K$_{}$".format(model_num), r"Ck$_{}$".format(model_num), r"Sk$_{}$".format(model_num), r"t0$_{}$".format(model_num)]
+                else:
+                    return ["P_{}".format(model_num), "K_{}".format(model_num), "Ck_{}".format(model_num), "Sk_{}".format(model_num), "t0_{}".format(model_num)]
+            if SkCk is False:
+                if plotting is True:
+                    return [r"P$_{}$".format(model_num), r"K$_{}$".format(model_num), r"ecc$_{}$".format(model_num), r"omega$_{}$".format(model_num), r"t0$_{}$".format(model_num)]
+                else:
+                    return ["P_{}".format(model_num), "K_{}".format(model_num), "ecc_{}".format(model_num), "omega_{}".format(model_num), "t0_{}".format(model_num)]
+                    
+                    
     def ecc_anomaly(self, M, ecc, max_itr=200):
         '''
         ----------

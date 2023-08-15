@@ -19,13 +19,13 @@ def numb_param_per_model(model_name):
     ''' Function to give the number of expected parameters per model
     '''
     if model_name.startswith("no") or model_name.startswith("No"):
-        model_param_number = 1
+        model_param_number = mod.No_Model.numb_param()
     if model_name.startswith("off") or model_name.startswith("Off"):
-        model_param_number = 1
+        model_param_number = mod.Offset.numb_param()
     if model_name.startswith("kep") or model_name.startswith("Kep"):
-        model_param_number = 5
+        model_param_number = mod.Keplerian.numb_param()
     if model_name.startswith("poly") or model_name.startswith("Poly"):
-        model_param_number = 4
+        model_param_number = mod.Polynomial.numb_param()
     return model_param_number
 
 

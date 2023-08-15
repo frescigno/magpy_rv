@@ -89,8 +89,13 @@ class Kernel(ABC):
     call the necessary hyperparamaters (generated with a dictionary).
     '''
     
-    @abc.abstractproperty
+    @abc.abstractstaticmethod
     def name(self):
+        pass
+    
+    @abc.abstractstaticmethod
+    def hparams():
+        '''returns the list of hyperparameter names'''
         pass
     
     @abc.abstractproperty
@@ -156,10 +161,14 @@ class Cosine(Kernel):
             raise KeyError("Cosine kernel requires 2 hyperparameters:" \
             + "'gp_amp', 'gp_per'")
         
-    @property    
-    def name(self):
+    @staticmethod  
+    def name():
         return "Cosine"
     
+    @staticmethod
+    def hparams():
+        return ['gp_amp', 'gp_per']
+            
     @property
     def __repr__(self):
         '''
@@ -263,9 +272,13 @@ class ExpSquared(Kernel):
             raise KeyError("ExpSquared kernel requires 2 hyperparameters:" \
             + "'gp_amp', 'gp_timescale'")
         
-    @property    
-    def name(self):
+    @staticmethod   
+    def name():
         return "ExpSquared"
+    
+    @staticmethod
+    def hparams():
+        return ['gp_amp', 'gp_timescale']
     
     @property
     def __repr__(self):
@@ -373,9 +386,13 @@ class ExpSinSquared(Kernel):
             raise KeyError("Periodic ExpSinSquared kernel requires 3 hyperparameters:" \
             + "'gp_amp', 'gp_timescale', 'gp_per'")
         
-    @property
-    def name(self):
+    @staticmethod
+    def name():
         return "ExpSinSquared"
+    
+    @staticmethod
+    def hparams():
+        return ['gp_amp', 'gp_timescale', 'gp_per']
     
     @property 
     def __repr__(self):
@@ -488,9 +505,13 @@ class QuasiPer(Kernel):
             raise KeyError("QuasiPeriodic Kernel requires 4 hyperparameters:" \
             + "'gp_per', 'gp_perlength', 'gp_explength', 'gp_amp'")
         
-    @property
-    def name(self):
+    @staticmethod
+    def name():
         return "QuasiPer"
+    
+    @staticmethod
+    def hparams():
+        return ['gp_per', 'gp_perlegth', 'gp_explength', 'gp_amp']
     
     @property 
     def __repr__(self):
@@ -609,9 +630,13 @@ class JitterQuasiPer(Kernel):
             raise KeyError("QuasiPeriodic Kernel requires 5 hyperparameters:" \
             + "'gp_per', 'gp_perlength', 'gp_explength', 'gp_amp', 'gp_jit'")
         
-    @property
-    def name(self):
+    @staticmethod
+    def name():
         return "JitterQuasiPer"
+    
+    @staticmethod
+    def hparams():
+        return ['gp_per', 'gp_perlegth', 'gp_explength', 'gp_amp', 'jitter']
     
     @property 
     def __repr__(self):
@@ -731,9 +756,13 @@ class Matern5(Kernel):
             raise KeyError("Matern 5/2 kernel requires 2 hyperparameters:" \
             + "'gp_amp', 'gp_timescale'")
         
-    @property
-    def name(self):
+    @staticmethod
+    def name():
         return "Matern5/2"
+    
+    @staticmethod
+    def hparams():
+        return ['gp_amp', 'gp_timescale']
     
     @property 
     def __repr__(self):
@@ -841,9 +870,13 @@ class Matern3(Kernel):
             raise KeyError("Matern 3/2 kernel requires 3 hyperparameters:" \
             + "'gp_amp', 'gp_timescale', 'gp_jit")
         
-    @property
-    def name(self):
+    @staticmethod
+    def name():
         return "Matern3/2"
+    
+    @staticmethod
+    def hparams():
+        return ['gp_amp', 'gp_timescale', 'gp_jit']
     
     @property 
     def __repr__(self):

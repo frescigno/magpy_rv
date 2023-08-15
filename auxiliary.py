@@ -12,6 +12,8 @@ Version: 25-01-2022
 """
 
 import numpy as np
+import Kernels as ker
+import Models as mod
 
 
 def printProgressBar (iteration, total, prefix = 'Progress: ', suffix = 'Complete', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
@@ -342,16 +344,16 @@ def model_param_names(model_list, SkCk=False, plotting = True):
     # If it's a single model
     if numb == 1:
         if model_list[0].startswith("Kep") or model_list[0].startswith("kep"):
-            param_names = ["P", "K", "Ck", "Sk", "t0"]
+            param_names = mod.Keplerian.params(plotting = plotting, SkCk = SkCk)
             
         if model_list[0].startswith("No_Model") or model_list[0].startswith("No") or model_list[0].startswith("no"):
-            param_names = ["no"]
+            param_names = mod.No_Model.params(plotting = plotting)
         
         if model_list[0].startswith("Off") or model_list[0].startswith("off"):
-            param_names = ["offset"]
+            param_names = mod.Offset.params(plotting = plotting)
         
         if model_list[0].startswith("Polynomial") or model_list[0].startswith("polynomial"):
-            param_names = ["polynomial"]
+            param_names = mod.Polynomial.params(plotting = plotting)
     else:
         # Check how many times each model is called
         n_kep = 0
@@ -362,38 +364,19 @@ def model_param_names(model_list, SkCk=False, plotting = True):
         for mod_name in model_list:
             param_names_mods = None
             if mod_name.startswith("Kep") or mod_name.startswith("kep"):
-                if SkCk:
-                    if plotting is True:
-                        param_names_mods = [r"P$_{}$".format(n_kep), r"K$_{}$".format(n_kep), r"Ck$_{}$".format(n_kep), r"Sk$_{}$".format(n_kep), r"t0$_{}$".format(n_kep)]
-                    else:
-                        param_names_mods = ["P_{}".format(n_kep), "K_{}".format(n_kep), "Ck_{}".format(n_kep), "Sk_{}".format(n_kep), "t0_{}".format(n_kep)]
-                    param_names.extend(param_names_mods) 
-                if not SkCk:
-                    if plotting is True:
-                        param_names_mods = [r"P$_{}$".format(n_kep), r"K$_{}$".format(n_kep), r"ecc$_{}$".format(n_kep), r"omega$_{}$".format(n_kep), r"t0$_{}$".format(n_kep)]
-                    else:
-                        param_names_mods = ["P_{}".format(n_kep), "K_{}".format(n_kep), "ecc_{}".format(n_kep), "omega_{}".format(n_kep), "t0_{}".format(n_kep)]
-                    param_names.extend(param_names_mods)
+                param_names_mods = mod.Keplerian.params(model_num = n_kep, plotting = plotting, SkCk = SkCk)
+                param_names.extend(param_names_mods)
                 n_kep += 1
             if mod_name.startswith("No_Model") or mod_name.startswith("No") or mod_name.startswith("no"):
-                if plotting is True:
-                    param_names_mods = [r"no$_{}$".format(n_no)]
-                else:
-                    param_names_mods = ["no_{}".format(n_no)]
+                param_names_mods = mod.No_Model.params(model_num = n_no, plotting = plotting)
                 param_names.extend(param_names_mods)
                 n_no += 1
             if mod_name.startswith("Off") or mod_name.startswith("off"):
-                if plotting is True:
-                    param_names_mods = [r"offset$_{}$".format(n_off)]
-                else:
-                    param_names_mods = ["offset_{}".format(n_off)]
+                param_names_mods = mod.Offset.params(model_num = n_off, plotting = plotting)
                 param_names.extend(param_names_mods)
                 n_off += 1
             if mod_name.startswith("Poly") or mod_name.startswith("poly"):
-                if plotting is True:
-                    param_names_mods = [r"polynomial$_{}$".format(n_poly)]
-                else:
-                    param_names_mods = ["polynomial_{}".format(n_poly)]
+                param_names_mods = mod.Polynomial.params(model_num = n_poly, plotting = plotting)
                 param_names.extend(param_names_mods)
                 n_poly += 1
     
@@ -415,19 +398,19 @@ def hparam_names(kernel_name):
         Name of hyperparameters
     """
     if kernel_name.startswith("Cos") or kernel_name.startswith("cos"):
-        hparam_names = ['gp_amp', 'gp_per']
+        hparam_names = ker.Cosine.hparams()
     if kernel_name.startswith("expsquare") or kernel_name.startswith("ExpSquare") or kernel_name.startswith("Expsquare") or kernel_name.startswith("expSquare"):
-        hparam_names = ['gp_amp', 'gp_timescale']
+        hparam_names = ker.ExpSquared.hparams()
     if kernel_name.startswith("ExpSin") or kernel_name.startswith("expsin") or kernel_name.startswith("expSin") or kernel_name.startswith("Expsin"):
-        hparam_names = ['gp_amp', 'gp_timescale', 'gp_per']
+        hparam_names = ker.ExpSinSquared.hparams()
     if kernel_name.startswith("Quas") or kernel_name.startswith("quas"):
-        hparam_names = ['gp_per', 'gp_perlegth', 'gp_explength', 'gp_amp']
+        hparam_names = ker.QuasiPer.hparams()
     if kernel_name.startswith("Jit") or kernel_name.startswith("jit"):
-        hparam_names = ['gp_per', 'gp_perlegth', 'gp_explength', 'gp_amp', 'jitter']
+        hparam_names = ker.JitterQuasiPer.hparams()
     if kernel_name.startswith("Matern5") or kernel_name.startswith("matern5"):
-        hparam_names = ['gp_amp', 'gp_timescale']
+        hparam_names = ker.Matern5.hparams()
     if kernel_name.startswith("Matern3") or kernel_name.startswith("matern3"):
-        hparam_names = ['gp_amp', 'gp_timescale', 'gp_jit']
+        hparam_names = ker.Matern3.hparams()
     
     return hparam_names
 
