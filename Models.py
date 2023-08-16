@@ -498,15 +498,15 @@ class Keplerian(Model):
     def params(model_num = None, plotting = True, SkCk = False):
         if model_num is None:
             if SkCk is True:
-                return ["P", "K", "Ck", "Sk", "t0"]
+                return ["P", "K", "Sk", "Ck", "t0"]
             if SkCk is False:
                 return ["P", "K", "ecc", "omega", "t0"]
         if model_num is not None:
             if SkCk is True:
                 if plotting is True:
-                    return [r"P$_{}$".format(model_num), r"K$_{}$".format(model_num), r"Ck$_{}$".format(model_num), r"Sk$_{}$".format(model_num), r"t0$_{}$".format(model_num)]
+                    return [r"P$_{}$".format(model_num), r"K$_{}$".format(model_num), r"Sk$_{}$".format(model_num), r"Ck$_{}$".format(model_num), r"t0$_{}$".format(model_num)]
                 else:
-                    return ["P_{}".format(model_num), "K_{}".format(model_num), "Ck_{}".format(model_num), "Sk_{}".format(model_num), "t0_{}".format(model_num)]
+                    return ["P_{}".format(model_num), "K_{}".format(model_num), "Sk_{}".format(model_num), "Ck_{}".format(model_num), "t0_{}".format(model_num)]
             if SkCk is False:
                 if plotting is True:
                     return [r"P$_{}$".format(model_num), r"K$_{}$".format(model_num), r"ecc$_{}$".format(model_num), r"omega$_{}$".format(model_num), r"t0$_{}$".format(model_num)]

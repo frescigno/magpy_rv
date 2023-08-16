@@ -110,6 +110,7 @@ class GPLikelihood:
         self.model_param_values = []
         for key in model_param.keys():
             self.model_param_values.append(model_param[key].value)
+        
     
     def __repr__(self):
         '''

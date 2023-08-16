@@ -129,6 +129,9 @@ def pri_create(param_name, prior, vals = None):
         for i in vals:
             assert type(i) == float or int, "vals must be a list or tuple of floats or ints"
     
+    PRIORS = defPriorList()
+    assert prior in PRIORS.keys(), 'prior not yet implemented. Pick from available priors: ' + str(PRIORS.keys())
+    
     if prior.startswith("Gauss") or prior.startswith("gauss"):
         prior = "Gaussian"
         if vals == None:

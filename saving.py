@@ -129,7 +129,7 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
     if Mstar is not None:
         initial_cond_file.write("\nHost Star Mass:\n")
         initial_cond_file.write(Mstar.__str__())
-        initial_cond_file.write("Solar Masses")
+        initial_cond_file.write(" Solar Masses")
         
         # generate the model to get the log likelihood
         model_y = get_model(model_list, time, init_param, to_ecc = False, flags = flags)    
@@ -139,17 +139,7 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
         # add the initial log likelihood to the file
         initial_cond_file.write("\nInitial LogL:\n")
         initial_cond_file.write(logL.__str__())
-        try:
-            # if a hyperparameter posterior chain has been entered, add the number of chains and iterations to the initial conditions file
-            num_chains = len(fin_hparam_post[0,:,0])
-            iterations = len(fin_hparam_post[:,0,0])-1
-            initial_cond_file.write("\nNumber of Chains:\n")
-            initial_cond_file.write(num_chains)
-            initial_cond_file.write("\nIterations:\n")
-            initial_cond_file.write(iterations)
-        except:
-            pass
-        initial_cond_file.close()
+    initial_cond_file.close()
     
     # create a prior file and save the prior list to the file
     prior_file = os.path.join(folder_name, "priors.txt")
@@ -268,8 +258,8 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
             for N,i in enumerate(param_list):
                 if i.startswith('ecc'):
                     # if we are on ecc in the list, this corresponds to ck in fin_param_values, pull that out along with the next value, sk
-                    ck = fin_param_values[N]
-                    sk = fin_param_values[N+1]
+                    sk = fin_param_values[N]
+                    ck = fin_param_values[N+1]
                     # run them through to_ecc to get ecc and omega
                     ecc, omega = aux.to_ecc(sk, ck)
                     # add ecc to the file
@@ -286,8 +276,8 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
                 try:
                     if i.startswith('ecc'):
                         # perform similar steps for errors
-                        ck_erru = fin_param_erru[N]
-                        sk_erru = fin_param_erru[N+1]
+                        sk_erru = fin_param_erru[N]
+                        ck_erru = fin_param_erru[N+1]
                         ecc_erru, omega_erru = aux.to_ecc(sk_erru, ck_erru)
                         fin_param_file.write("\n+")
                         ecc_erru = ecc_erru - ecc
@@ -304,8 +294,8 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
                     continue
                 try:
                     if i.startswith('ecc'):
-                        ck_errd = fin_param_errd[N]
-                        sk_errd = fin_param_errd[N+1]
+                        sk_errd = fin_param_errd[N]
+                        ck_errd = fin_param_errd[N+1]
                         ecc_errd, omega_errd = aux.to_ecc(sk_errd, ck_errd)
                         fin_param_file.write("\n-")
                         ecc_errd = ecc - ecc_errd
@@ -338,10 +328,10 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
                 # new param list can be made similarly but requires ck and sk to be converted into ecc and omega, done in a similar way to above
                 if i.startswith('ecc'):
                     # read the correct fin_param_values value by adding the length of hparams
-                    ck = fin_param_values[N + len(hparams)]
-                    sk = fin_param_values[N + len(hparams) +1]
-                    ck_err = fin_param_erru[N + len(hparams)]
-                    sk_err = fin_param_erru[N + len(hparams) +1]
+                    sk = fin_param_values[N + len(hparams)]
+                    ck = fin_param_values[N + len(hparams) +1]
+                    sk_err = fin_param_erru[N + len(hparams)]
+                    ck_err = fin_param_erru[N + len(hparams) +1]
                     # convert to ecc and omega
                     ecc, omega = aux.to_ecc(sk, ck)
                     ecc_err, omega_err = aux.to_ecc(sk_err, ck_err)
@@ -361,10 +351,20 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
             loglik = gp.GPLikelihood(time, rv, rv_err, new_hparam, kernel, model_y, new_param)
             logL = loglik.LogL(prior_list)
             # save the final logL to a final logL file
-            fin_logl_file = os.path.join(folder_name, "final_logL.txt")
+            fin_logl_file = os.path.join(folder_name, "final_info.txt")
             fin_logl_file = open(fin_logl_file, "w+")
             fin_logl_file.write("\nFinal LogL:\n")
             fin_logl_file.write(logL.__str__())
+            try:
+            # if a hyperparameter posterior chain has been entered, add the number of chains and iterations to the initial conditions file
+                num_chains = len(fin_hparam_post[0,:,0])
+                iterations = len(fin_hparam_post[:,0,0])-1
+                fin_logl_file.write("\nNumber of Chains:\n")
+                fin_logl_file.write(num_chains.__str__())
+                fin_logl_file.write("\nCompleted Iterations:\n")
+                fin_logl_file.write(iterations.__str__())
+            except:
+                pass
             fin_logl_file.close()
         except:
             pass

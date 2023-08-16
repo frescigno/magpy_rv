@@ -30,7 +30,7 @@ def numb_param_per_model(model_name):
 
 
 
-def get_model(model_name, time, model_par, to_ecc=True, flags=None):
+def get_model(model_name, time, model_par, to_ecc=False, flags=None):
     '''
     Parameters
     ----------

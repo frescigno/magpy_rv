@@ -109,7 +109,10 @@ class MCMC:
                     continue
             self.mass_list = np.zeros(shape = (1, self.numb_chains, len(par_list))) # mass array with rows = chains, columns = planets, dimensions = iterations
                     
-            
+        MODELS = modl.defModelList()
+        for model_name in model_name:
+            # check if the model is in the list of implemented models
+            assert model_name in MODELS.keys(), 'model not yet implemented. Pick from available models: ' + str(MODELS.keys())    
                     
         # Get initial guesses for hyperparameters and save them as 0
         # Save also errors for chains initial positions population
@@ -131,6 +134,9 @@ class MCMC:
             self.modpar_err.append(model_par0[key].error)
             self.modpar_vary.append(model_par0[key].vary)
             self.modpar_names.append(key)
+        
+        for i in range(len(prior_list)):
+            assert prior_list[i][0] in self.modpar_names or prior_list[i][0] in hparam0.keys(), "mispelt or incorrect parameter name: " + str(prior_list[i][0])
         # Extend self.modpar_names to inlcude a 2nd row with info on which model do they belong to and a 3rd with the name of the model
         which_model = []
         name = []
@@ -210,9 +216,9 @@ class MCMC:
             
             # Compute model y as sum of models
             if flags is None:
-                self.model_y0 = get_model(self.model_name, self.t, model_par_chain)
+                self.model_y0 = get_model(self.model_name, self.t, model_par_chain, to_ecc = True)
             if flags is not None:
-                self.model_y0 = get_model(self.model_name, self.t, model_par_chain, flags=self.flags)
+                self.model_y0 = get_model(self.model_name, self.t, model_par_chain, flags=self.flags, to_ecc = True)
             
             #for priors in ecc and omega need to go back momentarely
             
@@ -413,9 +419,9 @@ class MCMC:
             
             # Get new model
             if self.flags is None:
-                self.model_y = get_model(self.model_name, self.t, model_param, flags=None)
+                self.model_y = get_model(self.model_name, self.t, model_param, flags=None, to_ecc = True)
             if self.flags is not None:
-                self.model_y = get_model(self.model_name, self.t, model_param, flags=self.flags)
+                self.model_y = get_model(self.model_name, self.t, model_param, flags=self.flags, to_ecc = True)
             
             #For some reason after going through get model we get the ecc and omega instead???
             
