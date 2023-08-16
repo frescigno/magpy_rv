@@ -31,7 +31,7 @@ poster=False
 
 
 ###### allows me not to show plots
-matplotlib.use('Agg')
+# matplotlib.use('Agg')
 plt.rcParams.update({'font.size': 10})
 
 def offset_subtract(rv, flags, offsets):
