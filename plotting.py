@@ -15,14 +15,11 @@ Author: Bryce Dixon
 Version: 02.08.2023    
 """
 
-import matplotlib
-from matplotlib.colors import Normalize
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
 import numpy as np
-import scipy.interpolate
+import scipy.interpolate as interp
+
 import auxiliary as aux
-import matplotlib.ticker as plticker
 import GP_Likelihood as gp
 from MCMC_aux import get_model
 import Parameters as par
@@ -155,7 +152,6 @@ def data_plot(time, rv, xlabel = "time [BJD]", ylabel = "RV [m/s]", legend = Tru
 # gp plot funciton
 
 
-import scipy.interpolate as interp
 
 def GP_plot(time, rv, hparam, kernel_name, rv_err = None, model_list = None, model_param = None, flags = None, xpred = None, residuals=False, xlabel='Time [BJD]', ylabel='RV [m/s]', legend = True, save_folder=None, savefilename=None):
     """

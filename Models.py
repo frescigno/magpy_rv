@@ -14,10 +14,10 @@ Contains:
 Author: Bryce Dixon
 Version 18.07.2023
     '''
+    
+import Parameters as par
 
 import numpy as np
-import scipy as sc
-import Parameters as par
 import abc
 ABC = abc.ABC
 

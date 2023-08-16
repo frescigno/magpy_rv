@@ -11,9 +11,11 @@ Author: Bryce Dixon
 Version 21.07.2023
 '''
 
-import numpy as np
 import Models as mod
 import auxiliary as aux
+
+import numpy as np
+
 
 def numb_param_per_model(model_name):
     ''' Function to give the number of expected parameters per model

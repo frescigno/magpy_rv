@@ -10,15 +10,13 @@ Version 21.07.2023
 '''
 
 import numpy as np
-import scipy as sc
+import random
+import time
+
 import Parameters as par
-import Kernels as ker
 import Models as modl
 import GP_Likelihood as gp
-import random
-import math
 import auxiliary as aux
-import time
 import mass_calc as mc
 import MCMC_aux as mcmcx
 get_model = mcmcx.get_model

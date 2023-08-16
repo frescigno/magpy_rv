@@ -10,14 +10,14 @@ Version: 08.08.2023
 """
 
 import numpy as np
-import scipy as sc
+import os
+
 import Parameters as par
 import Models as mod
 import GP_Likelihood as gp
 from MCMC_aux import get_model
 from plotting import offset_subtract
 import auxiliary as aux
-import os
 
 
 # saving function

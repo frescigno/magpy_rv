@@ -8,14 +8,14 @@ Author: Bryce Dixon
 Version 19.07.2023
 '''
 
-import numpy as np
-import scipy as sc
 import Parameters as par
-from scipy.linalg import cho_factor, cho_solve
-import matplotlib.pyplot as plt
 import Kernels as ker
 import Models as mod
 from MCMC_aux import get_model 
+
+import numpy as np
+from scipy.linalg import cho_factor, cho_solve
+import matplotlib.pyplot as plt
 
 
 #######################################

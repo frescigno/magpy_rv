@@ -16,7 +16,6 @@ Version 18.07.2023
     '''
 
 import numpy as np
-import scipy as sc
 import abc
 ABC = abc.ABC
 
