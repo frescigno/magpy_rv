@@ -108,11 +108,7 @@ class MCMC:
                 except KeyError:
                     continue
             self.mass_list = np.zeros(shape = (1, self.numb_chains, len(par_list))) # mass array with rows = chains, columns = planets, dimensions = iterations
-                    
-        MODELS = modl.defModelList()
-        for model_name in model_name:
-            # check if the model is in the list of implemented models
-            assert model_name in MODELS.keys(), 'model not yet implemented. Pick from available models: ' + str(MODELS.keys())    
+                        
                     
         # Get initial guesses for hyperparameters and save them as 0
         # Save also errors for chains initial positions population

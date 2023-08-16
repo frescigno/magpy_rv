@@ -129,9 +129,6 @@ def pri_create(param_name, prior, vals = None):
         for i in vals:
             assert type(i) == float or int, "vals must be a list or tuple of floats or ints"
     
-    PRIORS = defPriorList()
-    assert prior in PRIORS.keys(), 'prior not yet implemented. Pick from available priors: ' + str(PRIORS.keys())
-    
     if prior.startswith("Gauss") or prior.startswith("gauss"):
         prior = "Gaussian"
         if vals == None:
@@ -165,7 +162,10 @@ def pri_create(param_name, prior, vals = None):
         assert len(vals) == 2, "Uniform priors require a list with 2 values, minval and maxval"
         prior_dict = dict(minval=vals[0], maxval=vals[1])
         prior_params = (param_name, prior, prior_dict)
-        assert vals[0] <= vals[1], 'Minval must be less than maxval.' 
+        assert vals[0] <= vals[1], 'Minval must be less than maxval.'
+    
+    PRIORS = defPriorList()
+    assert prior in PRIORS.keys(), 'prior not yet implemented. Pick from available priors: ' + str(PRIORS.keys()) 
             
     return prior_params
 

@@ -47,6 +47,7 @@ def get_model(model_name, time, model_par, to_ecc=False, flags=None):
         Radial velocity of the model
     '''
     
+    MODELS = mod.defModelList()
     
     model_y = np.zeros(len(time))
     i=0
@@ -56,11 +57,11 @@ def get_model(model_name, time, model_par, to_ecc=False, flags=None):
         parameters ={key: value for key, value in model_par.items() if (list(model_par).index(key) >= i and list(model_par).index(key) < i+numb_param_mod)}
         if name.startswith("no") or name.startswith("No"):
             model = mod.No_Model(time, parameters)
-        if name.startswith("off") or name.startswith("Off"):
+        elif name.startswith("off") or name.startswith("Off"):
             model = mod.Offset(flags, parameters)
-        if name.startswith("poly") or name.startswith("Poly"):
+        elif name.startswith("poly") or name.startswith("Poly"):
             model = mod.Polynomial(time, parameters)
-        if name.startswith("kep") or name.startswith("Kep"):
+        elif name.startswith("kep") or name.startswith("Kep"):
             if to_ecc:
                 if len(model_name) == 1:
                     parameters['ecc'].value, parameters['omega'].value = aux.to_ecc(parameters['ecc'].value, parameters['omega'].value)
@@ -68,6 +69,8 @@ def get_model(model_name, time, model_par, to_ecc=False, flags=None):
                     parameters['ecc_'+str(a)].value, parameters['omega_'+str(a)].value = aux.to_ecc(parameters['ecc_'+str(a)].value, parameters['omega_'+str(a)].value)
             model = mod.Keplerian(time, parameters)
             a +=1
+        else:
+            raise KeyError("model not yet implemented, please from currently implemented models: " + str(MODELS.keys()))
         model_y += model.model()
         i += numb_param_mod
         

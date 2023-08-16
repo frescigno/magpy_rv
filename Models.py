@@ -26,7 +26,7 @@ ABC = abc.ABC
 
 MODELS = {"No_Model": ['rvs'],
 "Offset": ['rvs', 'offset'],
-"Polinomyal":["a_0","a_1","a_2","a_3"],
+"Polynomial":["a_0","a_1","a_2","a_3"],
 "Keplerian": ['time', 'P', 'K', 'ecc', 'omega', 't0'],
 }
 
