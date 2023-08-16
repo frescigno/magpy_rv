@@ -166,8 +166,11 @@ class Cosine(Kernel):
         return "Cosine"
     
     @staticmethod
-    def hparams():
-        return ['gp_amp', 'gp_per']
+    def hparams(plotting = True):
+        if plotting is False:
+            return ['gp_amp', 'gp_per']
+        if plotting is True:
+            return [r'gp$_{amp}$', r'gp$_{per}$']
             
     @property
     def __repr__(self):
@@ -277,8 +280,11 @@ class ExpSquared(Kernel):
         return "ExpSquared"
     
     @staticmethod
-    def hparams():
-        return ['gp_amp', 'gp_timescale']
+    def hparams(plotting = True):
+        if plotting is False:
+            return ['gp_amp', 'gp_timescale']
+        if plotting is True:
+            return [r'gp$_{amp}$', r'gp$_{timescale}$']
     
     @property
     def __repr__(self):
@@ -391,8 +397,11 @@ class ExpSinSquared(Kernel):
         return "ExpSinSquared"
     
     @staticmethod
-    def hparams():
-        return ['gp_amp', 'gp_timescale', 'gp_per']
+    def hparams(plotting = True):
+        if plotting is False:
+            return ['gp_amp', 'gp_timescale', 'gp_per']
+        if plotting is True:
+            return [r'gp$_{amp}$', r'gp$_{timescale}$', r'gp$_{per}$']
     
     @property 
     def __repr__(self):
@@ -510,8 +519,11 @@ class QuasiPer(Kernel):
         return "QuasiPer"
     
     @staticmethod
-    def hparams():
-        return ['gp_per', 'gp_perlegth', 'gp_explength', 'gp_amp']
+    def hparams(plotting = True):
+        if plotting is False:
+            return ['gp_per', 'gp_perlength', 'gp_explength', 'gp_amp']
+        if plotting is True:
+            return [r'gp$_{per}$', r'gp$_{perlength}$', r'gp$_{explength}$', r'gp$_{amp}$']
     
     @property 
     def __repr__(self):
@@ -635,8 +647,11 @@ class JitterQuasiPer(Kernel):
         return "JitterQuasiPer"
     
     @staticmethod
-    def hparams():
-        return ['gp_per', 'gp_perlegth', 'gp_explength', 'gp_amp', 'jitter']
+    def hparams(plotting = True):
+        if plotting is False:
+            return ['gp_per', 'gp_perlegth', 'gp_explength', 'gp_amp', 'jit']
+        if plotting is True:
+            return [r'gp$_{per}$', r'gp$_{perlength}$', r'gp$_{explength}$', r'gp$_{amp}$', r'gp$_{jit}']
     
     @property 
     def __repr__(self):
@@ -761,8 +776,11 @@ class Matern5(Kernel):
         return "Matern5/2"
     
     @staticmethod
-    def hparams():
-        return ['gp_amp', 'gp_timescale']
+    def hparams(plotting = True):
+        if plotting is False:
+            return ['gp_amp', 'gp_timescale']
+        if plotting is True:
+            return [r'gp$_{amp}$', r'gp$_{timescale}$']
     
     @property 
     def __repr__(self):
@@ -877,6 +895,11 @@ class Matern3(Kernel):
     @staticmethod
     def hparams():
         return ['gp_amp', 'gp_timescale', 'gp_jit']
+    def hparams(plotting = True):
+        if plotting is False:
+            return ['gp_amp', 'gp_timescale', 'gp_jit']
+        if plotting is True:
+            return [r'gp$_{amp}$', r'gp$_{timescale}$', r'gp$_{jit}$']
     
     @property 
     def __repr__(self):

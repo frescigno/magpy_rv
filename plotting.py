@@ -106,7 +106,7 @@ def data_plot(time, rv, xlabel = "time [BJD]", ylabel = "RV [m/s]", legend = Tru
     
     # simple plot for no offsets
     if offsets is None and flags is None:
-        ax.errorbar(time, rv, yerr = y_err, fmt = '.', color = 'darkgreen')
+        ax.errorbar(time, rv, yerr = y_err, fmt = '.', color = 'darkgreen', label = 'Data')
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         if legend is True:

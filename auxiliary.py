@@ -383,7 +383,7 @@ def model_param_names(model_list, SkCk=False, plotting = True):
     return param_names
 
 
-def hparam_names(kernel_name):
+def hparam_names(kernel_name, plotting = True):
     """
     Function to get kernel hyperparameters names
 
@@ -398,19 +398,19 @@ def hparam_names(kernel_name):
         Name of hyperparameters
     """
     if kernel_name.startswith("Cos") or kernel_name.startswith("cos"):
-        hparam_names = ker.Cosine.hparams()
+        hparam_names = ker.Cosine.hparams(plotting)
     if kernel_name.startswith("expsquare") or kernel_name.startswith("ExpSquare") or kernel_name.startswith("Expsquare") or kernel_name.startswith("expSquare"):
-        hparam_names = ker.ExpSquared.hparams()
+        hparam_names = ker.ExpSquared.hparams(plotting)
     if kernel_name.startswith("ExpSin") or kernel_name.startswith("expsin") or kernel_name.startswith("expSin") or kernel_name.startswith("Expsin"):
-        hparam_names = ker.ExpSinSquared.hparams()
+        hparam_names = ker.ExpSinSquared.hparams(plotting)
     if kernel_name.startswith("Quas") or kernel_name.startswith("quas"):
-        hparam_names = ker.QuasiPer.hparams()
+        hparam_names = ker.QuasiPer.hparams(plotting)
     if kernel_name.startswith("Jit") or kernel_name.startswith("jit"):
-        hparam_names = ker.JitterQuasiPer.hparams()
+        hparam_names = ker.JitterQuasiPer.hparams(plotting)
     if kernel_name.startswith("Matern5") or kernel_name.startswith("matern5"):
-        hparam_names = ker.Matern5.hparams()
+        hparam_names = ker.Matern5.hparams(plotting)
     if kernel_name.startswith("Matern3") or kernel_name.startswith("matern3"):
-        hparam_names = ker.Matern3.hparams()
+        hparam_names = ker.Matern3.hparams(plotting)
     
     return hparam_names
 

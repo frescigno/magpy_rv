@@ -150,7 +150,7 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
 
     # if a hyperparameter posterior has been entered, save these to files based on hyperparameter as arrays with ncolumns = chains, and nrows = iterations
     if fin_hparam_post is not None:
-        hparams = aux.hparam_names(kernel)
+        hparams = aux.hparam_names(kernel, plotting = False)
         for N,i in enumerate(hparams):
             hparam_post = os.path.join(folder_name, "{}_posteriors.txt".format(i))
             if burnin is not None:
@@ -209,7 +209,7 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
     # if final parameter values have been entered, start by getting a list of all the existing parameters, should match the length of the final parameter values list        
     if fin_param_values is not None:
         try:
-            hparams = aux.hparam_names(kernel)
+            hparams = aux.hparam_names(kernel, plotting = False)
             # SkCk will acocunt for whether the user wants ecc and omega returned or Sk and Ck returned
             params = aux.model_param_names(model_list, SkCk = fin_to_skck, plotting = False)
             mass_list = []
@@ -315,7 +315,7 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
         # try to create a final logl value if we have the correct inputs
         try:
             # require a new hparam and param list from the fin_param_values
-            hparams_list = aux.hparam_names(kernel)
+            hparams_list = aux.hparam_names(kernel, plotting = False)
             params_list = aux.model_param_names(model_list, SkCk = False, plotting = False)
             new_hparam = par.par_create(kernel)
             for N,i in enumerate(hparams_list):
