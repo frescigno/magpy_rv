@@ -213,16 +213,17 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
             # SkCk will acocunt for whether the user wants ecc and omega returned or Sk and Ck returned
             params = aux.model_param_names(model_list, SkCk = fin_to_skck, plotting = False)
             mass_list = []
-            try:
-                init_param['P'].value
-                mass_list.append('mass')
-            except:
-                for i in range(len(model_list)):
-                    try:
-                        init_param['P_'+str(i)].value
-                        mass_list.append('mass'+str(i))
-                    except:
-                        continue
+            if len(fin_param_values) > (len(hparams)+len(params)):
+                try:
+                    init_param['P'].value
+                    mass_list.append('mass')
+                except:
+                    for i in range(len(model_list)):
+                        try:
+                            init_param['P_'+str(i)].value
+                            mass_list.append('mass'+str(i))
+                        except:
+                            continue
             # mass list will just be empty if there are no masses
             param_list = hparams + params + mass_list
         except:

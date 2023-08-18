@@ -649,9 +649,9 @@ class JitterQuasiPer(Kernel):
     @staticmethod
     def hparams(plotting = True):
         if plotting is False:
-            return ['gp_per', 'gp_perlegth', 'gp_explength', 'gp_amp', 'jit']
+            return ['gp_per', 'gp_perlegth', 'gp_explength', 'gp_amp', 'gp_jit']
         if plotting is True:
-            return [r'gp$_{per}$', r'gp$_{perlength}$', r'gp$_{explength}$', r'gp$_{amp}$', r'gp$_{jit}']
+            return [r'gp$_{per}$', r'gp$_{perlength}$', r'gp$_{explength}$', r'gp$_{amp}$', r'gp$_{jit}$']
     
     @property 
     def __repr__(self):
