@@ -26,7 +26,7 @@ ABC = abc.ABC
 
 MODELS = {"No_Model": ['rvs'],
 "Offset": ['rvs', 'offset'],
-"Polynomial":["a_0","a_1","a_2","a_3"],
+"Polynomial":["a0","a1","a2","a3"],
 "Keplerian": ['time', 'P', 'K', 'ecc', 'omega', 't0'],
 }
 
@@ -81,7 +81,7 @@ def mod_create(model):
             model_params = dict(offset='offset')
             
         if model[0].startswith("Poly") or model[0].startswith("poly"):
-            model_params = dict(a_0="a_0",a_1="a_1",a_2="a_2",a_3="a_3")
+            model_params = dict(a0="a0",a1="a1",a2="a2",a3="a3")
     else:
         # Check how many times each model is called
         n_kep = 0
@@ -100,7 +100,7 @@ def mod_create(model):
                 model_params.update({'offset_'+str(n_off):'offset'})
                 n_off += 1
             if mod_name.startswith("Poly") or mod_name.startswith("poly"):
-                model_params.update({'a_0_'+str(n_poly):'a_0','a_1_'+str(n_poly):'a_1','a_2_'+str(n_poly):'a_2','a_3_'+str(n_poly):'a_3'})
+                model_params.update({'a0_'+str(n_poly):'a0','a1_'+str(n_poly):'a1','a2_'+str(n_poly):'a2','a3_'+str(n_poly):'a3'})
                 n_poly += 1
                 
         
@@ -255,7 +255,7 @@ class No_Model(Model):
 
 class Polynomial(Model):
     '''The model of the rv data follows a polynomial up to the 3rd degree with equation
-        a_3*time^3 + a_2*time^2 + a_1*time + a_0
+        a3*time^3 + a2*time^2 + a1*time + a0
     '''
     
     def __init__(self, time, model_params):
@@ -265,7 +265,7 @@ class Polynomial(Model):
         time : array
             Time or x axis array
         model_params : dictionary of model parameters
-            containing a_0, a_1, a_2, a_3
+            containing a0, a1, a2, a3
         
         Raises
         ------
@@ -281,17 +281,17 @@ class Polynomial(Model):
         
         # Check if all hyperparameters are numbers
         try:
-            self.a_0 = self.model_params['a_0'].value
-            self.a_1 = self.model_params['a_1'].value
-            self.a_2 = self.model_params['a_2'].value
-            self.a_3 = self.model_params['a_3'].value
+            self.a0 = self.model_params['a0'].value
+            self.a1 = self.model_params['a1'].value
+            self.a2 = self.model_params['a2'].value
+            self.a3 = self.model_params['a3'].value
         except KeyError:
             for i in range(10):
                 try:
-                    self.a_0 = self.model_params['a_0_'+str(i)].value
-                    self.a_1 = self.model_params['a_1_'+str(i)].value
-                    self.a_2 = self.model_params['a_2_'+str(i)].value
-                    self.a_3 = self.model_params['a_3_'+str(i)].value
+                    self.a0 = self.model_params['a0_'+str(i)].value
+                    self.a1 = self.model_params['a1_'+str(i)].value
+                    self.a2 = self.model_params['a2_'+str(i)].value
+                    self.a3 = self.model_params['a3_'+str(i)].value
                     break
                 except KeyError:
                     if i == 10:
@@ -306,12 +306,12 @@ class Polynomial(Model):
     @staticmethod
     def params(model_num = None, plotting = True):
         if model_num is None:
-            return ["a_0", "a_1", "a_2", "a_3"]
+            return ["a0", "a1", "a2", "a3"]
         else:
             if plotting is True:
-                return [r"a_0$_{}$".format(model_num), r"a_1$_{}$".format(model_num), r"a_2$_{}$".format(model_num), r"a_3$_{}$".format(model_num)]
+                return [r"a0$_{}$".format(model_num), r"a1$_{}$".format(model_num), r"a2$_{}$".format(model_num), r"a3$_{}$".format(model_num)]
             else:
-                return ["a_0_{}".format(model_num), "a_1_{}".format(model_num), "a_2_{}".format(model_num), "a_3_{}".format(model_num)]
+                return ["a0_{}".format(model_num), "a1_{}".format(model_num), "a2_{}".format(model_num), "a3_{}".format(model_num)]
             
             
     def model(self):
@@ -321,7 +321,7 @@ class Polynomial(Model):
         model_y : array
             Model y to subtract from the observations
         '''
-        model_y = self.a_0 + self.a_1*self.time + self.a_2*self.time**2 + self.a_3*self.time**3
+        model_y = self.a0 + self.a1*self.time + self.a2*self.time**2 + self.a3*self.time**3
         return model_y
 
 

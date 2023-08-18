@@ -198,7 +198,6 @@ def GP_plot(time, rv, hparam, kernel_name, rv_err = None, model_list = None, mod
     # generate a predicted x array for the smooth models if none is given
     if xpred is None:
         xpred = np.arange(time.min()-1, time.max()+1, 0.1)
-    print(len(xpred))
     
     if model_list is None and model_param is None:
         # if no model is in use there should be no flags and residuals
