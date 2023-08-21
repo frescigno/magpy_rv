@@ -11,6 +11,7 @@ Version: 08.08.2023
 
 import numpy as np
 import os
+import pandas as pd
 
 import Parameters as par
 import Models as mod
@@ -72,10 +73,6 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
     """
     
     # create new folder titled current run, at the moment the code will not run if the folder already exists
-    #current = "current_run"
-    #path = os.path.join(folder_name, current)
-    #path = os.mkdir(path)
-    #folder_name = folder_name+'/current_run/'
     if os.path.exists(folder_name):
         pass
     else:
@@ -221,7 +218,7 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
                     for i in range(len(model_list)):
                         try:
                             init_param['P_'+str(i)].value
-                            mass_list.append('mass'+str(i))
+                            mass_list.append('mass_'+str(i))
                         except:
                             continue
             # mass list will just be empty if there are no masses
@@ -233,10 +230,16 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
         # create the final parameter file
         fin_param_file = os.path.join(folder_name, "final_parameter_values.txt")
         fin_param_file = open(fin_param_file, "w+")
+        fin_param_table = os.path.join(folder_name, "final_parameter_table.txt")
+        fin_param_table = open(fin_param_table, "w+")
+        value_list = []
+        erru_list = []
+        errd_list = []
         
         # if the user wants to return Sk and Ck, read the values as they are form the fin_param_values list, naming the files after the parameter in param_list
         if fin_to_skck is True:
             for N,i in enumerate(param_list):
+                value_list.append(fin_param_values[N])
                 fin_param_file.write("\n{}:\n".format(i))
                 fin_param_file.write(fin_param_values[N].__str__())
                 try:
@@ -244,12 +247,14 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
                     fin_param_file.write("\n+")
                     # noting the errors given in fin_param_err and fin_param_errd do not have the value subtracted from them so this must be done
                     erru = fin_param_erru[N] - fin_param_values[N]
+                    erru_list.append(erru)
                     fin_param_file.write(erru.__str__())
                 except:
                     continue
                 try:
-                    fin_param_file.write("\n-")
-                    errd = fin_param_values[N] - fin_param_errd[N]
+                    fin_param_file.write("\n")
+                    errd = fin_param_errd[N] - fin_param_values[N]
+                    errd_list.append(errd)
                     fin_param_file.write(errd.__str__())
                 except:
                     continue
@@ -264,14 +269,17 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
                     # run them through to_ecc to get ecc and omega
                     ecc, omega = aux.to_ecc(sk, ck)
                     # add ecc to the file
+                    value_list.append(ecc)
                     fin_param_file.write("\n{}:\n".format(i))
                     fin_param_file.write(ecc.__str__())
                 elif i.startswith('omega'):
                     # omega is checked next so can just be added to the file
+                    value_list.append(omega)
                     fin_param_file.write("\n{}:\n".format(i))
                     fin_param_file.write(omega.__str__())
                 else:
                     # the rest added as normal
+                    value_list.append(fin_param_values[N])
                     fin_param_file.write("\n{}:\n".format(i))
                     fin_param_file.write(fin_param_values[N].__str__())
                 try:
@@ -282,14 +290,17 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
                         ecc_erru, omega_erru = aux.to_ecc(sk_erru, ck_erru)
                         fin_param_file.write("\n+")
                         ecc_erru = ecc_erru - ecc
+                        erru_list.append(ecc_erru)
                         fin_param_file.write(ecc_erru.__str__())
                     elif i.startswith('omega'):
                         fin_param_file.write("\n+")
                         omega_erru = omega_erru - omega
+                        erru_list.append(omega_erru)
                         fin_param_file.write(omega_erru.__str__())
                     else:
                         fin_param_file.write("\n+")
                         erru = fin_param_erru[N] - fin_param_values[N]
+                        erru_list.append(erru)
                         fin_param_file.write(erru.__str__())
                 except:
                     continue
@@ -298,21 +309,27 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
                         sk_errd = fin_param_errd[N]
                         ck_errd = fin_param_errd[N+1]
                         ecc_errd, omega_errd = aux.to_ecc(sk_errd, ck_errd)
-                        fin_param_file.write("\n-")
-                        ecc_errd = ecc - ecc_errd
+                        fin_param_file.write("\n")
+                        ecc_errd = ecc_errd - ecc
+                        errd_list.append(ecc_errd)
                         fin_param_file.write(ecc_errd.__str__())
                     elif i.startswith('omega'):
-                        fin_param_file.write("\n-")
-                        omega_errd = omega - omega_errd
+                        fin_param_file.write("\n")
+                        omega_errd = omega_errd - omega
+                        errd_list.append(omega_errd)
                         fin_param_file.write(omega_errd.__str__())
                     else:
-                        fin_param_file.write("\n-")
-                        errd = fin_param_values[N] - fin_param_errd[N]
+                        fin_param_file.write("\n")
+                        errd = fin_param_errd[N] - fin_param_values[N]
+                        errd_list.append(errd)
                         fin_param_file.write(errd.__str__())
                 except:
                     continue
         fin_param_file.close()
-        
+        value_list = [ '%.3f' % elem for elem in value_list ]
+        erru_list = [ '%.3f' % elem for elem in erru_list ]
+        errd_list = [ '%.3f' % elem for elem in errd_list ]
+            
         # try to create a final logl value if we have the correct inputs
         try:
             # require a new hparam and param list from the fin_param_values
@@ -369,6 +386,52 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
             fin_logl_file.close()
         except:
             pass
+        
+        try:
+            hparams = aux.hparam_names(kernel, plotting = True)
+            # SkCk will acocunt for whether the user wants ecc and omega returned or Sk and Ck returned
+            params = aux.model_param_names(model_list, SkCk = fin_to_skck, plotting = True)
+            mass_list = []
+            if len(fin_param_values) > (len(hparams)+len(params)):
+                try:
+                    init_param['P'].value
+                    mass_list.append('mass')
+                except:
+                    for i in range(len(model_list)):
+                        try:
+                            init_param['P_'+str(i)].value
+                            mass_list.append('mass_'+str(i))
+                        except:
+                            continue
+            # mass list will just be empty if there are no masses
+            param_list = hparams + params + mass_list
+        except:
+            # if there is no model the list will just be hyperparameters
+            param_list = hparams
+            
+        try:
+            # build the latex tabel using the plot names
+            logL = "%.3f" % logL
+            param_list = param_list + ['Final LogL', 'Num Iterations', 'Num Chains']
+            value_list = value_list + [logL, iterations, num_chains]
+            erru_list = erru_list + [0,0,0]
+            errd_list = errd_list + [0,0,0]
+            param_tab = np.array([errd_list, erru_list, value_list, param_list])
+            param_tab = np.rot90(param_tab, 1, axes = (1,0))
+            param_tab = pd.DataFrame(param_tab)
+            param_tab = param_tab.to_latex(index = False, header = ['Parameter', 'Value', 'Error Up', 'Error Down'])
+            fin_param_table.write(param_tab.__str__())
+            fin_param_table.close()
+        except:
+            try:
+                param_tab = np.array([errd_list, erru_list, value_list, param_list])
+                param_tab = np.rot90(param_tab, 1, axes = (1,0))
+                param_tab = pd.DataFrame(param_tab)
+                param_tab = param_tab.to_latex(index = False, header = ['Parameter', 'Value', 'Error Up', 'Error Down'])
+                fin_param_table.write(param_tab.__str__())
+                fin_param_table.close()
+            except:
+                pass
     
         
     

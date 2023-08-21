@@ -324,7 +324,9 @@ def model_param_names(model_list, SkCk=False, plotting = True):
         Name of the model, or list of names of the models
     SkCk : boolean, optional
         If True, return the names of the Sk and Ck parameters. Default is False
-
+    plotting : bool, optional
+        If True, return names in format for plots, if False, return names in standard format
+        
     Returns
     -------
     param_names : list of strings
@@ -392,7 +394,9 @@ def hparam_names(kernel_name, plotting = True):
     ----------
     kernel_name : string
         Name of the kernel
-
+    plotting : bool, optional
+        If True, return names in format for plots, if False, return names in standard format
+        
     Returns
     -------
     hparam_names : list of strings

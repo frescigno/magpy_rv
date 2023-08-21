@@ -449,8 +449,7 @@ class MCMC:
         for chain in range(self.numb_chains):
             # Compute the difference between the current and the previous likelihood (include affine invariant normalisation)
             
-            diff_logL_z = self.logL[0][chain][0] - self.logL0[0][chain][0] + self.logz[chain] * (self.numb_param - 1)
-            
+            diff_logL_z = self.logL[0, chain, 0] - self.logL0[0, chain, 0] #+ self.logz[chain] * (self.numb_param - 1)
             hp = self.hp
             hp0 = self.hp0
             modpar = self.modpar
@@ -490,7 +489,6 @@ class MCMC:
                     self.acceptance_chain[0,chain,0] = False
                     self.mass_decision[0, chain,] = self.mass0_list[0, chain,]
             
-            
     
             
 
@@ -501,7 +499,7 @@ class MCMC:
         self.accepted = np.concatenate((self.accepted, self.acceptance_chain)) # nrows = chains, ndimensions = iterations
         self.hparameter_list = np.concatenate((self.hparameter_list, hp_decision)) # nrows = chains, ncolumns = parameters, ndimensions = iterations
         self.model_parameter_list = np.concatenate((self.model_parameter_list, modpar_decision)) # nrows = chains, ncolumns = parameters, ndimensions = iterations
-        
+        logL_decision, hp_decision, modpar_decision = None, None, None        
         
 
     
@@ -523,7 +521,7 @@ class MCMC:
         
         # Set the zero values for nex step
         for chain in range(self.numb_chains):
-            if self.acceptance_chain[0, chain, 0] is True:
+            if self.acceptance_chain[0, chain, 0] == True:
                 # if the chain was accepted, set the new initial value to the accepted one
                 self.logL0[0, chain, 0] = self.logL[0, chain, 0]
                 self.hp0[0, chain,] = self.hp[0, chain,]
@@ -564,7 +562,7 @@ class MCMC:
                 intra_chain_vars = []
                 for chain in range(J):
                     # Calculate chain mean
-                    param_chain = self.hparameter_list[burn_in, chain, hyper_param]
+                    param_chain = self.hparameter_list[burn_in:, chain, hyper_param]
 
                     chain_means.append(np.nanmean(param_chain))
                     intra_chain_var = np.nanvar(param_chain, ddof=1)
@@ -595,7 +593,7 @@ class MCMC:
                 continue
             for chain in range(J):
                 # Calculate chain mean
-                param_chain = self.model_parameter_list[burn_in, chain, param]
+                param_chain = self.model_parameter_list[burn_in:, chain, param]
 
                 chain_means.append(np.nanmean(param_chain))
                 intra_chain_var = np.nanvar(param_chain, ddof=1)
