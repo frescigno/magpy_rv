@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "MAGPy_RV"
+name = "magpy_rv"
 version = "0.0.1"
 authors = [
   {name="Federica Rescigno", email="fr307@exeter.ac.uk" },
