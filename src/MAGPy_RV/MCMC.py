@@ -4,6 +4,10 @@ MCMC code for the gaussian model
 Contains:
     MCMC class
     run_mcmc function
+    initial_pos_creator
+        generates initial conditions for multiple chains in the mcmc
+    star_cross
+        check that the planet orbit is larger than the radius of the star
 
 Author: Bryce Dixon
 Version 21.07.2023
@@ -17,7 +21,6 @@ import src.MAGPy_RV.Parameters as par
 import src.MAGPy_RV.Models as modl
 import src.MAGPy_RV.GP_Likelihood as gp
 import src.MAGPy_RV.auxiliary as aux
-import src.MAGPy_RV.mass_calc as mc
 import src.MAGPy_RV.MCMC_aux as mcmcx
 get_model = mcmcx.get_model
 numb_param_per_model = mcmcx.numb_param_per_model
@@ -170,8 +173,8 @@ class MCMC:
         
         
         # Populate the positions based on those values for the starting point of all the chains
-        self.hp0 = aux.initial_pos_creator(self.single_hp0,self.hp_err, self.numb_chains)
-        self.modpar0 = aux.initial_pos_creator(self.single_modpar0, self.modpar_err, self.numb_chains)
+        self.hp0 = mcmcx.initial_pos_creator(self.single_hp0,self.hp_err, self.numb_chains)
+        self.modpar0 = mcmcx.initial_pos_creator(self.single_modpar0, self.modpar_err, self.numb_chains)
         
         # Append these first guesses (and their chains) to the storing arrays (check for right shape)
         self.hparameter_list[0] = self.hp0 # set first dimension in hparameter array to initial guesses
@@ -199,11 +202,11 @@ class MCMC:
             
             # try for one keplerian model, if there is not then loop through the number of columns in the initial mass list    
             try:
-                mass_chain = mc.mass_calc(model_par_chain["P"].value, model_par_chain["K"].value, model_par_chain["omega"].value, model_par_chain["ecc"].value, self.Mstar)
+                mass_chain = aux.mass_calc(model_par_chain["P"].value, model_par_chain["K"].value, model_par_chain["omega"].value, model_par_chain["ecc"].value, self.Mstar)
                 self.mass0_list[0, chain, 0] = mass_chain
             except KeyError:
                 for i in range(len(self.mass0_list[0,0,])):
-                    mass_chain = mc.mass_calc(model_par_chain["P_"+str(i)].value, model_par_chain["K_"+str(i)].value, model_par_chain["omega_"+str(i)].value, model_par_chain["ecc_"+str(i)].value, self.Mstar)
+                    mass_chain = aux.mass_calc(model_par_chain["P_"+str(i)].value, model_par_chain["K_"+str(i)].value, model_par_chain["omega_"+str(i)].value, model_par_chain["ecc_"+str(i)].value, self.Mstar)
                     self.mass0_list[0, chain, i] = mass_chain
                 
             
@@ -403,11 +406,11 @@ class MCMC:
             
             # same method as the previous mass calculation
             try:
-                mass_chain = mc.mass_calc(model_param["P"].value, model_param["K"].value, model_param["omega"].value, model_param["ecc"].value, self.Mstar)
+                mass_chain = aux.mass_calc(model_param["P"].value, model_param["K"].value, model_param["omega"].value, model_param["ecc"].value, self.Mstar)
                 self.mass[0, chain, 0] = mass_chain
             except KeyError:
                 for i in range(len(self.mass[0,0,])):
-                    mass_chain = mc.mass_calc(model_param["P_"+str(i)].value, model_param["K_"+str(i)].value, model_param["omega_"+str(i)].value, model_param["ecc_"+str(i)].value, self.Mstar)
+                    mass_chain = aux.mass_calc(model_param["P_"+str(i)].value, model_param["K_"+str(i)].value, model_param["omega_"+str(i)].value, model_param["ecc_"+str(i)].value, self.Mstar)
                     self.mass[0, chain, i] = mass_chain
             
             

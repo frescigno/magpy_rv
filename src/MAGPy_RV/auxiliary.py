@@ -1,14 +1,38 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Set of auxiliary functions for the GP_solar and MCMC codes.
 
 Contains:
     printProgressBar
-    Creates the progress bar for the MCMC iterations
+        Creates the progress bar for the MCMC iterations
+    
+    transit_to_periastron
+        transforms from transit time to periastron time
+    periastron_to_transit
+        transforms from periastron time to transit time
+    
+    to_SkCk
+        transforms eccentricity and omega into Sk and Ck (as defined in Rescigno et al. 2023)
+    to_ecc
+        transforms Sk and Ck to eccentricity and omega
+    
+    mass_calc
+        computes masses from RV information
+    
+    transpose
+        transposes list
+    
+    model_param_names
+        outputs the name of the parameters in the chosen models
+    hparam_names
+        outputs the name of the parameters in the chosen kernel
+    
+    phasefold
+        phasefolds data
+    
+    
 
 Author: Federica Rescigno
-Version: 25-01-2022
+Last Updated: 22-08-2023
 """
 
 import numpy as np
@@ -46,7 +70,6 @@ def printProgressBar (iteration, total, prefix = 'Progress: ', suffix = 'Complet
     # Print New Line on Complete
     if iteration == total: 
         print()
-
 
 
 
@@ -104,41 +127,7 @@ def periastron_to_transit(t_0, P, ecc, omega):
     t_tr = t_0 + (P/(2*np.pi) * (E_tr - ecc*np.sin(E_tr)))
     
     return t_tr
-
-
-
-def star_cross(Sk, Ck, Rstar, P, Mstar):
-    '''
-    Parameters
-    ----------
-    Sk : float
-        Sk value from MCMC
-    Ck : float
-        Ck value from MCMC
-    Rstar : float
-        Radius of the host star, in Solar Radii
-    P : float
-        Period of planet, in days
-    Mstar : float
-        Mass of the star, in Solar Masses
-
-    Returns
-    -------
-    bool
-        If True, the semi-major orbit axes does never fall into the star
-        If False, the orbit falls into the star and the step should be dismissed
-
-    '''
-    ecc_pl = Sk**2 + Ck**2
-    Rsun = 6.95508e8    # in meters 
-    AU = 149597871e3    # in meters
-    ratio = (Rstar*Rsun/AU)/(((P/365.23)**2) * Mstar)**(1/3)
-    
-    if ecc_pl < 1 - ratio:
-        return True
-    if ecc_pl >= 1 - ratio:
-        return False
-    
+   
     
 
 
@@ -187,7 +176,30 @@ def to_SkCk(ecc, omega, ecc_err=None, omega_err=None):
 
 
 def to_ecc(Sk, Ck, errSk=None, errCk=None):
+    '''
     
+    Parameters
+    ----------
+    Sk : float
+        sqr(e)sin(omega)
+    Ck : float
+        sqr()cos(omega)
+    errSk : float, optional
+        error on Sk. Default None
+    errCk : float, optional
+        error on Ck. Default None
+    
+    Returns
+    -------
+    ecc : float
+        Eccentricity
+    omega : float, radians
+        Angle of periastron
+    ecc_err : float, optional
+        Error on the eccentricity
+    omega_err : float, optional
+        Error on angle of periastron
+    '''
     ecc = Sk**2 + Ck**2
     if ecc == 0.:
         omega = np.pi/2
@@ -202,61 +214,6 @@ def to_ecc(Sk, Ck, errSk=None, errCk=None):
         return ecc, omega, errecc, erromega
     
     return ecc, omega
-
-
-
-
-
-def initial_pos_creator(param, param_err, numb_chains, allow_neg = False, param_names=None):
-    '''
-
-    Parameters
-    ----------
-    param : list, floats
-        List of the initial guess parameters
-    param_err : list, floats
-        List of the errors on the initial guess parameters
-    numb_chains : int
-        Number of chains
-    allow_neg : boolean
-        Allow negative starting values. Default is False
-    Returns
-    -------
-    chains_param : 2D list, floats
-        2D array of
-
-    '''
-    
-    chains_param = np.zeros(shape = (1, numb_chains, len(param)))
-    # For the first chain, use the guesses themselves
-    chains_param[0,0,] = param
-    
-    # For the rest create them by multipling a random number between -1 and 1
-    for l in range(numb_chains-1):
-        pos = param + param_err * np.random.uniform(-1.,1.,(1,len(param)))
-        # Fix double parenthesis
-        #print(pos)
-        #pos.tolist()
-        if not allow_neg:
-            while np.min(pos) < 0:
-                if param_names is None:
-                    pos = param + param_err * np.random.uniform(-1.,1.,(1,len(param)))
-                elif param_names is not None:
-                    #print("in")
-                    for i in range(len(param_names)):
-                        if param_names[i].startswith("ecc") or param_names[i].startswith("omega"):
-                            #print("ecc or omega")
-                            pass
-                        else:
-                            while pos[0][i] < 0:
-                                pos[0][i] = param[i] + param_err[i] * np.random.uniform(-1.,1.,(1,len(param[i])))
-                                #print("pos", pos)
-        chains_param[0,l+1,] = pos[0]
-    
-    # chains_param should have on the horizontal the parameter values for each chain
-    # on the vertical the number of chains
-    return chains_param
-
 
 
 
@@ -292,11 +249,11 @@ def mass_calc(model_param, Mstar, earth_mass = False):
 
 
 
-def transpose(arr):
+def transpose(lst):
     '''
     Parameters
     ----------
-    arr : list
+    lst : list
         List you want to transpose
 
     Returns
@@ -305,7 +262,7 @@ def transpose(arr):
         Transposed list
 
     '''
-    arr2 = np.array(arr)
+    arr2 = np.array(lst)
     trans = arr2.T
     trans2 = trans.tolist()
     

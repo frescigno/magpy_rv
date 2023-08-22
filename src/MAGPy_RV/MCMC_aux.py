@@ -80,6 +80,95 @@ def get_model(model_name, time, model_par, to_ecc=False, flags=None):
     return model_y
 
 
+
+def initial_pos_creator(param, param_err, numb_chains, allow_neg = False, param_names=None):
+    '''
+
+    Parameters
+    ----------
+    param : list, floats
+        List of the initial guess parameters
+    param_err : list, floats
+        List of the errors on the initial guess parameters
+    numb_chains : int
+        Number of chains
+    allow_neg : boolean
+        Allow negative starting values. Default is False
+    Returns
+    -------
+    chains_param : 2D list, floats
+        2D array of
+
+    '''
+    
+    chains_param = np.zeros(shape = (1, numb_chains, len(param)))
+    # For the first chain, use the guesses themselves
+    chains_param[0,0,] = param
+    
+    # For the rest create them by multipling a random number between -1 and 1
+    for l in range(numb_chains-1):
+        pos = param + param_err * np.random.uniform(-1.,1.,(1,len(param)))
+        # Fix double parenthesis
+        #print(pos)
+        #pos.tolist()
+        if not allow_neg:
+            while np.min(pos) < 0:
+                if param_names is None:
+                    pos = param + param_err * np.random.uniform(-1.,1.,(1,len(param)))
+                elif param_names is not None:
+                    #print("in")
+                    for i in range(len(param_names)):
+                        if param_names[i].startswith("ecc") or param_names[i].startswith("omega"):
+                            #print("ecc or omega")
+                            pass
+                        else:
+                            while pos[0][i] < 0:
+                                pos[0][i] = param[i] + param_err[i] * np.random.uniform(-1.,1.,(1,len(param[i])))
+                                #print("pos", pos)
+        chains_param[0,l+1,] = pos[0]
+    
+    # chains_param should have on the horizontal the parameter values for each chain
+    # on the vertical the number of chains
+    return chains_param
+
+
+
+
+def star_cross(Sk, Ck, Rstar, P, Mstar):
+    '''
+    Parameters
+    ----------
+    Sk : float
+        Sk value from MCMC
+    Ck : float
+        Ck value from MCMC
+    Rstar : float
+        Radius of the host star, in Solar Radii
+    P : float
+        Period of planet, in days
+    Mstar : float
+        Mass of the star, in Solar Masses
+
+    Returns
+    -------
+    bool
+        If True, the semi-major orbit axes does never fall into the star
+        If False, the orbit falls into the star and the step should be dismissed
+
+    '''
+    ecc_pl = Sk**2 + Ck**2
+    Rsun = 6.95508e8    # in meters 
+    AU = 149597871e3    # in meters
+    ratio = (Rstar*Rsun/AU)/(((P/365.23)**2) * Mstar)**(1/3)
+    
+    if ecc_pl < 1 - ratio:
+        return True
+    if ecc_pl >= 1 - ratio:
+        return False
+ 
+ 
+ 
+
 def parameter_check(parameters, names, Rstar=None, Mstar=None):
     ''' Function to check if the parameters are within the bounds
     
