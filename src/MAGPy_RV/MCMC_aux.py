@@ -1,24 +1,40 @@
 '''
-Auxiliary functions for the MCMC code to use
+Auxiliary functions for the MCMC code
 
 Contains:
-    Number of expected parameters per model function
-    Get model function
-    Parameter check function
+    numb_param_per_model
+        Number of expected parameters per model function
+    get_model
+        Get model to use
+    initial_pos_creator
+        generates initial conditions for multiple chains in the mcmc
+    star_cross
+        check that the planet orbit is larger than the radius of the star
+    parameter_check
+        check if the parameters are acceptable
     
 
-Author: Bryce Dixon
-Version 21.07.2023
+Author: Federica Rescingo, Bryce Dixon
+Version 22.08.2023
 '''
+import numpy as np
 
 import src.MAGPy_RV.Models as mod
 import src.MAGPy_RV.auxiliary as aux
 
-import numpy as np
-
 
 def numb_param_per_model(model_name):
     ''' Function to give the number of expected parameters per model
+    
+    Parameters
+    ----------
+    model_name : string
+        Name of the model
+        
+    Returns
+    -------
+    model_param_number : int
+        number of parameter required in the model
     '''
     if model_name.startswith("no") or model_name.startswith("No"):
         model_param_number = mod.No_Model.numb_param()
@@ -127,8 +143,6 @@ def initial_pos_creator(param, param_err, numb_chains, allow_neg = False, param_
                                 #print("pos", pos)
         chains_param[0,l+1,] = pos[0]
     
-    # chains_param should have on the horizontal the parameter values for each chain
-    # on the vertical the number of chains
     return chains_param
 
 

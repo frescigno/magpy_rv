@@ -4,10 +4,7 @@ MCMC code for the gaussian model
 Contains:
     MCMC class
     run_mcmc function
-    initial_pos_creator
-        generates initial conditions for multiple chains in the mcmc
-    star_cross
-        check that the planet orbit is larger than the radius of the star
+    
 
 Author: Bryce Dixon
 Version 21.07.2023

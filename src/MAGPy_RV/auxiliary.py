@@ -32,7 +32,7 @@ Contains:
     
 
 Author: Federica Rescigno
-Last Updated: 22-08-2023
+Last Updated: 22.08.2023
 """
 
 import numpy as np
