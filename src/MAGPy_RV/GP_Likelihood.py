@@ -4,18 +4,18 @@ GP likelihood calculation for the gaussian model
 Contains:
     GP Likelihood class
 
-Author: Bryce Dixon
-Version 19.07.2023
+Author: Federica Rescigno, Bryce Dixon
+Version 22.08.2023
 '''
+
+import numpy as np
+from scipy.linalg import cho_factor, cho_solve
+import matplotlib.pyplot as plt
 
 import src.MAGPy_RV.Parameters as par
 import src.MAGPy_RV.Kernels as ker
 import src.MAGPy_RV.Models as mod
 from src.MAGPy_RV.MCMC_aux import get_model 
-
-import numpy as np
-from scipy.linalg import cho_factor, cho_solve
-import matplotlib.pyplot as plt
 
 
 #######################################
@@ -197,7 +197,7 @@ class GPLikelihood:
             
     
     
-    def internal_residuals(self):
+    def residuals(self):
         '''
         Residuals internal to the computation:
             RV - RV_model
@@ -209,22 +209,6 @@ class GPLikelihood:
         '''
         self.new_y = self.y - self.model_y
         res = self.new_y
-        return res
-    
-    
-    def residuals(self):
-        '''
-        Residuals between the RV - model and the GP prediction for the plotting of GPs.
-            RV - RV_model - predicted mean of GP noise model
-
-        Returns
-        -------
-        res : array
-            New RVs for GP plotting
-        '''
-        mu_pred, _pred = self.predict(self.x)
-        #self.predict comes from the predict function later on
-        res = self.y - self.model_y - mu_pred
         return res
 
 
@@ -242,7 +226,7 @@ class GPLikelihood:
         '''
         # Compute kernel covariance matrix and the y (rvs) to model
         K = self.compute_kernel(self.x, self.x)
-        Y = self.internal_residuals()
+        Y = self.residuals()
         # Compute likelihood, formula 2.28 in Raphie Thesis
         # Part 1: get ln of determinant
         sign, logdetK = np.linalg.slogdet(K)
@@ -400,7 +384,7 @@ class GPLikelihood:
             Full covariance of the data set
         '''
    
-        Y = self.internal_residuals()
+        Y = self.residuals()
         y = Y.T
         
         K = self.compute_kernel(self.x, self.x)
@@ -417,6 +401,7 @@ class GPLikelihood:
         pred_cov = Kss - np.dot(Ks, beta)
         
         
+        # Turn plot to true for in-depth checks on health of matrixes
         plots = False
         if plots is True:
             
