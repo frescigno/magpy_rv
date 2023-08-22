@@ -37,8 +37,8 @@ Last Updated: 22.08.2023
 
 import numpy as np
 
-import src.MAGPy_RV.Kernels as ker
-import src.MAGPy_RV.Models as mod
+import src.magpy_rv.kernels as ker
+import src.magpy_rv.models as mod
 
 
 def printProgressBar (iteration, total, prefix = 'Progress: ', suffix = 'Complete', decimals = 1, length = 100, fill = '█', printEnd = "\r"):

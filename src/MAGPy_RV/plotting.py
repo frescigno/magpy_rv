@@ -19,10 +19,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as interp
 
-import src.MAGPy_RV.auxiliary as aux
-import src.MAGPy_RV.GP_Likelihood as gp
-from src.MAGPy_RV.MCMC_aux import get_model
-import src.MAGPy_RV.Parameters as par
+import src.magpy_rv.auxiliary as aux
+import src.magpy_rv.gp_likelihood as gp
+from src.magpy_rv.mcmc_aux import get_model
+import src.magpy_rv.parameters as par
 
 
 
