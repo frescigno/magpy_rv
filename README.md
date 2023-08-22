@@ -19,9 +19,18 @@ To use please cite the original publication (Rescigno et al. in review)
 
 # Installation
 
-* package installation using pip  
-* install pip  
-* install package   
+**Build conda environment**
+MAGPy_RV can be run in its own environment. To generate it follow the steps:
+
+Update dependencies in env.yml [file](env.yml)
+Run the following from the folder containing the .yml file
+    ``conda env create -f conda_env.yml``
+
+
+**Package installation using pip**
+Install pip (if Anaconda or miniconda is installe use ``conda install pip``) 
+
+Install package   
 ``pip install magpy_rv``
 
 # Examples
