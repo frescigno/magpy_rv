@@ -4,15 +4,17 @@ Creator for parameters and priors for the gaussian model
 Contains:
     Kernel Parameter creator function
     Prior Parameter creator function
+    
     Parameter class
+    
     Priors list
     Gaussian Prior class
     Jeffrey Prior class
     Modified Jeffrey Prior class
     Uniform Prior Class
 
-Author: Bryce Dixon
-Version 18.07.2023
+Author: Federica Rescigno, Bryce Dixon
+Version 22.08.2023
     '''
 
 import numpy as np

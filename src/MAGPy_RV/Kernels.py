@@ -5,6 +5,7 @@ Kernels for the Gaussian Process model
 Contains:
     Kernel List
     Compute Distances Function
+    
     Parent Kernel Class
     Cosine Kernel Class
     Exponential Squared Kernel Class
@@ -14,8 +15,8 @@ Contains:
     Matérn 5th Order Kernel Class
     Matérn 3rd Order Kernel Class
 
-Author: Bryce Dixon
-Version: 17.07.2023'''
+Author: Federica Rescigno, Bryce Dixon
+Version: 22.08.2023'''
 
 import numpy as np
 import scipy as sc
