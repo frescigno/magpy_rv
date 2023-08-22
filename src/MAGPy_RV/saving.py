@@ -5,12 +5,12 @@ Contains:
     saving function
 
     
-Author: Bryce Dixon
-Version: 08.08.2023    
+Author: Federica Rescigno, Bryce Dixon
+Version: 22.08.2023    
 """
+import os
 
 import numpy as np
-import os
 import pandas as pd
 
 import src.MAGPy_RV.Parameters as par
