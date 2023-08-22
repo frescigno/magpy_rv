@@ -6,13 +6,17 @@ Contains:
     run_mcmc function
     
 
-Author: Bryce Dixon
-Version 21.07.2023
+Author: Federica Rescigno, Bryce Dixon
+Version 22.08.2023
 '''
 
-import numpy as np
 import random
 import time
+import os
+
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 import src.MAGPy_RV.Parameters as par
 import src.MAGPy_RV.Models as modl
@@ -249,9 +253,7 @@ class MCMC:
     
     
     def split_step(self, n_splits=2, a=2., Rstar=None, Mstar=None):
-        '''
-        self, n_splits=2, a=2, Rstar=None, Mstar=None
-        
+        '''        
         Parameters
         ----------
         n_splits : integer, optional
@@ -536,11 +538,20 @@ class MCMC:
     
     
     def gelman_rubin_calc(self, burn_in):
-
         """
-        Returns the Gelman-Rubin convergence statistic.
-
+        Computes the Gelman-Rubin convergence statistic.
         Must be calculated for each parameter independently.
+        
+        Parameters
+        -------
+        burn_in : int
+            length in steps of the chosen burn in phase
+        
+        Returns
+        -------
+        all_R : array, floats
+            array of Gelman-Rubin values for each parameter
+        
         """
 
         all_R = []
@@ -555,7 +566,7 @@ class MCMC:
             pdb.set_trace()
         
         #  Calculate for hyperparams
-        hp=False
+        hp=True
         if hp:
             for hyper_param in range(P):
                 chain_means = []
@@ -631,7 +642,7 @@ class MCMC:
 
 
 
-def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = None, model_name = ["no_model"], prior_list = [], numb_chains=None, n_splits=None, a=None, Rstar=None, Mstar=None, flags=None, plot_convergence=False, saving_folder=None):
+def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = None, model_name = ["no_model"], prior_list = [], numb_chains=None, n_splits=None, a=None, Rstar=None, Mstar=None, flags=None, plot_convergence=False, saving_folder=None, gelman_rubin_limit = 1.1):
     """Function to run the MCMC to obtain posterior distributions for hyperparameters and model parameters
 
     Parameters
@@ -649,35 +660,27 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = Non
     kernel_name : string
         name of the chosen Kernel
     model_param0 : dictionary, optional
-        dictionary of all model parameters, not required for no model
-        defaults to None
+        dictionary of all model parameters, not required for no model. Defaults to None
     model_name : list of strings, optional
-        list of the names of the chosen models, not required for no model
-        defaults to ["no_model"]
+        list of the names of the chosen models, not required for no model. Defaults to ["no_model"]
     prior_list : list of dictionaries, optional
-        list of prior parameters in the form of dictionaries set up by pri_create, not required for no priors
-        defaults to []
+        list of prior parameters in the form of dictionaries set up by pri_create, not required for no priors. Defaults to []
     numb_chains : int
-        number of MCMC chains to run, no input will run 100 chains
-        defaults to None
+        number of MCMC chains to run, no input will run 100 chains. Defaults to None
     n_splits : int, optional
-        number of subsplits of the total number of chains, no input will use 2 splits
-        defaults to None
+        number of subsplits of the total number of chains, no input will use 2 splits. Defaults to None
     a : float, optional
-        adjustable scale parameter, no input will use a=2
-        defaults to None
+        adjustable scale parameter, no input will use a=2. Defaults to None
     Rstar : float, optional
-        radius of the host star in solar radii 
-        defaults to None
+        radius of the host star in solar radii. Defaults to None
     Mstar : float, optional
-        rmass of the star in solar masses
-        defaults to None
+        rmass of the star in solar masses. Defaults to None
     flags: array of floats, optional
-        array of flags representing which datapoints in the time array are related to which telescope and so will have which offset
-        defaults to false
+        array of flags representing which datapoints in the time array are related to which telescope and so will have which offset. Defaults to false
     saving_folder : string, optional
-        folder location to save outputs to
-        defaults to None
+        folder location to save outputs to. Defaults to None
+    gelman_rubin_limit : float, optional
+        Convergence cut for the Gelman_Rubin statistic. Default is 1.1
 
     Raises
     ------
@@ -698,7 +701,6 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = Non
     completed_iterations : integer
         number of completed iterations
     """
-    gelman_rubin_limit = 1.1
     
     if model_param0 == None:
         if model_name[0].startswith("no") or model_name[0].startswith("No"):
@@ -746,19 +748,15 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = Non
     
     
     if plot_convergence:
-        import matplotlib.pyplot as plt
-
-        conv_f, ax = plt.subplots()
+        conv_f, ax = plt.subplots(figsize=(15,15))
         hparam_names = aux.hparam_names(kernel_name)
         model_param_names = aux.model_param_names(model_name)
         all_param_names = hparam_names + model_param_names
-        all_param_names = model_param_names
         conv_vals = {i: [] for i in all_param_names}
         conv_iters = []
+        ax.set_prop_cycle("color", sns.color_palette("plasma",len(all_param_names)))
 
         if saving_folder is None:
-            import os
-
             saving_folder = os.getcwd()
     
     
