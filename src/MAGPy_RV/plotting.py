@@ -11,8 +11,8 @@ Contains:
     phase_plot function
     
     
-Author: Bryce Dixon
-Version: 02.08.2023    
+Author: Federica Rescigno, Bryce Dixon
+Version: 22.08.2023    
 """
 
 import matplotlib.pyplot as plt
@@ -24,7 +24,6 @@ import src.MAGPy_RV.GP_Likelihood as gp
 from src.MAGPy_RV.MCMC_aux import get_model
 import src.MAGPy_RV.Parameters as par
 
-poster=False
 
 
 ###### allows me not to show plots
@@ -67,7 +66,7 @@ def offset_subtract(rv, flags, offsets):
 
 def data_plot(time, rv, xlabel = "time [BJD]", ylabel = "RV [m/s]", legend = True, y_err = None, flags = None, offsets = None, save_folder = None, savefilename = None):
     """
-    Function to plot the rv data against the times with any given offsets subtracted from the data.
+    Function to plot the rv data against the times with any given offsets subtracted from the data. It accepts a maximum of 6 offsets.
 
     Parameters
     ----------
@@ -103,11 +102,11 @@ def data_plot(time, rv, xlabel = "time [BJD]", ylabel = "RV [m/s]", legend = Tru
     
     # simple plot for no offsets
     if offsets is None and flags is None:
-        ax.errorbar(time, rv, yerr = y_err, fmt = '.', color = 'darkgreen', label = 'Data')
+        ax.errorbar(time, rv, yerr = y_err, fmt = '.', color = 'tab:blue', label = 'Data')
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         if legend is True:
-            ax.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize = 10)
+            ax.legend(loc='upper left', borderaxespad=0, fontsize = 10)
     elif offsets is None and flags is not None:
         raise KeyError("offsets must be provided when flags are given")
     elif offsets is not None and flags is None:
@@ -116,8 +115,8 @@ def data_plot(time, rv, xlabel = "time [BJD]", ylabel = "RV [m/s]", legend = Tru
         # offset subtract function to get subtracted y
         y = offset_subtract(rv, flags, offsets)
         # set up list of colours for points, currently can support 6 datasets
-        c_list = ['darkgreen', 'darkred', 'magenta', 'cyan', 'gold', 'saddlebrown']
-        c_dict = {'darkgreen':'Dataset_1', 'darkred':'Dataset_2', 'magenta':'Dataset_3', 'cyan':'Dataset_4', 'gold':'Dataset_5', 'saddlebrown':'Dataset_6'}
+        c_list = ['tab:blue', 'tab:red', 'tab:green', 'tab:purple', 'tab:brown', 'tab:pink']
+        c_dict = {'tab:blue':'Dataset 1', 'tab:red':'Dataset 2', 'tab:green':'Dataset 3', 'tab:purple':'Dataset 4', 'tab:brown':'Dataset 5', 'tab:pink':'Dataset 6'}
         c_array = []
         for i in range(len(flags)):
             for a in range(len(c_list)):
@@ -133,13 +132,11 @@ def data_plot(time, rv, xlabel = "time [BJD]", ylabel = "RV [m/s]", legend = Tru
         ax.set_xlabel(xlabel, fontsize = 10)
         ax.set_ylabel(ylabel, fontsize = 10)
         if legend is True:
-            ax.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize = 10) 
+            ax.legend(loc='upper left', borderaxespad=0, fontsize = 10) 
     
     if save_folder is not None:
         assert savefilename is not None, "You need to give both save_folder and savefilename to save the figure"
         plt.savefig(str(save_folder)+"/"+str(savefilename)+".png", bbox_inches='tight')
-        if poster:
-            plt.savefig(str(save_folder)+"/"+str(savefilename)+".pdf", bbox_inches='tight')
 
     if savefilename is not None and save_folder is None:
         print("Figure not saved, you need to provide savefilename and save_folder both")          
@@ -211,25 +208,25 @@ def GP_plot(time, rv, hparam, kernel_name, rv_err = None, model_list = None, mod
             ax = fig.add_subplot(1,1,1)
         
             # plots for no model
-            ax.errorbar(time, rv, yerr = rv_err, fmt = '.', color = 'darkgreen', label = 'Data')
+            ax.errorbar(time, rv, yerr = rv_err, fmt = '.', color = 'tab:blue', label = 'Data')
             ax.plot(xpred, GP_y, linestyle = '--', color = 'orange', label = 'Predicted GP')
             ax.fill_between(xpred, GP_y+GP_err, GP_y-GP_err, alpha=0.5, color='gray')
             ax.set_xlabel(xlabel)
             ax.set_ylabel(ylabel)
             if legend is True:
-                ax.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize = 10)
+                ax.legend(loc='upper left', borderaxespad=0, fontsize = 10)
         
         if residuals is True:
             # set up two plots for residuals
             fig, ax = plt.subplots(ncols=1, nrows=2, sharex=True, figsize=(10,7), gridspec_kw={'height_ratios': [3,1]})
             fig.subplots_adjust(hspace=0)
             
-            ax[0].errorbar(time, rv, yerr = rv_err, fmt = '.', color = 'darkgreen', label = 'Data')
-            ax[0].plot(xpred, GP_y, linestyle = '--', color = 'orange', label = 'Predicted GP')
-            ax[0].fill_between(xpred, GP_y+GP_err, GP_y-GP_err, alpha=0.5, color='gray')
+            ax[0].errorbar(time, rv, yerr = rv_err, fmt = '.', color = 'tab:blue', label = 'Data')
+            ax[0].plot(xpred, GP_y, linestyle = '--', color = 'tab:orange', label = 'Predicted GP')
+            ax[0].fill_between(xpred, GP_y+GP_err, GP_y-GP_err, alpha=0.3, color='tab:orange')
             ax[0].set_ylabel(ylabel)
             if legend is True:
-                ax[0].legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize = 10)
+                ax[0].legend(loc='upper left', borderaxespad=0, fontsize = 10)
             
             # interpolate the smooth GP to get the points relating to the time array
             f = interp.interp1d(xpred, GP_y, kind='cubic')
@@ -237,7 +234,7 @@ def GP_plot(time, rv, hparam, kernel_name, rv_err = None, model_list = None, mod
             # subtract the points relating to the time array from the rv data to get residuals
             res = (rv-new_pred_y)
 
-            ax[1].scatter(time, res, c='darkgreen', s = 10)
+            ax[1].errorbar(time, res, yerr = rv_err, fmt = '.', color = 'tab:blue')
             ax[1].set_ylabel("Residuals")
             ax[1].set_xlabel(xlabel)
     
@@ -314,8 +311,8 @@ def GP_plot(time, rv, hparam, kernel_name, rv_err = None, model_list = None, mod
             gp_mod_y = smooth_model_y + GP_y
             
             # set up the list of colours for points, currently can support 6 datasets
-            c_list = ['darkgreen', 'darkred', 'magenta', 'cyan', 'gold', 'saddlebrown']
-            c_dict = {'darkgreen':'Dataset_1', 'darkred':'Dataset_2', 'magenta':'Dataset_3', 'cyan':'Dataset_4', 'gold':'Dataset_5', 'saddlebrown':'Dataset_6'}
+            c_list = ['tab:blue', 'tab:red', 'tab:green', 'tab:purple', 'tab:brown', 'tab:pink']
+            c_dict = {'tab:blue':'Dataset_1', 'tab:red':'Dataset_2', 'tab:green':'Dataset_3', 'tab:purple':'Dataset_4', 'tab:brown':'Dataset_5', 'tab:pink':'Dataset_6'}
             c_array = []
             for i in range(len(flags)):
                 for a in range(len(c_list)):
@@ -337,16 +334,16 @@ def GP_plot(time, rv, hparam, kernel_name, rv_err = None, model_list = None, mod
                     ax.errorbar(time[ix], rv[ix], yerr = rv_err[ix], fmt = '.', c = g, label = c_dict[g])
             except:
                 # plot data if no offsets are present
-                ax.errorbar(time, rv, yerr = rv_err, fmt = '.', color = 'darkgreen', label = 'Data')
+                ax.errorbar(time, rv, yerr = rv_err, fmt = '.', color = 'tab:blue', label = 'Data')
             
             # plots for predicted GP and model+GP
-            ax.plot(xpred, GP_y, linestyle = '--', color = 'orange', label = 'Predicted GP')
+            ax.plot(xpred, GP_y, linestyle = '--', color = 'tab:orange', label = 'Predicted GP')
             ax.fill_between(xpred, gp_mod_y+GP_err, gp_mod_y-GP_err, alpha=0.5, color='gray')
-            ax.plot(xpred, gp_mod_y, color = 'blue', label = 'Predicted Model+GP')
+            ax.plot(xpred, gp_mod_y, color = 'gray', label = 'Predicted Model+GP')
             ax.set_xlabel(xlabel)
             ax.set_ylabel(ylabel)
             if legend is True:
-                ax.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize = 10)
+                ax.legend(loc='upper left', borderaxespad=0, fontsize = 10)
         
         if residuals is True:
             # set up two plots for residuals
@@ -361,16 +358,16 @@ def GP_plot(time, rv, hparam, kernel_name, rv_err = None, model_list = None, mod
                     axs[0].errorbar(time[ix], rv[ix], yerr = rv_err[ix], fmt = '.', c = g, label = c_dict[g])
             except:
                 # plot data if no offsets are present
-                axs[0].errorbar(time, rv, yerr = rv_err, fmt = '.', color = 'darkgreen', label = 'Data')
+                axs[0].errorbar(time, rv, yerr = rv_err, fmt = '.', color = 'tab:blue', label = 'Data')
             
             # plots for predicted GP and model+GP on the first plot
             axs[0].plot(xpred, GP_y, linestyle = '--', color = 'orange', label = 'Predicted GP')
-            axs[0].plot(xpred, gp_mod_y, color = 'blue', label = 'Predicted Model+GP')
+            axs[0].plot(xpred, gp_mod_y, color = 'gray', label = 'Predicted Model+GP')
             axs[0].fill_between(xpred, gp_mod_y+GP_err, gp_mod_y-GP_err, alpha=0.5, color='gray')
             axs[0].tick_params(axis='y', labelsize=10)
             axs[0].set_ylabel(ylabel, size = 10)
             if legend is True:
-                axs[0].legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize = 10)
+                axs[0].legend(loc='upper left', borderaxespad=0, fontsize = 10)
 
             # interpolate the smooth GP+model to get the points relating to the time array
             f = interp.interp1d(xpred, gp_mod_y, kind='cubic')
@@ -380,10 +377,10 @@ def GP_plot(time, rv, hparam, kernel_name, rv_err = None, model_list = None, mod
 
             try:
                 # try plotting multiple colours for offsets on the second plot
-                axs[1].scatter(time, res, c = c_array, s = 10)
+                axs[1].errorbar(time, res, yerr = rv_err, fmt = '.', c = c_array)
             except:
                 # plotting for no offsets on the second plot
-                axs[1].scatter(time, res, c='darkgreen', s = 10)
+                axs[1].errorbar(time, res, yerr = rv_err, fmt = '.', color = 'tab:blue')
             axs[1].set_ylabel("Residuals", size = 10)
             axs[1].set_xlabel(xlabel, size = 10)
             axs[1].tick_params(axis='y', labelsize=10)
@@ -496,7 +493,8 @@ def mixing_plot(hparam_chain, kernel_name, model_param_chain, model_name, LogL_c
 
 def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, masses = None, save_folder=None, savefilename="corner", errors=False):
     '''
-    Function to plot the posteriors of each parameter from the mcmc as corner plots
+    Function to plot the posteriors of each parameter from the mcmc as corner plots.
+    If there is no dynamic range in any of the parameters the plots will automatically show up as empty.
     
     Parameters
     ----------
@@ -900,8 +898,8 @@ def keplerian_only_plot(time, rv, hparam, kernel_name, model_list, model_param, 
                 raise KeyError("offsets should be provided if flags are given")
             
             # if offsets are in use, set up the dictionary for plotting the offsets as different colours
-            c_list = ['darkgreen', 'darkred', 'magenta', 'cyan', 'gold', 'saddlebrown']
-            c_dict = {'darkgreen':'Subtracted Dataset_1', 'darkred':'Subtracted Dataset_2', 'magenta':'Subtracted Dataset_3', 'cyan':'Subtracted Dataset_4', 'gold':'Subtracted Dataset_5', 'saddlebrown':'Subtracted Dataset_6'}
+            c_list = ['tab:blue', 'tab:red', 'tab:green', 'tab:purple', 'tab:brown', 'tab:pink']
+            c_dict = {'tab:blue':'Subtracted Dataset_1', 'tab:red':'Subtracted Dataset_2', 'tab:green':'Subtracted Dataset_3', 'tab:purple':'Subtracted Dataset_4', 'tab:brown':'Subtracted Dataset_5', 'tab:pink':'Subtracted Dataset_6'}
             c_array = []
             for i in range(len(flags)):
                 for a in range(len(c_list)):
@@ -958,13 +956,13 @@ def keplerian_only_plot(time, rv, hparam, kernel_name, model_list, model_param, 
                 ax.errorbar(time[ix], rv[ix], yerr = rv_err[ix], fmt = '.', c = g, label = c_dict[g])
         except:
             # plot data if no offsets are present
-            ax.errorbar(time, rv, yerr = rv_err, fmt = '.', color = 'darkgreen', label = 'Subtracted Data')
+            ax.errorbar(time, rv, yerr = rv_err, fmt = '.', color = 'tab:blue', label = 'Subtracted Data')
             
         ax.plot(xpred, smooth_model_y, color = 'blue', label = 'Predicted Keplerian Model')
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         if legend is True:
-            ax.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize = 10)
+            ax.legend(loc='upper left', borderaxespad=0, fontsize = 10)
         
     if residuals is True:
         # set up two plots for residuals
@@ -979,13 +977,13 @@ def keplerian_only_plot(time, rv, hparam, kernel_name, model_list, model_param, 
                 axs[0].errorbar(time[ix], rv[ix], yerr = rv_err[ix], fmt = '.', c = g, label = c_dict[g])
         except:
             # plot data if no offsets are present
-            axs[0].errorbar(time, rv, yerr = rv_err, fmt = '.', color = 'darkgreen', label = 'Subtracted Data')
+            axs[0].errorbar(time, rv, yerr = rv_err, fmt = '.', color = 'tab:blue', label = 'Subtracted Data')
             
         # plots for data and model on the first plot
         axs[0].plot(xpred, smooth_model_y, color = 'blue', label = 'Predicted Keplerian Model')
         axs[0].set_ylabel(ylabel)
         if legend is True:
-            axs[0].legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize = 10)
+            axs[0].legend(loc='upper left', borderaxespad=0, fontsize = 10)
 
         # interpolate the smooth model to get the points relating to the time array
         f = interp.interp1d(xpred, smooth_model_y, kind='cubic', bounds_error=False)
@@ -995,10 +993,10 @@ def keplerian_only_plot(time, rv, hparam, kernel_name, model_list, model_param, 
 
         try:
             # try plotting multiple colours for offsets on the second plot
-            axs[1].scatter(time, res, c = c_array, s = 10)
+            axs[1].errorbar(time, res, yerr = rv_err, fmt = '.', c=c_array)
         except:
             # plotting for no offsets on the second plot
-            axs[1].scatter(time, res, c='darkgreen', s = 10)
+            axs[1].errorbar(time, res, yerr = rv_err, fmt = '.', color = 'tab:blue')
         axs[1].set_ylabel("Residuals")
         axs[1].set_xlabel(xlabel)
     
@@ -1173,19 +1171,19 @@ def phase_plot(time, rv, hparam, kernel_name, model_list, model_param, rv_err = 
                 ax.errorbar(true_phase[ix], rv[ix], yerr = rv_err[ix], fmt = '.', c = g, label = c_dict[g])
         except:
             # plot data if no offsets are present
-            ax.errorbar(true_phase, rv, yerr = rv_err, fmt = '.', color = 'darkgreen', label = 'Subtracted Data')
+            ax.errorbar(true_phase, rv, yerr = rv_err, fmt = '.', color = 'tab:blue', label = 'Subtracted Data')
 
         # plot the model for the data in blue
         ax.plot(phase_xpred, smooth_model_y, c = 'blue', label = 'Keplerian Model')
         # plot the extended data points and model in grey
         ax.errorbar(start_time, start_rv, yerr = start_yerr, fmt = '.', color = 'gray')
         ax.errorbar(end_time, end_rv, yerr = end_yerr, fmt = '.', color = 'gray')
-        ax.plot(start_xpred, start_model, c = 'grey')
-        ax.plot(end_xpred, end_model, c = 'grey')
+        ax.plot(start_xpred, start_model, c = 'gray')
+        ax.plot(end_xpred, end_model, c = 'gray')
         ax.set_ylabel(ylabel)
         ax.set_xlabel(xlabel)
         if legend is True:
-            ax.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize = 10)
+            ax.legend(loc='upper left', borderaxespad=0, fontsize = 10)
             
     if residuals is True:
         
@@ -1205,25 +1203,25 @@ def phase_plot(time, rv, hparam, kernel_name, model_list, model_param, rv_err = 
                 axs[0].errorbar(true_phase[ix], rv[ix], yerr = rv_err[ix], fmt = '.', c = g, label = c_dict[g])
         except:
             # plot data if no offsets are present
-            axs[0].errorbar(true_phase, rv, yerr = rv_err, fmt = '.', color = 'darkgreen', label = 'Subtracted Data')
+            axs[0].errorbar(true_phase, rv, yerr = rv_err, fmt = '.', color = 'tab:blue', label = 'Subtracted Data')
 
         # plot the model for the data in blue
         axs[0].plot(phase_xpred, smooth_model_y, c = 'blue', label = 'Keplerian Model')
         # plot the extended data points and model in grey
         axs[0].errorbar(start_time, start_rv, yerr = start_yerr, fmt = '.', color = 'gray')
         axs[0].errorbar(end_time, end_rv, yerr = end_yerr, fmt = '.', color = 'gray')
-        axs[0].plot(start_xpred, start_model, c = 'grey')
-        axs[0].plot(end_xpred, end_model, c = 'grey')
+        axs[0].plot(start_xpred, start_model, c = 'gray')
+        axs[0].plot(end_xpred, end_model, c = 'gray')
         axs[0].set_ylabel(ylabel)
         if legend is True:
-            axs[0].legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, fontsize = 10)
+            axs[0].legend(loc='upper left', borderaxespad=0, fontsize = 10)
         
         try:
             # try plotting multiple colours for offsets on the second plot
             axs[1].scatter(true_phase, res, c = c_array, s = 10)
         except:
             # plotting for no offsets on the second plot
-            axs[1].scatter(true_phase, res, c='darkgreen', s = 10)
+            axs[1].scatter(true_phase, res, c='tab:blue', s = 10)
         start_res = res[:start_rv_num[-1]+1]
         end_res = res[end_rv_num[0]:]
         # plotting extended residuals
