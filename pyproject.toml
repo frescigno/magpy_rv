@@ -36,3 +36,4 @@ dependencies = [
 [project.urls]
 "Homepage" = "https://github.com/frescigno/MAGPy_RV"
 "Bug Tracker" = "https://github.com/frescigno/MAGPy_RV/issues"
+"ReadtheDocs" = https://magpy-rv.readthedocs.io/en/latest/

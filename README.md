@@ -15,7 +15,7 @@ To use please cite the original publication (Rescigno et al. in review)
 
 # Documentation
 
-**Documentation Site:**  [MAGPy RV.readthedocs](https://magpy-rv.readthedocs.io/en/latest/badge=latest)
+**Documentation Site:**  [MAGPy RV.readthedocs](https://magpy-rv.readthedocs.io/en/latest/)
 
 # Installation
 
