@@ -11,6 +11,7 @@ Welcome to magpy_rv's documentation!
    :caption: Contents:
 
    install
+   gettingstarted
    api
 
 
