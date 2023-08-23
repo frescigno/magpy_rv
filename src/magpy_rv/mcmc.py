@@ -18,11 +18,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-import src.magpy_rv.parameters as par
-import src.magpy_rv.models as modl
-import src.magpy_rv.gp_likelihood as gp
-import src.magpy_rv.auxiliary as aux
-import src.magpy_rv.mcmc_aux as mcmcx
+import magpy_rv.parameters as par
+import magpy_rv.models as modl
+import magpy_rv.gp_likelihood as gp
+import magpy_rv.auxiliary as aux
+import magpy_rv.mcmc_aux as mcmcx
 get_model = mcmcx.get_model
 numb_param_per_model = mcmcx.numb_param_per_model
 parameter_check = mcmcx.parameter_check

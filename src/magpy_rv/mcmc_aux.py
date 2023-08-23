@@ -19,8 +19,8 @@ Version 22.08.2023
 '''
 import numpy as np
 
-import src.magpy_rv.models as mod
-import src.magpy_rv.auxiliary as aux
+import magpy_rv.models as mod
+import magpy_rv.auxiliary as aux
 
 
 def numb_param_per_model(model_name):

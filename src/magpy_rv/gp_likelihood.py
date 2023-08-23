@@ -12,10 +12,10 @@ import numpy as np
 from scipy.linalg import cho_factor, cho_solve
 import matplotlib.pyplot as plt
 
-import src.magpy_rv.parameters as par
-import src.magpy_rv.kernels as ker
-import src.magpy_rv.models as mod
-from src.magpy_rv.mcmc_aux import get_model 
+import magpy_rv.parameters as par
+import magpy_rv.kernels as ker
+import magpy_rv.models as mod
+from magpy_rv.mcmc_aux import get_model 
 
 
 #######################################
