@@ -7,12 +7,10 @@ name = "magpy_rv"
 version = "0.0.1"
 authors = [
   {name="Federica Rescigno", email="fr307@exeter.ac.uk" },
-  {name="Ben S Lakeland"},
   {name="Bryce Dixon"},
 ]
 maintainers = [
     {name="Federica Rescigno", email="fr307@exeter.ac.uk" },
-    {name="Ben S Lakeland"},
 ]
 description = "Gaussian Process Regression with affine invariant MCMC algorithm"
 readme = "README.md"
@@ -34,6 +32,6 @@ dependencies = [
 
 
 [project.urls]
-"Homepage" = "https://github.com/frescigno/MAGPy_RV"
-"Bug Tracker" = "https://github.com/frescigno/MAGPy_RV/issues"
+"Homepage" = "https://github.com/frescigno/magpy_rv"
+"Bug Tracker" = "https://github.com/frescigno/magpy_rv/issues"
 "ReadtheDocs" = "https://magpy-rv.readthedocs.io/en/latest/"

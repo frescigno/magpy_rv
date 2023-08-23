@@ -5,7 +5,7 @@
 [![github](https://img.shields.io/badge/GitHub-frescigno-181717.svg?style=flat&logo=github)](https://github.com/frescigno)
 [![website](https://img.shields.io/badge/Website-Federica_Rescigno-5087B2.svg?style=flat&logo=telegram)](https://frescigno.github.io)
 
-# MAGPy_RV
+# magpy_rv
 
 Modeling Activity with Gaussian process regression in Python
 
@@ -24,7 +24,7 @@ MAGPy_RV can be run in its own environment. To generate it follow the steps:
 
 Update dependencies in env.yml [file](env.yml)
 Run the following from the folder containing the .yml file
-    ``conda env create -f conda_env.yml``
+``conda env create -f conda_env.yml``
 
 
 **Package installation using pip**
