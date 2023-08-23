@@ -20,7 +20,7 @@ import numpy as np
 import abc
 ABC = abc.ABC
 
-import src.MAGPy_RV.Parameters as par
+import magpy_rv.parameters as par
 
 
 # List of the models for possible planets or offsets
