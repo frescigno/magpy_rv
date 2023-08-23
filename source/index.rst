@@ -12,7 +12,7 @@ Welcome to magpy_rv's documentation!
 
    ../../source/install
    ../../source/gettingstarted
-   api
+   ../../source/api
 
 
 Indices and tables
