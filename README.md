@@ -1,11 +1,11 @@
-[![Documentation Status](https://readthedocs.org/projects/MAGPy_RV/badge/?version=latest)](https://magpy-rv.readthedocs.io/en/latest/badge=latest)
-[![PyPI version](https://badge.fury.io/py/magpy_rv.svg)](https://badge.fury.io/py/magpy_rv)
+[![Documentation Status](https://readthedocs.org/projects/MAGPy-RV/badge/?version=latest)](https://magpy-rv.readthedocs.io/en/latest/badge=latest)
+[![PyPI version](https://badge.fury.io/py/magpy-rv.svg)](https://badge.fury.io/py/magpy-rv)
 [![DOI](https://zenodo.org/badge/DOI/number.svg)](https://doi.org/number)
 
 [![github](https://img.shields.io/badge/GitHub-frescigno-181717.svg?style=flat&logo=github)](https://github.com/frescigno)
 [![website](https://img.shields.io/badge/Website-Federica_Rescigno-5087B2.svg?style=flat&logo=telegram)](https://frescigno.github.io)
 
-# magpy_rv
+# MAGPy-RV
 
 Modeling Activity with Gaussian process regression in Python
 
@@ -20,7 +20,7 @@ To use please cite the original publication (Rescigno et al. in review)
 # Installation
 
 **Build conda environment**
-MAGPy_RV can be run in its own environment. To generate it follow the steps:
+MAGPy-RV can be run in its own environment. To generate it follow the steps:
 
 Update dependencies in env.yml [file](env.yml)
 Run the following from the folder containing the .yml file
@@ -31,7 +31,7 @@ Run the following from the folder containing the .yml file
 Install pip (if Anaconda or miniconda is installe use ``conda install pip``) 
 
 Install package   
-``pip install magpy_rv``
+``pip install magpy-rv``
 
 # Examples
 Examples are hosted [here](https://github.com/frescigno/magpy_rv/tree/main/docs/tutorials):  
