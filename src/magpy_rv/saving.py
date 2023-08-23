@@ -13,12 +13,12 @@ import os
 import numpy as np
 import pandas as pd
 
-import magpy_r.parameters as par
-import magpy_r.models as mod
-import magpy_r.gp_likelihood as gp
-from magpy_r.mcmc_aux import get_model
-from magpy_r.plotting import offset_subtract
-import magpy_r.auxiliary as aux
+import magpy_rv.parameters as par
+import magpy_rv.models as mod
+import magpy_rv.gp_likelihood as gp
+from magpy_rv.mcmc_aux import get_model
+from magpy_rv.plotting import offset_subtract
+import magpy_rv.auxiliary as aux
 
 
 # saving function
