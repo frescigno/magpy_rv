@@ -3,7 +3,5 @@
 MCMC Functions
 ================
 
-.. module:: magpy_rv
-
-.. automodule:: magpy_rv.mcmc
+.. automodule:: mcmc
     :members:

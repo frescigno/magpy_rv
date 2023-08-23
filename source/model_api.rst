@@ -3,7 +3,5 @@
 Model Functions
 ===============
 
-.. module:: magpy_rv
-
-.. automodule:: magpy_rv.models
+.. automodule:: models
     :members:

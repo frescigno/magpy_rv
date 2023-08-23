@@ -3,5 +3,5 @@
 Auxiliary Functions
 ===================
 
-.. automodule:: magpy_rv.auxiliary
+.. automodule:: auxiliary
     :members:
