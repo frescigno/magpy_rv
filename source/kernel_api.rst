@@ -3,5 +3,7 @@
 Kernel Functions
 ================
 
-.. automodule:: kernels
+.. module:: magpy_rv
+
+.. automodule:: magpy_rv.kernels
     :members:

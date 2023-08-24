@@ -12,7 +12,8 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../src/magpy_rv'))
+#sys.path.insert(0, os.path.abspath('../src/magpy_rv'))
+import magpy_rv
 
 
 # -- Project information -----------------------------------------------------

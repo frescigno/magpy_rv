@@ -6,12 +6,12 @@ API
 .. toctree::
    :maxdepth: 2
 
-   ../../source/kernel_api
-   ../../source/parameter_api
-   ../../source/model_api
-   ../../source/gp_likelihood_api
-   ../../source/mcmc_api
-   ../../source/plotting_api
-   ../../source/saving_api
-   ../../source/mcmc_aux_api
-   ../../source/auxiliary_api
+   kernel_api
+   parameter_api
+   model_api
+   gp_likelihood_api
+   mcmc_api
+   plotting_api
+   saving_api
+   mcmc_aux_api
+   auxiliary_api

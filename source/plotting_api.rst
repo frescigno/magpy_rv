@@ -3,5 +3,7 @@
 Plotting Functions
 ================
 
-.. automodule:: plotting
+.. module:: magpy_rv
+
+.. automodule:: magpy_rv.plotting
     :members:

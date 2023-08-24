@@ -3,5 +3,7 @@
 Parameter Functions
 ===================
 
-.. automodule:: parameters
+.. module:: magpy_rv
+
+.. automodule:: magpy_rv.parameters
     :members:
