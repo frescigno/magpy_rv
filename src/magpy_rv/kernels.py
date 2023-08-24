@@ -164,10 +164,19 @@ class Cosine(Kernel):
         
     @staticmethod  
     def name():
+        '''Returns the name of the Kernel'''
         return "Cosine"
     
     @staticmethod
     def hparams(plotting = True):
+        '''Function to return a list of the hyperparameters
+        
+        Parameters
+        ----------
+        plotting: bool, optional
+            True returns the list in format for plots, False returns the list in format for text, defaults to True
+        
+        Returns list of hyperparameter names in selected format'''
         if plotting is False:
             return ['gp_amp', 'gp_per']
         if plotting is True:
@@ -278,10 +287,19 @@ class ExpSquared(Kernel):
         
     @staticmethod   
     def name():
+        '''Returns the name of the Kernel'''
         return "ExpSquared"
     
     @staticmethod
     def hparams(plotting = True):
+        '''Function to return a list of the hyperparameters
+        
+        Parameters
+        ----------
+        plotting: bool, optional
+            True returns the list in format for plots, False returns the list in format for text, defaults to True
+        
+        Returns list of hyperparameter names in selected format'''
         if plotting is False:
             return ['gp_amp', 'gp_timescale']
         if plotting is True:
@@ -395,10 +413,19 @@ class ExpSinSquared(Kernel):
         
     @staticmethod
     def name():
+        '''Returns the name of the Kernel'''
         return "ExpSinSquared"
     
     @staticmethod
     def hparams(plotting = True):
+        '''Function to return a list of the hyperparameters
+        
+        Parameters
+        ----------
+        plotting: bool, optional
+            True returns the list in format for plots, False returns the list in format for text, defaults to True
+        
+        Returns list of hyperparameter names in selected format'''
         if plotting is False:
             return ['gp_amp', 'gp_timescale', 'gp_per']
         if plotting is True:
@@ -517,10 +544,19 @@ class QuasiPer(Kernel):
         
     @staticmethod
     def name():
+        '''Returns the name of the Kernel'''
         return "QuasiPer"
     
     @staticmethod
     def hparams(plotting = True):
+        '''Function to return a list of the hyperparameters
+        
+        Parameters
+        ----------
+        plotting: bool, optional
+            True returns the list in format for plots, False returns the list in format for text, defaults to True
+        
+        Returns list of hyperparameter names in selected format'''
         if plotting is False:
             return ['gp_per', 'gp_perlength', 'gp_explength', 'gp_amp']
         if plotting is True:
@@ -645,10 +681,19 @@ class JitterQuasiPer(Kernel):
         
     @staticmethod
     def name():
+        '''Returns the name of the Kernel'''
         return "JitterQuasiPer"
     
     @staticmethod
     def hparams(plotting = True):
+        '''Function to return a list of the hyperparameters
+        
+        Parameters
+        ----------
+        plotting: bool, optional
+            True returns the list in format for plots, False returns the list in format for text, defaults to True
+        
+        Returns list of hyperparameter names in selected format'''
         if plotting is False:
             return ['gp_per', 'gp_perlegth', 'gp_explength', 'gp_amp', 'gp_jit']
         if plotting is True:
@@ -774,10 +819,19 @@ class Matern5(Kernel):
         
     @staticmethod
     def name():
+        '''Returns the name of the Kernel'''
         return "Matern5/2"
     
     @staticmethod
     def hparams(plotting = True):
+        '''Function to return a list of the hyperparameters
+        
+        Parameters
+        ----------
+        plotting: bool, optional
+            True returns the list in format for plots, False returns the list in format for text, defaults to True
+        
+        Returns list of hyperparameter names in selected format'''
         if plotting is False:
             return ['gp_amp', 'gp_timescale']
         if plotting is True:
@@ -891,12 +945,19 @@ class Matern3(Kernel):
         
     @staticmethod
     def name():
+        '''Returns the name of the Kernel'''
         return "Matern3/2"
     
     @staticmethod
-    def hparams():
-        return ['gp_amp', 'gp_timescale', 'gp_jit']
     def hparams(plotting = True):
+        '''Function to return a list of the hyperparameters
+        
+        Parameters
+        ----------
+        plotting: bool, optional
+            True returns the list in format for plots, False returns the list in format for text, defaults to True
+        
+        Returns list of hyperparameter names in selected format'''
         if plotting is False:
             return ['gp_amp', 'gp_timescale', 'gp_jit']
         if plotting is True:
