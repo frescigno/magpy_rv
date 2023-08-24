@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "magpy-rv"
-version = "1.0.1"
+version = "1.0.2"
 authors = [
   {name="Federica Rescigno", email="fr307@exeter.ac.uk" },
   {name="Bryce Dixon"},
