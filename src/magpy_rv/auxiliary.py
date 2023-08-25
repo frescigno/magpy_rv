@@ -236,7 +236,7 @@ def mass_calc(model_param, Mstar, earth_mass = False):
         Minimum mass of the planet in Earth masses
     '''
     
-    P, K, Ck, Sk, t0 = model_param[-1][0], model_param[-1][1], model_param[-1][2], model_param[-1][3], model_param[-1][4]
+    P, K, Ck, Sk = model_param[0], model_param[1], model_param[2], model_param[3]
     ecc = Ck**2 + Sk**2
     omega = np.arctan(Sk/Ck)
     Mpl_sini = 4.9191*10**(-3) * K * np.sqrt(1-ecc**2) * P**(1/3) * Mstar**(2/3)
