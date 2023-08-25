@@ -9,6 +9,7 @@ Author: Federica Rescigno, Bryce Dixon
 Version: 22.08.2023    
 """
 import os
+import pickle as pk
 
 import numpy as np
 import pandas as pd
@@ -24,7 +25,7 @@ import magpy_rv.auxiliary as aux
 # saving function
 
 
-def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, kernel = None, init_param = None, prior_list = [], fin_hparam_post = None, fin_param_post = None, logl_chain = None, masses = None, fin_param_values = None, fin_param_erru = None, fin_param_errd = None, flags = None, Mstar = None, fin_to_skck = False, burnin = None):
+def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, kernel = None, init_param = None, prior_list = [], fin_hparam_post = None, fin_param_post = None, logl_chain = None, masses = None, fin_param_values = None, fin_param_erru = None, fin_param_errd = None, flags = None, Mstar = None, fin_to_skck = False, burnin = 0):
     """
     Saves offset subtracted and combined RVs and times, rv_error, kernel name, model list, initial hyperparameters and parameters, initial LogL, priors, final hyperparameter and parameter posteriors, final LogL posterior, mass posteriors, final hyperparameter, parameter and mass values along with errors, final logL value
     
@@ -69,7 +70,7 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
     fin_to_skck: bool, optional
         if True, returns final keplerian parameters with Sk and Ck, if False returns final keplerian parameters with ecc and omega, defaults to False
     burnin: integer, optional
-        integer value to specify the length of the burn in, defaults to None for no burn in
+        integer value to specify the length of the burn in, defaults to 0 for no burn in
     """
     
     # create new folder titled current run, at the moment the code will not run if the folder already exists
@@ -145,42 +146,38 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
     prior_file.write(prior_list.__str__())
     prior_file.close()
 
+    assert type(burnin) == int, "burnin should be an integer"
     # if a hyperparameter posterior has been entered, save these to files based on hyperparameter as arrays with ncolumns = chains, and nrows = iterations
     if fin_hparam_post is not None:
         hparams = aux.hparam_names(kernel, plotting = False)
+        # first save hparam posteriors as a pickle file then save each posterior seperately as a txt file
+        hparam_pkl = os.path.join(folder_name, "hparam_posteriors.pkl")
+        hparam_pkl = open(hparam_pkl, "wb")
+        pk.dump(fin_hparam_post[burnin:], hparam_pkl)
+        hparam_pkl.close()
         for N,i in enumerate(hparams):
             hparam_post = os.path.join(folder_name, "{}_posteriors.txt".format(i))
-            if burnin is not None:
-                assert type(burnin) == int, "burnin should be an integer or None"
-                post_hparam = fin_hparam_post[:,:,N]
-                burn_hparam = post_hparam[burnin:, :]
-                np.savetxt(hparam_post, burn_hparam)
-            else:
-                np.savetxt(hparam_post, fin_hparam_post[:,:,N])
+            np.savetxt(hparam_post, fin_hparam_post[burnin:,:,N])
     
     # do the same with model parameters    
     if fin_param_post is not None:
         params = aux.model_param_names(model_list, SkCk = True, plotting = False)
+        param_pkl = os.path.join(folder_name, "param_posteriors.pkl")
+        param_pkl = open(param_pkl, "wb")
+        pk.dump(fin_param_post[burnin:], param_pkl)
+        param_pkl.close()
         for N,i in enumerate(params):
             param_post = os.path.join(folder_name, "{}_posteriors.txt".format(i))
-            if burnin is not None:
-                assert type(burnin) == int, "burnin should be an integer or None"
-                post_param = fin_param_post[:,:,N]
-                burn_param = post_param[burnin:, :]
-                np.savetxt(param_post, burn_param)
-            else:
-                np.savetxt(param_post, fin_param_post[:,:,N])
+            np.savetxt(param_post, fin_param_post[burnin:,:,N])
     
     # do the same with the logL chain
     if logl_chain is not None:
         logl_post = os.path.join(folder_name, "logL_posteriors.txt")
-        if burnin is not None:
-            assert type(burnin) == int, "burnin should be an integer or None"
-            post_logl = logl_chain[:,:,0]
-            burn_logl = post_logl[burnin:, :]
-            np.savetxt(logl_post, burn_logl)
-        else:
-            np.savetxt(logl_post, logl_chain[:,:,0])
+        np.savetxt(logl_post, logl_chain[burnin:,:,0])
+        logl_pkl = os.path.join(folder_name, "logl_posteriors.pkl")
+        logl_pkl = open(logl_pkl, "wb")
+        pk.dump(logl_chain[burnin:], logl_pkl)
+        logl_pkl.close()
     
     # do the same with the masses
     if masses is not None:
@@ -193,15 +190,13 @@ def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, k
                 name = "mass_{}".format(i)
                 mass_list.append(name)
         
+        mass_pkl = os.path.join(folder_name, "mass_posteriors.pkl")
+        mass_pkl = open(mass_pkl, "wb")
+        pk.dump(masses[burnin:], mass_pkl)
+        mass_pkl.close()
         for N,i in enumerate(mass_list):
             mass_post = os.path.join(folder_name, "{}_posteriors.txt".format(i))
-            if burnin is not None:
-                assert type(burnin) == int, "burnin should be an integer or None"
-                post_mass = masses[:,:,N]
-                burn_mass = post_mass[burnin:, :]
-                np.savetxt(mass_post, burn_mass)
-            else:
-                np.savetxt(mass_post, masses[:,:,N])
+            np.savetxt(mass_post, masses[burnin:,:,N])
     
     # if final parameter values have been entered, start by getting a list of all the existing parameters, should match the length of the final parameter values list        
     if fin_param_values is not None:

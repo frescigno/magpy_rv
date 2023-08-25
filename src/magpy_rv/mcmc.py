@@ -54,6 +54,8 @@ class MCMC:
             List inlcuding in order the name of parameter, the name of the prior and the dictionary of the prior parameters (see posterior function in GP_solar.py for better description)
         numb_chains : integer, optional
             Number of chains requested. The default is 100.
+        flags: array of floats, optional
+            array of flags representing which datapoints in the time array are related to which telescope and so will have which offset. Defaults to false
         Mstar : float
             mass of the host star in solar masses
         '''

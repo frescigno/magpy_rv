@@ -226,10 +226,21 @@ class No_Model(Model):
     
     @staticmethod
     def numb_param():
+        '''Returns the number of parameters'''
         return 1
     
     @staticmethod
     def params(model_num = None, plotting = True):
+        '''Function to return a list of the parameters
+        
+        Parameters
+        ----------
+        model_num: int, optional
+            indicates the nth of this model in the model list, defaults to None
+        plotting: bool, optional
+            True returns the list in format for plots, False returns the list in format for text, defaults to True
+        
+        Returns list of parameter names in selected format'''
         if model_num is None:
             return ["no"]
         else:
@@ -302,10 +313,21 @@ class Polynomial(Model):
     
     @staticmethod
     def numb_param():
+        '''Returns the number of parameters'''
         return 4
     
     @staticmethod
     def params(model_num = None, plotting = True):
+        '''Function to return a list of the parameters
+        
+        Parameters
+        ----------
+        model_num: int, optional
+            indicates the nth of this model in the model list, defaults to None
+        plotting: bool, optional
+            True returns the list in format for plots, False returns the list in format for text, defaults to True
+        
+        Returns list of parameter names in selected format'''
         if model_num is None:
             return ["a0", "a1", "a2", "a3"]
         else:
@@ -376,10 +398,21 @@ class Offset(Model):
     
     @staticmethod
     def numb_param():
+        '''Returns the number of parameters'''
         return 1    
     
     @staticmethod
     def params(model_num = None, plotting = True):
+        '''Function to return a list of the parameters
+        
+        Parameters
+        ----------
+        model_num: int, optional
+            indicates the nth of this model in the model list, defaults to None
+        plotting: bool, optional
+            True returns the list in format for plots, False returns the list in format for text, defaults to True
+        
+        Returns list of parameter names in selected format'''
         if model_num is None:
             return ["offset"]
         else:
@@ -493,10 +526,23 @@ class Keplerian(Model):
     
     @staticmethod
     def numb_param():
+        '''Returns the number of parameters'''
         return 5
     
     @staticmethod
     def params(model_num = None, plotting = True, SkCk = False):
+        '''Function to return a list of the parameters
+        
+        Parameters
+        ----------
+        model_num: int, optional
+            indicates the nth of this model in the model list, defaults to None
+        plotting: bool, optional
+            True returns the list in format for plots, False returns the list in format for text, defaults to True
+        SkCk: bool, optional
+            If True return list including Sk and Ck, if False return list including ecc and omega, defaults to False
+            
+        Returns list of parameter names in selected format'''
         if model_num is None:
             if SkCk is True:
                 return ["P", "K", "Sk", "Ck", "t0"]

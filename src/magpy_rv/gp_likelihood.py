@@ -44,7 +44,7 @@ class GPLikelihood:
         model_y: array, floats, optional
             Array of y (rv) values from the model chosen
             Default to None
-        model_par: dictionary, optional
+        model_param: dictionary, optional
             dictionary of all model parameters considered
             Default to None
             
