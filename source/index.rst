@@ -10,7 +10,7 @@ Welcome to magpy_rv's documentation!
    :maxdepth: 5
    :caption: Contents:
 
-   ../../source/install
+   source/install
    ../../source/gettingstarted
    ../../source/api
 
