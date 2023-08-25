@@ -3,7 +3,5 @@
 GP Likelihood Functions
 =======================
 
-.. module:: magpy_rv
-
-.. automodule:: magpy_rv.gp_likelihood
+.. automodule:: src.magpy_rv.gp_likelihood
     :members:

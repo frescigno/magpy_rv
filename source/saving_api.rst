@@ -3,7 +3,5 @@
 Saving Function
 ===============
 
-.. module:: magpy_rv
-
-.. automodule:: magpy_rv.saving
+.. automodule:: src.magpy_rv.saving
     :members:

@@ -3,7 +3,5 @@
 MCMC Auxiliary Functions
 ========================
 
-.. module:: magpy_rv
-
-.. automodule:: magpy_rv.mcmc_aux
+.. automodule:: src.magpy_rv.mcmc_aux
     :members:
