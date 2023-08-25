@@ -16,7 +16,7 @@ If the user requires more information about the function, they should see :ref:`
 .. toctree::
    :maxdepth: 2
 
-   tutorials/1_no_model_tutorial.ipynb
+   tutorials/1_no_model_tutorial
    tutorials/2_polynomial_tutorial
    tutorials/3_51_peg_tutorial
    tutorials/4_offset_tutorial
