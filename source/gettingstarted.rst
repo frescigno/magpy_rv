@@ -14,9 +14,9 @@ Tutorial 3 demonstrates how the code can be used with real data.\
 Tutorial 4 shows how the code can be used with complex data and a complex model.\
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 5
 
-   ../docs/tutorials/(1)_no_model_tutorial.ipynb
-   ../docs/tutorials/(2)_polynomial_tutorial.ipynb
-   ../docs/tutorials/(3)_51_peg_tutorial.ipynb
-   ../docs/tutorials/(4)_offset_tutorial.ipynb
+   ../../docs/tutorials/(1)_no_model_tutorial.ipynb
+   ../../docs/tutorials/(2)_polynomial_tutorial.ipynb
+   ../../docs/tutorials/(3)_51_peg_tutorial.ipynb
+   ../../docs/tutorials/(4)_offset_tutorial.ipynb
