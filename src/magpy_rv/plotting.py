@@ -377,7 +377,9 @@ def GP_plot(time, rv, hparam, kernel_name, rv_err = None, model_list = None, mod
 
             try:
                 # try plotting multiple colours for offsets on the second plot
-                axs[1].errorbar(time, res, yerr = rv_err, fmt = '.', c = c_array)
+                for g in np.unique(c_array):
+                    ix = np.where(c_array == g)
+                    axs[1].errorbar(time[ix], res[ix], yerr = rv_err[ix], fmt = '.', c = g)
             except:
                 # plotting for no offsets on the second plot
                 axs[1].errorbar(time, res, yerr = rv_err, fmt = '.', color = 'tab:blue')
@@ -993,7 +995,9 @@ def keplerian_only_plot(time, rv, hparam, kernel_name, model_list, model_param, 
 
         try:
             # try plotting multiple colours for offsets on the second plot
-            axs[1].errorbar(time, res, yerr = rv_err, fmt = '.', c=c_array)
+            for g in np.unique(c_array):
+                ix = np.where(c_array == g)
+                axs[1].errorbar(time[ix], res[ix], yerr = rv_err[ix], fmt = '.', c = g)
         except:
             # plotting for no offsets on the second plot
             axs[1].errorbar(time, res, yerr = rv_err, fmt = '.', color = 'tab:blue')
@@ -1218,10 +1222,12 @@ def phase_plot(time, rv, hparam, kernel_name, model_list, model_param, rv_err = 
         
         try:
             # try plotting multiple colours for offsets on the second plot
-            axs[1].scatter(true_phase, res, c = c_array, s = 10)
+            for g in np.unique(c_array):
+                ix = np.where(c_array == g)
+                axs[1].errorbar(true_phase[ix], res[ix], yerr = rv_err[ix], fmt = '.', c = g)
         except:
             # plotting for no offsets on the second plot
-            axs[1].scatter(true_phase, res, c='tab:blue', s = 10)
+            axs[1].errorbar(true_phase, res, yerr = rv_err, fmt = '.', color = 'tab:blue')
         start_res = res[:start_rv_num[-1]+1]
         end_res = res[end_rv_num[0]:]
         # plotting extended residuals

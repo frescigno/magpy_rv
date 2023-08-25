@@ -5,6 +5,7 @@ readthedocs-sphinx-search==0.1.1
 nbsphinx
 myst-nb
 magpy_rv
+corner
 #numpy>=1.20.3
 #scipy>=1.7.3
 #matplotlib>=3.3.1
