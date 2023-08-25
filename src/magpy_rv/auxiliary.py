@@ -222,7 +222,7 @@ def mass_calc(model_param, Mstar, earth_mass = False):
     Parameters
     ----------
     model_param : 2d array
-        Array of all the model parameter in the mcmc (with Sk and Ck instead of ecc and omega)
+        Array of all the model parameter in the mcmc
     Mstar : float
         Stellar mass in solar masses
     earth_mass : bool, optional
@@ -236,9 +236,9 @@ def mass_calc(model_param, Mstar, earth_mass = False):
         Minimum mass of the planet in Earth masses
     '''
     
-    P, K, Ck, Sk = model_param[0], model_param[1], model_param[2], model_param[3]
-    ecc = Ck**2 + Sk**2
-    omega = np.arctan(Sk/Ck)
+    P, K, ecc, omega = model_param[0], model_param[1], model_param[2], model_param[3]
+    #ecc = Ck**2 + Sk**2
+    #omega = np.arctan(Sk/Ck)
     Mpl_sini = 4.9191*10**(-3) * K * np.sqrt(1-ecc**2) * P**(1/3) * Mstar**(2/3)
     
     if earth_mass == False:
