@@ -3,6 +3,7 @@ sphinx==5.3.0
 sphinx_rtd_theme==1.1.1
 readthedocs-sphinx-search==0.1.1
 nbsphinx
+myst-nb
 magpy_rv
 #numpy>=1.20.3
 #scipy>=1.7.3
