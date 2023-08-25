@@ -9,10 +9,10 @@ Author: Federica Rescigno, Bryce Dixon
 Version: 22.08.2023    
 """
 import os
+import pickle as pk
 
 import numpy as np
 import pandas as pd
-import pickle as pk
 
 import magpy_rv.parameters as par
 import magpy_rv.models as mod
