@@ -1222,6 +1222,8 @@ def phase_plot(time, rv, hparam, kernel_name, model_list, model_param, rv_err = 
         
         try:
             # try plotting multiple colours for offsets on the second plot
+            res = np.array(res)
+            
             for g in np.unique(c_array):
                 ix = np.where(c_array == g)
                 axs[1].errorbar(true_phase[ix], res[ix], yerr = rv_err[ix], fmt = '.', c = g)
