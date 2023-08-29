@@ -1,39 +1,40 @@
 """
 Set of auxiliary functions for the GP_solar and MCMC codes.
-
-Contains:
-    printProgressBar
-        Creates the progress bar for the MCMC iterations
-    
-    transit_to_periastron
-        transforms from transit time to periastron time
-    periastron_to_transit
-        transforms from periastron time to transit time
-    
-    to_SkCk
-        transforms eccentricity and omega into Sk and Ck (as defined in Rescigno et al. 2023)
-    to_ecc
-        transforms Sk and Ck to eccentricity and omega
-    
-    mass_calc
-        computes masses from RV information
-    
-    transpose
-        transposes list
-    
-    model_param_names
-        outputs the name of the parameters in the chosen models
-    hparam_names
-        outputs the name of the parameters in the chosen kernel
-    
-    phasefold
-        phasefolds data
-    
-    
-
-Author: Federica Rescigno
-Last Updated: 22.08.2023
 """
+
+# Contains:
+#     printProgressBar
+#         Creates the progress bar for the MCMC iterations
+#     
+#     transit_to_periastron
+#         transforms from transit time to periastron time
+#     periastron_to_transit
+#         transforms from periastron time to transit time
+#     
+#     to_SkCk
+#         transforms eccentricity and omega into Sk and Ck (as defined in Rescigno et al. 2023)
+#     to_ecc
+#         transforms Sk and Ck to eccentricity and omega
+#     
+#     mass_calc
+#         computes masses from RV information
+#     
+#     transpose
+#         transposes list
+#     
+#     model_param_names
+#         outputs the name of the parameters in the chosen models
+#     hparam_names
+#         outputs the name of the parameters in the chosen kernel
+#     
+#     phasefold
+#         phasefolds data
+#    
+#    
+#
+# Author: Federica Rescigno
+# Last Updated: 22.08.2023
+
 
 import numpy as np
 

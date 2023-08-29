@@ -1,21 +1,22 @@
 '''
 Code to define the models and model parameters for the gp regression.
+'''
 
-Contains:
-    Model List
-    Model parameter creator function
-    
-    Combine data function
-    
-    Parent model class
-    No model class
-    Offset model class
-    Polynomial model class
-    Keplerian model class 
+# Contains:
+#     Model List
+#     Model parameter creator function
+#    
+#     Combine data function
+#     
+#     Parent model class
+#     No model class
+#     Offset model class
+#     Polynomial model class
+#     Keplerian model class 
+#
+# Author: Federica Rescigno, Bryce Dixon
+# Version 22.08.2023
 
-Author: Federica Rescigno, Bryce Dixon
-Version 22.08.2023
-    '''
 import numpy as np
 import abc
 ABC = abc.ABC

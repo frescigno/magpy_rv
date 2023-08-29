@@ -1,19 +1,20 @@
 """
 Various plotting functions to allow the user to interpret data from the mcmc
-
-Contains:
-    offset_subtract function
-    data_plot function
-    gp_plot function
-    mixing_plot function
-    corner_plot function
-    keplerian_only_plot function
-    phase_plot function
-    
-    
-Author: Federica Rescigno, Bryce Dixon
-Version: 22.08.2023    
 """
+
+# Contains:
+#     offset_subtract function
+#     data_plot function
+#     gp_plot function
+#     mixing_plot function
+#     corner_plot function
+#     keplerian_only_plot function
+#     phase_plot function
+#    
+#    
+# Author: Federica Rescigno, Bryce Dixon
+# Version: 22.08.2023    
+
 
 import matplotlib.pyplot as plt
 import numpy as np

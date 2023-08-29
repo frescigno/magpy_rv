@@ -1,14 +1,15 @@
 '''
 MCMC code for the gaussian model
-
-Contains:
-    MCMC class
-    run_mcmc function
-    
-
-Author: Federica Rescigno, Bryce Dixon
-Version 22.08.2023
 '''
+
+# Contains:
+#     MCMC class
+#     run_mcmc function
+#    
+#
+# Author: Federica Rescigno, Bryce Dixon
+# Version 22.08.2023
+
 
 import random
 import time

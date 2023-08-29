@@ -1,13 +1,14 @@
 """
 Function to allow the user to save any or all outputs from the mcmc
-
-Contains:
-    saving function
-
-    
-Author: Federica Rescigno, Bryce Dixon
-Version: 22.08.2023    
 """
+
+# Contains:
+#     saving function
+#
+#    
+# Author: Federica Rescigno, Bryce Dixon
+# Version: 22.08.2023    
+
 import os
 import pickle as pk
 

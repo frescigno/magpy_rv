@@ -1,22 +1,23 @@
 
 '''
 Kernels for the Gaussian Process model
+'''
 
-Contains:
-    Kernel List
-    Compute Distances Function
-    
-    Parent Kernel Class
-    Cosine Kernel Class
-    Exponential Squared Kernel Class
-    Exponential Sine Squared Kernel Class
-    Quasi Periodic Kernel Class
-    Jitter Quasi Periodic Kernel Class
-    Matérn 5th Order Kernel Class
-    Matérn 3rd Order Kernel Class
-
-Author: Federica Rescigno, Bryce Dixon
-Version: 22.08.2023'''
+# Contains:
+#     Kernel List
+#     Compute Distances Function
+#    
+#     Parent Kernel Class
+#     Cosine Kernel Class
+#     Exponential Squared Kernel Class
+#     Exponential Sine Squared Kernel Class
+#     Quasi Periodic Kernel Class
+#     Jitter Quasi Periodic Kernel Class
+#     Matérn 5th Order Kernel Class
+#     Matérn 3rd Order Kernel Class
+#
+# Author: Federica Rescigno, Bryce Dixon
+# Version: 22.08.2023
 
 import numpy as np
 import scipy as sc

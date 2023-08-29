@@ -1,12 +1,13 @@
 '''
 GP likelihood calculation for the gaussian model
-
-Contains:
-    GP Likelihood class
-
-Author: Federica Rescigno, Bryce Dixon
-Version 22.08.2023
 '''
+
+# Contains:
+#     GP Likelihood class
+#
+# Author: Federica Rescigno, Bryce Dixon
+# Version 22.08.2023
+
 
 import numpy as np
 from scipy.linalg import cho_factor, cho_solve
