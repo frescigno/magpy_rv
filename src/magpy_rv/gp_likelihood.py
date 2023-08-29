@@ -292,7 +292,7 @@ class GPLikelihood:
             Dictionary containing all necessary prior parameters
             (get with pri_create and assign values)
         
-        Raises:
+        Raises
         ------
         Assertion:
             Raised if the selected prior is not in the list of currently available priors    
@@ -364,7 +364,9 @@ class GPLikelihood:
             List of the priors applied. Each item in the list should countain the following
             3 objects:
                 String of the name of the parameter the prior is applied to
+                
                 String of the name of the prior
+                
                 pri_create dictionary of the prior
         
         Raises
