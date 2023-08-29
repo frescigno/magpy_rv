@@ -25,7 +25,40 @@ from magpy_rv.mcmc_aux import get_model
 
 
 class GPLikelihood:
-    '''Gaussian Process likelihood
+    '''
+    Gaussian Process likelihood
+    
+    Parameters
+    ----------
+    x : array or list, floats
+        Time series of the radial velocity
+    y : array or list, floats
+        Radial velocity values
+    yerr : array or list, floats
+        Radial velocity errors
+    hparamters: dictionary
+        dictionary of all hyper parameters considered
+    kernel_name: string
+        name of the used kernel
+    model_y: array, floats, optional
+        Array of y (rv) values from the model chosen
+        Default to None
+    model_param: dictionary, optional
+        dictionary of all model parameters considered
+        Default to None
+        
+    Raises
+    ------
+    Assertion:
+        Raised if the hyperparameters are not a dictionary
+    Assertion:
+        Raised if the a model is in use and the model parameters are not a dictionary
+    KeyError:
+        Raised if a model is in use and model_y is not given
+    KeyError:
+        Raised if a model_y is given but no parameters are specified
+    KeyError:
+        Raised if a model_y is given but no model is in use
     '''
     
     def __init__(self, x, y, yerr, hparameters, kernel_name, model_y = None, model_param = None):
@@ -218,7 +251,10 @@ class GPLikelihood:
         '''
         Computes the natural logarith of the likelihood of the gaussian fit.
         Following the equation:
-            ln(L) = -n/2 ln(2pi) * -1/2 ln(det(K)) -1/2 Y.T dot K-1 dot Y
+        
+        .. math::
+        
+            ln(L) = -\\frac{n}{2} ln(2\\pi) \\cdot -\\frac{1}{2} ln(det(K)) -\\frac{1}{2} Y^T \\cdot (K-1) \\cdot Y
         
         Returns
         -------

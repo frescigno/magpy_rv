@@ -32,6 +32,34 @@ parameter_check = mcmcx.parameter_check
 
 
 class MCMC:
+    '''
+    Class to perform the MCMC calculation
+    
+    Parameters
+    ----------
+    t : array, floats
+        Time array of the observations
+    rv : array, floats
+        Radial velocity array of the observations
+    rv_err : array, floats
+        Errors on the radial velocity array
+    hparam0 : dictionary
+        Set of hyper-parameters for the kernel, with value, error and vary 
+    kernel_name : string
+        Name of chosen kernel
+    model_par0 : dictionary
+        Set of parameters for the model, with value, error and vary
+    model_name : string
+        Name of chosen model
+    prior_list : list
+        List inlcuding in order the name of parameter, the name of the prior and the dictionary of the prior parameters (see posterior function in GP_solar.py for better description)
+    numb_chains : integer, optional
+        Number of chains requested. The default is 100.
+    flags: array of floats, optional
+        array of flags representing which datapoints in the time array are related to which telescope and so will have which offset. Defaults to false
+    Mstar : float
+        mass of the host star in solar masses
+    '''
     
     def __init__(self, t, rv, rv_err, hparam0, kernel_name, model_par0, model_name, prior_list, numb_chains=100, flags=None, Mstar = 0):
         '''
@@ -692,7 +720,8 @@ def run_MCMC(iterations, t, rv, rv_err, hparam0, kernel_name, model_param0 = Non
     Assertion
         Raised if the number of chains is less than double the number of free parameters
 
-    Returns:
+    Returns
+    -------
     logL_list : array of floats
         array of the log likelihoods of every iteration
     hparameter_list : array of floats
