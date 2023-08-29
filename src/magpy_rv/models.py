@@ -232,7 +232,7 @@ class No_Model(Model):
     
     @staticmethod
     def params(model_num = None, plotting = True):
-        '''Function to return a list of the parameters
+        '''Function to return a list of the parameters in selected format
         
         Parameters
         ----------
@@ -241,7 +241,7 @@ class No_Model(Model):
         plotting: bool, optional
             True returns the list in format for plots, False returns the list in format for text, defaults to True
         
-        Returns list of parameter names in selected format'''
+        '''
         if model_num is None:
             return ["no"]
         else:
@@ -267,8 +267,11 @@ class No_Model(Model):
 
 
 class Polynomial(Model):
-    '''The model of the rv data follows a polynomial up to the 3rd degree with equation
-        a3*time^3 + a2*time^2 + a1*time + a0
+    '''The model of the rv data follows a polynomial up to the 3rd degree with equation:
+    
+    .. math::
+    
+        a_3(time)^3 + a_2(time)^2 + a_1(time) + a_0
     '''
     
     def __init__(self, time, model_params):
@@ -319,7 +322,7 @@ class Polynomial(Model):
     
     @staticmethod
     def params(model_num = None, plotting = True):
-        '''Function to return a list of the parameters
+        '''Function to return a list of the parameters in selected format
         
         Parameters
         ----------
@@ -328,7 +331,7 @@ class Polynomial(Model):
         plotting: bool, optional
             True returns the list in format for plots, False returns the list in format for text, defaults to True
         
-        Returns list of parameter names in selected format'''
+        '''
         if model_num is None:
             return ["a0", "a1", "a2", "a3"]
         else:
@@ -404,7 +407,7 @@ class Offset(Model):
     
     @staticmethod
     def params(model_num = None, plotting = True):
-        '''Function to return a list of the parameters
+        '''Function to return a list of the parameters in selected format
         
         Parameters
         ----------
@@ -413,7 +416,7 @@ class Offset(Model):
         plotting: bool, optional
             True returns the list in format for plots, False returns the list in format for text, defaults to True
         
-        Returns list of parameter names in selected format'''
+        '''
         if model_num is None:
             return ["offset"]
         else:
@@ -452,9 +455,10 @@ class Offset(Model):
 class Keplerian(Model):
     '''The generalized Keplerian RV model (only use when dealing with RV observation
     of star with possible planet).
-    If multiple planets are involved, the model parameters should be inputted as list (not fully implemented yet).
-    
     '''
+    
+    # If multiple planets are involved, the model parameters should be inputted as list (not fully implemented yet).
+    
     
     def __init__(self, time, model_params):
         '''
@@ -532,7 +536,7 @@ class Keplerian(Model):
     
     @staticmethod
     def params(model_num = None, plotting = True, SkCk = False):
-        '''Function to return a list of the parameters
+        '''Function to return a list of the parameters in selected format
         
         Parameters
         ----------
@@ -543,7 +547,7 @@ class Keplerian(Model):
         SkCk: bool, optional
             If True return list including Sk and Ck, if False return list including ecc and omega, defaults to False
             
-        Returns list of parameter names in selected format'''
+        '''
         if model_num is None:
             if SkCk is True:
                 return ["P", "K", "Sk", "Ck", "t0"]
