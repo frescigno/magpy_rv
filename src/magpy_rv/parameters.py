@@ -177,6 +177,15 @@ def pri_create(param_name, prior, vals = None):
 
 class parameter:
     ''' Object to assign initial values to a parameter and define whether it is allowed to vary in the fitting
+    
+    Parameters
+        ----------
+        value : float, optional
+            Assumed initial value of the chosen variable. The default is None.
+        error : float, optional
+            Error on the value. The default is None
+        vary : True or False, optional
+            Is the variable allowed to vary? The default is True.
     '''
     
     def __init__(self, value=None, error=None, vary=True):
@@ -265,9 +274,10 @@ class Gaussian(Prior):
     
     .. math::
         
-        -0.5 \\cdot (\\frac{(x - \\mu)}{sigma})^2 - 0.5 \\cdot np.log(2\\pi \\cdot \\sigma^2)
+        -0.5 \\cdot (\\frac{(x - \\mu)}{sigma})^2 - 0.5 \\cdot log(2\\pi \\cdot \\sigma^2)
         
     Args:
+    
         hparam (string): parameter label
         
         :math:`mu` (float): centre of Gaussian Prior
@@ -329,6 +339,7 @@ class Jeffrey(Prior):
         with upper and lower bound to avoid singularity at x = 0
         
         and normalized as:
+        
             :math:`\\frac{1}{ln(\\frac{maxval}{minval})}`
     
     Args:
