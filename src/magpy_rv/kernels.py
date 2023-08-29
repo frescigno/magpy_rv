@@ -174,14 +174,14 @@ class Cosine(Kernel):
     
     @staticmethod
     def hparams(plotting = True):
-        '''Function to return a list of the hyperparameters
+        '''Function to return a list of the hyperparameters in selected format
         
         Parameters
         ----------
         plotting: bool, optional
             True returns the list in format for plots, False returns the list in format for text, defaults to True
         
-        Returns list of hyperparameter names in selected format'''
+        '''
         if plotting is False:
             return ['gp_amp', 'gp_per']
         if plotting is True:
@@ -301,14 +301,14 @@ class ExpSquared(Kernel):
     
     @staticmethod
     def hparams(plotting = True):
-        '''Function to return a list of the hyperparameters
+        '''Function to return a list of the hyperparameters in selected format
         
         Parameters
         ----------
         plotting: bool, optional
             True returns the list in format for plots, False returns the list in format for text, defaults to True
         
-        Returns list of hyperparameter names in selected format'''
+        '''
         if plotting is False:
             return ['gp_amp', 'gp_timescale']
         if plotting is True:
@@ -432,14 +432,14 @@ class ExpSinSquared(Kernel):
     
     @staticmethod
     def hparams(plotting = True):
-        '''Function to return a list of the hyperparameters
+        '''Function to return a list of the hyperparameters in selected format
         
         Parameters
         ----------
         plotting: bool, optional
             True returns the list in format for plots, False returns the list in format for text, defaults to True
         
-        Returns list of hyperparameter names in selected format'''
+        '''
         if plotting is False:
             return ['gp_amp', 'gp_timescale', 'gp_per']
         if plotting is True:
@@ -511,7 +511,7 @@ class QuasiPer(Kernel):
     
     .. math::
     
-        K = H_1^2 \\cdot exp( \\frac{-(t-t')^2}{H_2^2} - \\frac{\\sin^2(\\frac{\\pi(t-t')}{H_3}}{H_4^2} )
+        K = H_1^2 \\cdot exp( \\frac{-(t-t')^2}{H_2^2} - \\frac{\\sin^2(\\frac{\\pi(t-t')}{H_3})}{H_4^2} )
     
     in which:
     
@@ -569,14 +569,14 @@ class QuasiPer(Kernel):
     
     @staticmethod
     def hparams(plotting = True):
-        '''Function to return a list of the hyperparameters
+        '''Function to return a list of the hyperparameters in selected format
         
         Parameters
         ----------
         plotting: bool, optional
             True returns the list in format for plots, False returns the list in format for text, defaults to True
         
-        Returns list of hyperparameter names in selected format'''
+        '''
         if plotting is False:
             return ['gp_per', 'gp_perlength', 'gp_explength', 'gp_amp']
         if plotting is True:
@@ -652,7 +652,7 @@ class JitterQuasiPer(Kernel):
     
     .. math::
     
-        K = H_1^2 \\cdot exp( \\frac{-(t-t')^2}{H_2^2} - \\frac{\\sin^2(\\frac{\\pi(t-t')}{H_3}}{H_4^2} ) + delta_{nm} jit^2
+        K = H_1^2 \\cdot exp( \\frac{-(t-t')^2}{H_2^2} - \\frac{\\sin^2(\\frac{\\pi(t-t')}{H_3}}{H_4^2} ) + \\delta_{nm} jit^2
     
     in which:
     
@@ -713,14 +713,14 @@ class JitterQuasiPer(Kernel):
     
     @staticmethod
     def hparams(plotting = True):
-        '''Function to return a list of the hyperparameters
+        '''Function to return a list of the hyperparameters in selected format
         
         Parameters
         ----------
         plotting: bool, optional
             True returns the list in format for plots, False returns the list in format for text, defaults to True
         
-        Returns list of hyperparameter names in selected format'''
+        '''
         if plotting is False:
             return ['gp_per', 'gp_perlegth', 'gp_explength', 'gp_amp', 'gp_jit']
         if plotting is True:
@@ -803,7 +803,7 @@ class Matern5(Kernel):
     
     .. math::
         
-        K = H_1^2 (1 + \\frac{\\sqrt{5}|t-t'|}{H_2} + 5|t-t'|^{\\frac{2}{3}}*H_2^2) exp(-\\frac{\\sqrt{5}|t-t'|}{H_2})
+        K = H_1^2 (1 + \\frac{\\sqrt{5}|t-t'|}{H_2} + 5|t-t'|^{\\frac{2}{3}}H_2^2) exp(-\\frac{\\sqrt{5}|t-t'|}{H_2})
     
     in which:
     
@@ -855,14 +855,14 @@ class Matern5(Kernel):
     
     @staticmethod
     def hparams(plotting = True):
-        '''Function to return a list of the hyperparameters
+        '''Function to return a list of the hyperparameters in selected format
         
         Parameters
         ----------
         plotting: bool, optional
             True returns the list in format for plots, False returns the list in format for text, defaults to True
         
-        Returns list of hyperparameter names in selected format'''
+        '''
         if plotting is False:
             return ['gp_amp', 'gp_timescale']
         if plotting is True:
@@ -931,7 +931,7 @@ class Matern3(Kernel):
     
     .. math::
         
-        K = (H_1^2 \\cdot (1 + \\frac{\\sqrt{3}|t-t'|}{H_2}) \\cdot exp(\\frac{\\sqrt{3}|t-t'|}{H_2}) + delta_{nm} jit^2
+        K = (H_1^2 \\cdot (1 + \\frac{\\sqrt{3}|t-t'|}{H_2}) \\cdot exp(\\frac{\\sqrt{3}|t-t'|}{H_2})) + \\delta_{nm} jit^2
         
     in which:
     
@@ -986,14 +986,14 @@ class Matern3(Kernel):
     
     @staticmethod
     def hparams(plotting = True):
-        '''Function to return a list of the hyperparameters
+        '''Function to return a list of the hyperparameters in selected format
         
         Parameters
         ----------
         plotting: bool, optional
             True returns the list in format for plots, False returns the list in format for text, defaults to True
         
-        Returns list of hyperparameter names in selected format'''
+        '''
         if plotting is False:
             return ['gp_amp', 'gp_timescale', 'gp_jit']
         if plotting is True:
