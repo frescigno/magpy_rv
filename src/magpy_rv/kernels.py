@@ -120,9 +120,10 @@ class Cosine(Kernel):
     '''Class that computes the Cosine kernel matrix.
     
     Kernel formula:
+    
     .. math::
         
-        K = H_1^2 \cos(\frac{2\pi \cdot |t-t'|}{H_2})
+        K = H_1^2 \\cos(\\frac{2\\pi \\cdot |t-t'|}{H_2})
     
     in which:
         H_1 = variance/amp
