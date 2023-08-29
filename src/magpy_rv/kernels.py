@@ -126,12 +126,15 @@ class Cosine(Kernel):
         K = H_1^2 \\cos(\\frac{2\\pi \\cdot |t-t'|}{H_2})
     
     in which:
-        :math: `H_1 = \\frac{variance}{amp}`
+    
+    .. math::
+    
+        H_1 = \\frac{variance}{amp}
         
-        :math: `H_2 = per`
+        H_2 = per
         
     Arguments:
-        hparams: dictionary with all the hyperparameters,
+        hparams: dictionary with all the hyperparameters.
             Should have 2 elements with possibly errors
     '''
     
