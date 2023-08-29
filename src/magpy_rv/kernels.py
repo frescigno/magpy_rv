@@ -254,11 +254,9 @@ class ExpSquared(Kernel):
     
     in which:
     
-    .. math::
-    
-        H_1 = \\frac{variance}{amp}
+        :math:`H_1 = \\frac{variance}{amp}`
         
-        H_2 = \\frac{recurrence timescale}{length}
+        :math:`H_2 = \\frac{recurrence timescale}{length}`
         
     Arguments:
         hparams: dictionary with all the hyperparameters.
@@ -384,13 +382,11 @@ class ExpSinSquared(Kernel):
     
     in which:
     
-    .. math::
-    
-        H_1 = \\frac{variance}{amp}
+        :math:`H_1 = \\frac{variance}{amp}`
         
-        H_3 = \\frac{recurrence timescale}{length}
+        :math:`H_3 = \\frac{recurrence timescale}{length}`
         
-        H_2 = period
+        :math:`H_2 = period`
         
     Arguments:
         hparams: dictionary with all the hyperparameters.
@@ -519,15 +515,16 @@ class QuasiPer(Kernel):
     
     in which:
     
-    .. math::
-    
-        H_1 = amp
-        H_2 = explength
-        H_3 = per
-        H_4 = perlength
+        :math:`H_1 = amp`
+        
+        :math:`H_2 = explength`
+        
+        :math:`H_3 = per`
+        
+        :math:`H_4 = perlength`
     
     Arguments:
-        hparams : dictionary with all the hyperparameters
+        hparams : dictionary with all the hyperparameters.
             Should have 4 elements with errors
         
     '''
@@ -659,17 +656,15 @@ class JitterQuasiPer(Kernel):
     
     in which:
     
-    .. math::
-    
-        H_1 = amp
+        :math:`H_1 = amp`
         
-        H_2 = explength
+        :math:`H_2 = explength`
         
-        H_3 = per
+        :math:`H_3 = per`
         
-        H_4 = perlength
+        :math:`H_4 = perlength`
         
-        jit = jitter
+        :math:`jit = jitter`
     
     Arguments:
         hparams : dictionary with all the hyperparameters.
@@ -812,11 +807,9 @@ class Matern5(Kernel):
     
     in which:
     
-    .. math::
-    
-        H_1 = \\frac{variance}{amp}
+        :math:`H_1 = \\frac{variance}{amp}`
         
-        H_2 = timescale
+        :math:`H_2 = timescale`
     
     Arguments:
         hparams : dictionary with all the hyperparameters.
@@ -942,11 +935,11 @@ class Matern3(Kernel):
         
     in which:
     
-        H_1 = \\frac{variance}{amp}
+        :math:`H_1 = \\frac{variance}{amp}`
         
-        H_2 = timescale
+        :math:`H_2 = timescale`
         
-        jit = jitter
+        :math:`jit = jitter`
     
     Arguments:
         hparams : dictionary with all the hyperparameters.
