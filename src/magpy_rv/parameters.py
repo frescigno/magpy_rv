@@ -176,8 +176,7 @@ def pri_create(param_name, prior, vals = None):
 # parameter class
 
 class parameter:
-    '''Object to assign initial values to a parameter and define whether it is
-    allowed to vary in the fitting
+    ''' Object to assign initial values to a parameter and define whether it is allowed to vary in the fitting
     '''
     
     def __init__(self, value=None, error=None, vary=True):
@@ -263,13 +262,17 @@ class Prior(ABC):
 
 class Gaussian(Prior):
     '''Gaussian prior computed as:
+    
+    .. math::
         
-        -0.5 * ((x - mu) / sigma)**2 -0.5 * np.log(2*pi * sigma**2)
+        -0.5 \\cdot (\\frac{(x - \\mu)}{sigma})^2 - 0.5 \\cdot np.log(2\\pi \\cdot \\sigma^2)
         
     Args:
         hparam (string): parameter label
-        mu (float): centre of Gaussian Prior
-        sigma (float): width of the Gaussian Prior
+        
+        :math:`mu` (float): centre of Gaussian Prior
+        
+        :math:`sigma` (float): width of the Gaussian Prior
     '''
     
     def __init__(self, hparam, mu, sigma):
@@ -322,15 +325,17 @@ class Gaussian(Prior):
 class Jeffrey(Prior):
     '''Jeffrey prior computed as:
         
-        p(x) proportional to  1/x
+        p(x) proportional to  :math:`\\frac{1}{x}`
         with upper and lower bound to avoid singularity at x = 0
         
         and normalized as:
-            1 / ln(maxval/minval)
+            :math:`\\frac{1}{ln(\\frac{maxval}{minval})}`
     
     Args:
         hparam (string): parameter label
+        
         minval (float): minimum allowed value
+        
         maxval (float): maximum allowed value
     '''
     
@@ -392,14 +397,17 @@ class Jeffrey(Prior):
 class Modified_Jeffrey(Prior):
     ''' Modified Jeffrey prior computed as:
         
-        p(x) proportional to  1/(x-x0)
+        p(x) proportional to  :math:`\\frac{1}{x-x_0}`
         with upper bound
     
     
     Args:
         hparam (string): parameter label
+        
         kneeval (float): x0, knee of the Jeffrey prior
+        
         minval (float): minimum allowed value
+        
         maxval (float): maximum allowed value
     '''
     
@@ -468,7 +476,9 @@ class Uniform(Prior):
     
     Args:
         hparam (string): parameter label
+        
         minval (float): minimum allowed value
+        
         maxval (float): maximum allowed value
     '''
     
