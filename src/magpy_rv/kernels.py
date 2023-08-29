@@ -210,10 +210,10 @@ class Cosine(Kernel):
         ----------
         dist_e : array, floats
             Spatial distance between each x1-x2 points set in euclidean space
-            in formula = (t - t'), from the compute_distances function
+            in formula = :math:`(t - t')`, from the compute_distances function
         dist_se : array, floats
             Spatial distance between each x1-x2 points set in squared euclidean space
-            in formula = (t - t')^2, from the compute_distances function
+            in formula = :math:`(t - t')^2`, from the compute_distances function
         errors : array, floats
             Array of the errors, if want to add to diagonal of the covariance matrix
 
@@ -247,16 +247,22 @@ class ExpSquared(Kernel):
     '''Class that computes the Exponential Squared kernel matrix.
     
     Kernel formula:
+    
+    .. math::
         
-        K = H_1^2 . exp{-1/2 (|t-t'| / H_2)^2}
+        K = H_1^2 \\cdot exp(-\\frac{1}{2} \\frac{|t-t'|}{H_2^2})
     
     in which:
-        H_1 = variance/amp
-        H_2 = recurrence timescale/length
+    
+    .. math::
+    
+        H_1 = \\frac{variance}{amp}
+        
+        H_2 = \\frac{recurrence timescale}{length}
         
     Arguments:
-        hparams: dictionary with all the hyperparameters
-        Should have 2 elements with possibly errors
+        hparams: dictionary with all the hyperparameters.
+            Should have 2 elements with possibly errors
     '''
     
     def __init__(self, hparams):
@@ -333,10 +339,10 @@ class ExpSquared(Kernel):
         ----------
         dist_e : array, floats
             Spatial distance between each x1-x2 points set in euclidean space
-            in formula = (t - t'), from the compute_distances function
+            in formula = :math:`(t - t')`, from the compute_distances function
         dist_se : array, floats
             Spatial distance between each x1-x2 points set in squared euclidean space
-            in formula = (t - t')^2, from the compute_distances function
+            in formula = :math:`(t - t')^2`, from the compute_distances function
         errors : array, floats
             Array of the errors, if want to add to diagonal of the covariance matrix
 
@@ -371,17 +377,24 @@ class ExpSinSquared(Kernel):
     '''Class that computes the Exponential Sine Squared kernel matrix.
     
     Kernel formula:
+    
+    .. math::
         
-        K = H_1^2 . exp{-2/H_3^2 . sin^2[(pi . |t-t'|) / H_2]}
+        K = H_1^2 \\cdot exp(-\\frac{2}{H_3^2} \\cdot \\sin^2(\\frac{\\pi \\cdot |t-t'|}{H_2}))
     
     in which:
-        H_1 = variance/amp
-        H_3 = recurrence timescale/length
+    
+    .. math::
+    
+        H_1 = \\frac{variance}{amp}
+        
+        H_3 = \\frac{recurrence timescale}{length}
+        
         H_2 = period
         
     Arguments:
-        hparams: dictionary with all the hyperparameters
-        Should have 3 elements with possibly errors
+        hparams: dictionary with all the hyperparameters.
+            Should have 3 elements with possibly errors
     '''
     
     def __init__(self, hparams):
@@ -460,10 +473,10 @@ class ExpSinSquared(Kernel):
         ----------
         dist_e : array, floats
             Spatial distance between each x1-x2 points set in euclidean space
-            in formula = (t - t'), from the compute_distances function
+            in formula = :math:`(t - t')`, from the compute_distances function
         dist_se : array, floats
             Spatial distance between each x1-x2 points set in squared euclidean space
-            in formula = (t - t')^2, from the compute_distances function
+            in formula = :math:`(t - t')^2`, from the compute_distances function
         errors : array, floats
             Array of the errors, if want to add to diagonal of the covariance matrix
 
@@ -500,9 +513,14 @@ class QuasiPer(Kernel):
     
     Kernel formula from Haywood Thesis 2016, Equation 2.14:
     
-        K = H_1^2 . exp{ [-(t-t')^2 / H_2^2] - [ sin^2(pi(t-t')/H_3) / H_4^2] }
+    .. math::
+    
+        K = H_1^2 \\cdot exp( \\frac{-(t-t')^2}{H_2^2} - \\frac{\\sin^2(\\frac{\\pi(t-t')}{H_3}}{H_4^2} )
     
     in which:
+    
+    .. math::
+    
         H_1 = amp
         H_2 = explength
         H_3 = per
@@ -593,10 +611,10 @@ class QuasiPer(Kernel):
         ----------
         dist_e : array, floats
             Spatial distance between each x1-x2 points set in euclidean space
-            in formula = (t - t'), from the compute_distances function
+            in formula = :math:`(t - t')`, from the compute_distances function
         dist_se : array, floats
             Spatial distance between each x1-x2 points set in squared euclidean space
-            in formula = (t - t')^2, from the compute_distances function
+            in formula = :math:`(t - t')^2`, from the compute_distances function
         errors : array, floats
             Array of the errors, if want to add to diagonal of the covariance matrix
 
@@ -635,17 +653,26 @@ class JitterQuasiPer(Kernel):
     
     Kernel formula from Haywood Thesis 2016, Equation 2.14:
     
-        K = H_1^2 . exp{ [-(t-t')^2 / H_2^2] - [ sin^2(pi(t-t')/H_3) / H_4^2] } + delta_nm jit^2
+    .. math::
+    
+        K = H_1^2 \\cdot exp( \\frac{-(t-t')^2}{H_2^2} - \\frac{\\sin^2(\\frac{\\pi(t-t')}{H_3}}{H_4^2} ) + delta_{nm} jit^2
     
     in which:
+    
+    .. math::
+    
         H_1 = amp
+        
         H_2 = explength
+        
         H_3 = per
+        
         H_4 = perlength
+        
         jit = jitter
     
     Arguments:
-        hparams : dictionary with all the hyperparameters
+        hparams : dictionary with all the hyperparameters.
             Should have 5 elements with errors
         
     '''
@@ -730,10 +757,10 @@ class JitterQuasiPer(Kernel):
         ----------
         dist_e : array, floats
             Spatial distance between each x1-x2 points set in euclidean space
-            in formula = (t - t'), from the compute_distances function
+            in formula = :math:`(t - t')`, from the compute_distances function
         dist_se : array, floats
             Spatial distance between each x1-x2 points set in squared euclidean space
-            in formula = (t - t')^2, from the compute_distances function
+            in formula = :math:`(t - t')^2`, from the compute_distances function
         errors : array, floats
             Array of the errors, if want to add to diagonal of the covariance matrix
 
@@ -778,15 +805,21 @@ class Matern5(Kernel):
     '''Class that computes the Matern 5/2 kernel matrix.
     
     Kernel formula:
+    
+    .. math::
         
-        K = H_1^2 (1 + (sqr(5)|t-t'|)/H_2 + 5|t-t'|^2/3*H_2^2) exp{-sqr(5)|t-t'|/H_2}
+        K = H_1^2 (1 + \\frac{\\sqrt{5}|t-t'|}{H_2} + 5|t-t'|^{\\frac{2}{3}}*H_2^2) exp(-\\frac{\\sqrt{5}|t-t'|}{H_2})
     
     in which:
-        H_1 = variance/amp
+    
+    .. math::
+    
+        H_1 = \\frac{variance}{amp}
+        
         H_2 = timescale
     
     Arguments:
-        hparams : dictionary with all the hyperparameters
+        hparams : dictionary with all the hyperparameters.
             Should have 2 elements with errors
         
     '''
@@ -864,10 +897,10 @@ class Matern5(Kernel):
         ----------
         dist_e : array, floats
             Spatial distance between each x1-x2 points set in euclidean space
-            in formula = (t - t'), from the compute_distances function
+            in formula = :math:`(t - t')`, from the compute_distances function
         dist_se : array, floats
             Spatial distance between each x1-x2 points set in squared euclidean space
-            in formula = (t - t')^2, from the compute_distances function
+            in formula = :math:`(t - t')^2`, from the compute_distances function
         errors : array, floats
             Array of the errors, if want to add to diagonal of the covariance matrix
 
@@ -902,16 +935,21 @@ class Matern3(Kernel):
     '''Class that computes the Matern 3/2 kernel matrix.
     
     Kernel formula:
+    
+    .. math::
         
-        K = (H_1^2 * (1 + (sqrt(3)*|t-t'|/H_2)) * exp(sqrt(3)*|t-t'|/H_2)) + delta_nm jit^2
+        K = (H_1^2 \\cdot (1 + \\frac{\\sqrt{3}|t-t'|}{H_2}) \\cdot exp(\\frac{\\sqrt{3}|t-t'|}{H_2}) + delta_{nm} jit^2
         
     in which:
-        H_1 = variance/amp
+    
+        H_1 = \\frac{variance}{amp}
+        
         H_2 = timescale
+        
         jit = jitter
     
     Arguments:
-        hparams : dictionary with all the hyperparameters
+        hparams : dictionary with all the hyperparameters.
             Should have 3 elements with errors
         
     '''
@@ -991,10 +1029,10 @@ class Matern3(Kernel):
         ----------
         dist_e : array, floats
             Spatial distance between each x1-x2 points set in euclidean space
-            in formula = (t - t'), from the compute_distances function
+            in formula = :math:`(t - t')`, from the compute_distances function
         dist_se : array, floats
             Spatial distance between each x1-x2 points set in squared euclidean space
-            in formula = (t - t')^2, from the compute_distances function
+            in formula = :math:`(t - t')^2`, from the compute_distances function
         errors : array, floats
             Array of the errors, if want to add to diagonal of the covariance matrix
 
