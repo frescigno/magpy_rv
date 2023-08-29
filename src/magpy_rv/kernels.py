@@ -63,10 +63,10 @@ def compute_distances(t1, t2):
     -------
     dist_e : array, floats
         Spatial distance between each x1-x2 points set in euclidean space
-        in formula = (t - t')
+        in formula = :math:`(t - t')`
     dist_se : array, floats
         Spatial distance between each x1-x2 points set in squared euclidean space
-        in formula = (t - t')^2
+        in formula = :math:`(t - t')^2`
 
     '''
     T1 = np.array([t1]).T
@@ -126,6 +126,7 @@ class Cosine(Kernel):
         K = H_1^2 \\cos(\\frac{2\\pi \\cdot |t-t'|}{H_2})
     
     in which:
+    
         :math:`H_1 = \\frac{variance}{amp}`
         
         :math:`H_2 = per`
