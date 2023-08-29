@@ -178,7 +178,7 @@ def pri_create(param_name, prior, vals = None):
 class parameter:
     ''' Object to assign initial values to a parameter and define whether it is allowed to vary in the fitting
     
-    Parameters
+        Parameters
         ----------
         value : float, optional
             Assumed initial value of the chosen variable. The default is None.
@@ -280,9 +280,9 @@ class Gaussian(Prior):
     
         hparam (string): parameter label
         
-        :math:`mu` (float): centre of Gaussian Prior
+        mu (float): centre of Gaussian Prior
         
-        :math:`sigma` (float): width of the Gaussian Prior
+        sigma (float): width of the Gaussian Prior
     '''
     
     def __init__(self, hparam, mu, sigma):
