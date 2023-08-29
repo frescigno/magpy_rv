@@ -427,6 +427,10 @@ def mixing_plot(hparam_chain, kernel_name, model_param_chain, model_name, LogL_c
         Folder to save the plot, by default None. If None, the plot is not saved.
     savefilename : str, optional
         Name of the file to save the plot, by default Mixing.
+    
+    Returns
+    -------
+    Mixing plots for each parameter
     '''
     iterations = len(LogL_chain[:,0,0])-1
     numb_chains = len(LogL_chain[0,:,0])
@@ -515,6 +519,10 @@ def corner_plot(hparam_chain, kernel_name, model_param_chain, model_name, masses
         Folder to save the plot, by default None. If None, the plot is not saved.
     savefilename : str, optional
         Name of the file to save the plot, by default Corner.
+        
+    Returns
+    -------
+    Corner plots of the posteriors of each parameter
     '''
     
     
