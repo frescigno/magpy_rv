@@ -8,7 +8,7 @@ API
 
    kernel_api
    parameter_api
-   source.model_api
+   source/model_api
    gp_likelihood_api
    mcmc_api
    plotting_api
