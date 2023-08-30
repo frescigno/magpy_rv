@@ -256,7 +256,7 @@ class ExpSquared(Kernel):
     
         :math:`H_1 = amp`
         
-        :math:`H_2 = recurrence-timescale`
+        :math:`H_2` = recurrence timescale
         
     Arguments:
         hparams: dictionary with all the hyperparameters.
