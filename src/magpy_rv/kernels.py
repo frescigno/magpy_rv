@@ -127,7 +127,7 @@ class Cosine(Kernel):
     
     in which:
     
-        :math:`H_1 = \\frac{variance}{amp}`
+        :math:`H_1 = amp`
         
         :math:`H_2 = per`
         
@@ -254,9 +254,9 @@ class ExpSquared(Kernel):
     
     in which:
     
-        :math:`H_1 = \\frac{variance}{amp}`
+        :math:`H_1 = amp`
         
-        :math:`H_2 = \\frac{recurrence timescale}{length}`
+        :math:`H_2 = recurrence-timescale`
         
     Arguments:
         hparams: dictionary with all the hyperparameters.
@@ -382,9 +382,9 @@ class ExpSinSquared(Kernel):
     
     in which:
     
-        :math:`H_1 = \\frac{variance}{amp}`
+        :math:`H_1 = amp`
         
-        :math:`H_3 = \\frac{recurrence timescale}{length}`
+        :math:`H_3 = recurrence-timescale`
         
         :math:`H_2 = period`
         
@@ -807,7 +807,7 @@ class Matern5(Kernel):
     
     in which:
     
-        :math:`H_1 = \\frac{variance}{amp}`
+        :math:`H_1 = amp`
         
         :math:`H_2 = timescale`
     
@@ -935,7 +935,7 @@ class Matern3(Kernel):
         
     in which:
     
-        :math:`H_1 = \\frac{variance}{amp}`
+        :math:`H_1 = amp`
         
         :math:`H_2 = timescale`
         
