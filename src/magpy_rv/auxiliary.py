@@ -63,7 +63,7 @@ def printProgressBar (iteration, total, prefix = 'Progress: ', suffix = 'Complet
     fill: string, optional
         Bar fill character
     printEnd: string, optional
-        End character (e.g. $"\r", "\r\n"$)
+        End character (e.g. carriage returns on same line or new line)
     '''
     
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
