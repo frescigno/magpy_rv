@@ -43,24 +43,26 @@ import magpy_rv.models as mod
 
 
 def printProgressBar (iteration, total, prefix = 'Progress: ', suffix = 'Complete', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
-    ''' Call in a loop to create terminal progress bar
+    ''' 
+    Call in a loop to create terminal progress bar
+    
     Parameters
     ----------
-    iteration:  integer
+    iteration: integer
         Current iteration
-    total:      integer
+    total: integer
         Total expected iterations
-    prefix:     string, optional
+    prefix: string, optional
         String before progress bar
-    suffix:     string, optional
+    suffix: string, optional
         String after percentage
-    decimals:   integer, optional
+    decimals: integer, optional
         Number of decimals in the percetage
-    length:     integer, optional
+    length: integer, optional
         Character lenght of the progress bar
-    fill:       string, optional
+    fill: string, optional
         Bar fill character
-    printEnd:   string, optional
+    printEnd: string, optional
         End character (e.g. "\r", "\r\n")
     '''
     
