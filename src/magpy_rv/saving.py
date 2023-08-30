@@ -28,7 +28,7 @@ import magpy_rv.auxiliary as aux
 
 def save(folder_name, rv, time, rv_err, model_list = None, init_hparam = None, kernel = None, init_param = None, prior_list = [], fin_hparam_post = None, fin_param_post = None, logl_chain = None, masses = None, fin_param_values = None, fin_param_erru = None, fin_param_errd = None, flags = None, Mstar = None, fin_to_skck = False, burnin = 0):
     """
-    Saves offset subtracted and combined RVs and times, rv_error, kernel name, model list, initial hyperparameters and parameters, initial LogL, priors, final hyperparameter and parameter posteriors, final LogL posterior, mass posteriors, final hyperparameter, parameter and mass values along with errors, final logL value
+    Saves offset subtracted and combined RVs and times, rv_error, kernel name, model list, initial hyperparameters and parameters, initial LogL, priors, final hyperparameter and parameter posteriors as txt and pickle files, final LogL posterior as txt and pickle files, mass posteriors as txt and pickle, final hyperparameter, parameter and mass values along with errors, final logL value
     
     Parameters
     ----------
