@@ -127,9 +127,9 @@ class Cosine(Kernel):
     
     in which:
     
-        :math:`H_1 = amp`
+        :math:`H_1` = amp
         
-        :math:`H_2 = per`
+        :math:`H_2` = per
         
     Arguments:
         hparams: dictionary with all the hyperparameters.
@@ -254,7 +254,7 @@ class ExpSquared(Kernel):
     
     in which:
     
-        :math:`H_1 = amp`
+        :math:`H_1` = amp
         
         :math:`H_2` = recurrence timescale
         
@@ -382,11 +382,11 @@ class ExpSinSquared(Kernel):
     
     in which:
     
-        :math:`H_1 = amp`
+        :math:`H_1` = amp
         
-        :math:`H_3 = recurrence-timescale`
+        :math:`H_3` = recurrence timescale
         
-        :math:`H_2 = period`
+        :math:`H_2` = period
         
     Arguments:
         hparams: dictionary with all the hyperparameters.
@@ -515,13 +515,13 @@ class QuasiPer(Kernel):
     
     in which:
     
-        :math:`H_1 = amp`
+        :math:`H_1` = amp
         
-        :math:`H_2 = explength`
+        :math:`H_2` = explength
         
-        :math:`H_3 = per`
+        :math:`H_3` = per
         
-        :math:`H_4 = perlength`
+        :math:`H_4` = perlength
     
     Arguments:
         hparams : dictionary with all the hyperparameters.
@@ -656,15 +656,15 @@ class JitterQuasiPer(Kernel):
     
     in which:
     
-        :math:`H_1 = amp`
+        :math:`H_1` = amp
         
-        :math:`H_2 = explength`
+        :math:`H_2` = explength
         
-        :math:`H_3 = per`
+        :math:`H_3` = per
         
-        :math:`H_4 = perlength`
+        :math:`H_4` = perlength
         
-        :math:`jit = jitter`
+        :math:`jit` = jitter
     
     Arguments:
         hparams : dictionary with all the hyperparameters.
@@ -807,9 +807,9 @@ class Matern5(Kernel):
     
     in which:
     
-        :math:`H_1 = amp`
+        :math:`H_1` = amp
         
-        :math:`H_2 = timescale`
+        :math:`H_2` = timescale
     
     Arguments:
         hparams : dictionary with all the hyperparameters.
@@ -935,11 +935,11 @@ class Matern3(Kernel):
         
     in which:
     
-        :math:`H_1 = amp`
+        :math:`H_1` = amp
         
-        :math:`H_2 = timescale`
+        :math:`H_2` = timescale
         
-        :math:`jit = jitter`
+        :math:`jit` = jitter
     
     Arguments:
         hparams : dictionary with all the hyperparameters.
