@@ -274,7 +274,7 @@ class Gaussian(Prior):
     
     .. math::
         
-        -0.5 \\cdot (\\frac{(x - \\mu)}{sigma})^2 - 0.5 \\cdot log(2\\pi \\cdot \\sigma^2)
+        -0.5 \\cdot (\\frac{(x - \\mu)}{\\sigma})^2 - 0.5 \\cdot log(2\\pi \\cdot \\sigma^2)
         
     Args:
         hparam (string): parameter label
