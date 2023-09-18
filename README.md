@@ -1,4 +1,4 @@
-[![Documentation Status](https://readthedocs.org/projects/MAGPy-RV/badge/?version=latest)](https://magpy-rv.readthedocs.io/en/latest/badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/MAGPy-RV/badge/?version=latest)](https://magpy-rv.readthedocs.io/en/latest/)
 [![PyPI version](https://badge.fury.io/py/magpy-rv.svg)](https://badge.fury.io/py/magpy-rv)
 [![DOI](https://zenodo.org/badge/DOI/number.svg)](https://doi.org/number)
 
