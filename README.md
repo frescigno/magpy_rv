@@ -1,4 +1,5 @@
-[![Documentation Status](https://readthedocs.org/projects/MAGPy-RV/badge/?version=latest)](https://magpy-rv.readthedocs.io/en/latest/)
+[![Documentation](https://img.shields.io/badge/read%20the-docs-green.svg)](https://magpy-rv.readthedocs.io/en/latest/)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/j-faria/magpy_rv/LICENSE)
 [![PyPI version](https://badge.fury.io/py/magpy-rv.svg)](https://badge.fury.io/py/magpy-rv)
 [![DOI](https://zenodo.org/badge/DOI/number.svg)](https://doi.org/number)
 
