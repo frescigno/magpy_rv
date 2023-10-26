@@ -13,13 +13,13 @@ Modeling Activity with Gaussian process regression in Python
 Pipeline to model data with Gaussian Process regression and affine invariant Monte Carlo Markov Chain parameter searching algorith.
 To use please cite the original publication [Rescigno et al. 2023](https://ui.adsabs.harvard.edu/abs/2023arXiv231013623R/abstract)
 
-Main Contributors:
+**Main Contributors:**
 
 Federica Rescigno
 
 Bryce Dixon
 
-Special Acknowledgements:
+**Special Acknowledgements:**
 
 Dr. Raphaëlle D. Haywood
 
